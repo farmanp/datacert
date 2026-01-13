@@ -18,6 +18,9 @@ npm run test:unit       # Run only TypeScript unit tests
 npm run test:integration # Run integration tests
 npm run test:accuracy    # Run statistical accuracy tests
 npm run test:rust       # Run Rust tests only
+npm run docs:start     # Start Docusaurus dev server
+npm run docs:build     # Build Docusaurus static site
+npm run docs:serve     # Serve built Docusaurus site
 npm run typecheck       # Run TypeScript type checker
 npm run lint            # ESLint check (src/app, max-warnings 0)
 npm run format          # Format codebase (Prettier + Rustfmt)
