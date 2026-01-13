@@ -1,0 +1,14 @@
+# Build artifacts
+dist
+dev-dist
+src/wasm/pkg
+src/wasm/target
+
+# Dependencies
+node_modules
+
+# Configuration files
+vite.config.ts
+vitest.config.ts
+tailwind.config.js
+postcss.config.js

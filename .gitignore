@@ -1,0 +1,44 @@
+# IDEs and Tools
+.vscode/
+.idea/
+.claude/
+.gemini/
+*.swp
+*.swo
+.DS_Store
+
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# WebAssembly
+src/wasm/pkg/
+src/wasm/target/
+
+# Build and Distribution
+dist/
+dev-dist/
+tmp-vite/
+.vercel
+.netlify
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Temporary files
+tmp/
+temp/
+coverage/
+.nyc_output/
+.vitest-cache/

@@ -1,0 +1,48 @@
+{
+  "name": "datalens-profiler",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:wasm && vite build",
+    "build:wasm": "cd src/wasm && wasm-pack build --target web --out-dir pkg",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/app --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:rust": "cd src/wasm && cargo clippy -- -D warnings",
+    "format": "prettier --write \"src/app/**/*.{ts,tsx,css}\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"src/app/**/*.{ts,tsx,css}\" \"*.{json,md}\"",
+    "format:rust": "cd src/wasm && cargo fmt",
+    "check": "npm run typecheck && npm run lint && npm run format:check",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.10.0",
+    "solid-js": "^1.8.0",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-core": "^7.4.0",
+    "workbox-precaching": "^7.4.0"
+  },
+  "devDependencies": {
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/testing-library__jest-dom": "^5.14.9",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.45.0",
+    "eslint-plugin-solid": "^0.13.0",
+    "jsdom": "^27.4.0",
+    "postcss": "^8.4.31",
+    "prettier": "^3.0.0",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.0.2",
+    "vite": "^5.0.0",
+    "vite-plugin-solid": "^2.8.0",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0",
+    "vitest": "^1.0.0"
+  }
+}

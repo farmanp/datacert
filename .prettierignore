@@ -1,0 +1,15 @@
+# Build artifacts
+dist
+dev-dist
+public
+src/wasm/pkg
+src/wasm/target
+
+# Dependencies
+node_modules
+package-lock.json
+
+# Tooling
+.claude
+.gemini
+tmp-vite
