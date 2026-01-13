@@ -1,0 +1,1946 @@
+
+You said:
+What should all jira tickets have? 
+
+1. user story 
+2. acceptance criteria 
+3. implementation details 
+4. additional resources
+
+anythign else? resrearch online too 
+ChatGPT said:
+Yes — your list is a great start for what a strong Jira ticket should include, especially for Agile user stories, but there are a few other important elements teams commonly include to make tickets actionable, clear, and easy to work with. Here’s a practical checklist combining industry best practices:
+
+✅ Core Components Every Jira Ticket Should Have
+Title / Summary
+
+A short, descriptive headline using clear language (often action-oriented). It should quickly convey the purpose of the ticket at a glance. 
+
+User Story (when using Agile)
+
+The standard “As a ___, I want ___ so that ___” format — clarifying who, what, and why. 
+
+Description / Context
+
+A longer explanation of the ticket: what it’s about, scope, business value, background context, and why it’s needed. 
+
+Acceptance Criteria
+
+Clear, testable conditions that define when the story is “done”. They aren’t implementation steps — they’re conditions the work must satisfy. 
+
+Implementation Details / Technical Notes
+
+Optional but helpful for developers: hints about approach, constraints, dependencies, APIs, design references, etc.
+
+✅ Useful Additional Information
+Assignee / Owner
+
+Who is responsible for completing the work. 
+
+Priority
+
+Helps teams understand urgency (e.g., Blocker, High, Medium, Low). 
+
+Estimate / Story Points (for Agile teams)
+
+Rough estimate of effort to plan work and manage velocity.
+
+Labels / Components / Tags
+
+Metadata to group related tickets (e.g., frontend, backend, UI, API). 
+
+Due Date / Sprint / Milestone
+
+When the work is expected to be completed or which iteration it belongs to. 
+
+Dependencies / Linked Issues
+
+Connections to related work (e.g., “blocks”, “is blocked by”, “relates to”). 
+
+Attachments / Additional Resources
+
+Screenshots, UX designs, mockups, spec docs, links to Confluence or external resources.
+
+Definition of Done (DoD) (Optional but recommended)
+
+A checklist that outlines organizational quality standards (e.g., tests passed, code reviewed).
+
+✅ Common Enhancements That Improve Tickets
+✅ Checklist of subtasks
+
+Break complex work into smaller pieces.
+
+✅ Test Cases
+
+Especially useful in QA or BDD (Given/When/Then format). 
+
+✅ Business Value / ROI
+
+Explains why completing the ticket matters to stakeholders.
+
+✅ Non-functional Requirements
+
+Performance, security, accessibility — if relevant.
+
+✅ Definition of Done vs. Acceptance Criteria
+
+Acceptance Criteria are specific to the ticket’s functionality.
+
+Definition of Done is a broader quality baseline your team agrees on (e.g., code review, documentation). 
+
+📌 Example of a Well-Structured Jira Ticket Template
+**Title:**  
+[Short summary]
+
+**User Story:**  
+As a [role], I want [feature], so that [benefit].
+
+**Description / Context:**  
+[Detailed explanation + background]
+
+**Acceptance Criteria:**  
+- [Criterion 1]  
+- [Criterion 2]  
+- [Criterion 3]
+
+**Implementation Notes:**  
+[Optional developer guidance]
+
+**Assignee:**  
+[Dev name]
+
+**Priority:**  
+[High / Medium / Low]
+
+**Estimate:**  
+[X points]
+
+**Sprint / Milestone:**  
+[Spring Sprint #]
+
+**Attachments / Resources:**  
+[Designs, Docs, Links]
+🧠 Summary
+Your original list is on the right track — particularly for user-story driven Agile work — but high-quality Jira tickets typically include a few more structured fields to ensure clarity and team alignment. The most essential beyond your list are:
+
+✅ Title / Summary
+✅ Clear Description / Context
+✅ Assignee & Priority
+✅ Estimates
+✅ Linked Issues / Dependencies
+
+These elements help teams understand what, why, how, who, and when — which is what a well-scoped ticket should communicate. 
+
+If you want, I can also give you a ready-to-copy Jira ticket template (in Markdown) for your team to paste into Jira by default!
+
+You said:
+lets also include format types too like using gherkin - seemsz to be really effetive, right? 
+ChatGPT said:
+Yes — including format types (especially Gherkin) is a very good idea, and yes, Gherkin is often very effective when used in the right situations. Many high-performing Agile teams standardize on one or two formats so tickets stay consistent and testable.
+
+Below is a clean, practical way to extend your Jira ticket checklist with formats, plus guidance on when Gherkin is the right choice vs. overkill.
+
+✅ Add: Acceptance Criteria Format
+Acceptance criteria should always declare their format, so readers instantly know how to interpret and test them.
+
+Common Formats to Support
+1. Gherkin (BDD) — Recommended Default for Behavioral Work
+Format
+
+Given [context]
+When [action]
+Then [outcome]
+Example
+
+Given the user is logged in
+When they submit an invalid email
+Then an error message is displayed
+Why it’s effective
+
+Removes ambiguity
+
+Naturally testable (manual or automated)
+
+Shared language between PM, QA, and Engineering
+
+Works extremely well with automated testing tools
+
+Best for
+
+User-facing behavior
+
+Business rules
+
+Workflow and state changes
+
+API behavior
+
+✅ Strongly recommended when QA is involved or automation exists
+
+2. Bullet-Point Acceptance Criteria — Simple & Fast
+Format
+
+- User can submit the form
+- Error is shown for invalid input
+- Data is saved successfully
+Pros
+
+Fast to write
+
+Easy to read
+
+Cons
+
+Can be vague
+
+Less test-friendly
+
+Best for
+
+Very small tickets
+
+Internal tooling
+
+Spike follow-ups
+
+3. Checklist / Validation Rules
+Format
+
+☐ Validation rule applied
+☐ Error message copy approved
+☐ Logging added
+Best for
+
+Non-functional requirements
+
+QA sign-off
+
+Operational or compliance work
+
+4. Hybrid (Recommended in Practice)
+Many teams do this:
+
+Gherkin for critical flows
+
+Bullets for edge cases or non-behavioral checks
+
+Example
+
+Scenario: Submitting invalid email
+Given the user is on the signup form
+When they submit an invalid email
+Then they see an error message
+
+Additional acceptance:
+- Error message matches design copy
+- Form does not submit
+✅ Update Your Jira Ticket “Must-Have” List
+Here’s your updated, best-practice checklist with formats included:
+
+Every Jira Ticket Should Have
+Title / Summary
+
+User Story
+
+Description / Context
+
+Acceptance Criteria
+
+✅ Format specified (Gherkin, Bullets, Checklist)
+
+Implementation Notes (optional)
+
+Additional Resources
+
+Priority
+
+Assignee / Owner
+
+Estimate / Story Points
+
+Dependencies / Linked Tickets
+
+Definition of Done (team-level, optional per ticket)
+
+🧠 Is Gherkin “Really Effective”?
+Yes — when used intentionally.
+
+Gherkin is highly effective when:
+✅ Behavior matters
+✅ Multiple roles review tickets
+✅ QA needs clarity
+✅ Tests may be automated
+✅ Ambiguity has caused bugs before
+
+Gherkin can be overkill when:
+❌ Work is purely technical (refactors, infra)
+❌ Acceptance is trivial
+❌ Team isn’t aligned on BDD concepts
+
+👉 Rule of thumb:
+
+If someone could ask “what exactly should happen?” → use Gherkin.
+
+📌 Recommended Team Standard (Simple & Scalable)
+Suggested policy
+
+User-facing stories → Gherkin required
+
+Backend/infra → Bullets acceptable
+
+Spikes → Goals + learnings
+
+Always label the format explicitly
+
+Example
+
+Acceptance Criteria (Gherkin):
+✨ Want a Ready-to-Use Jira Template?
+I can give you:
+
+A default Jira Story template
+
+A Gherkin-first template
+
+A Spike / Research ticket template
+
+A Bug ticket template (Given/When/Then)
+
+Just tell me which ones your team uses.
+
+You said:
+show me the default jira story template
+ChatGPT said:
+Here’s a clean, battle-tested default Jira Story template that works well for most Agile teams. It assumes Gherkin-first acceptance criteria, but still allows flexibility for simpler tickets.
+
+You can paste this directly into Jira (or save it as your project’s default template).
+
+✅ Default Jira Story Template
+Title
+Short, action-oriented summary of the story
+
+User Story
+As a [type of user]
+I want [some goal]
+So that [some benefit]
+Description / Context
+Background and business context
+
+Why this change is needed
+
+Any relevant constraints or assumptions
+
+What is in scope / out of scope (if helpful)
+
+Acceptance Criteria (Gherkin)
+Scenario: [Clear scenario name]
+
+Given [initial context]
+And [additional context]
+When [user action or system event]
+Then [expected outcome]
+And [additional outcome]
+Additional Acceptance (if needed):
+
+Non-functional requirements (performance, accessibility, security)
+
+Edge cases not suited for Gherkin
+
+Copy or UX requirements
+
+Implementation Notes (Optional)
+Suggested approach or constraints
+
+APIs, services, or modules involved
+
+Feature flags, migrations, or rollout notes
+
+Technical risks or tradeoffs
+
+Dependencies / Linked Issues
+Blocks / Is blocked by / Relates to
+
+External dependencies or prerequisites
+
+Additional Resources
+Design mocks (Figma)
+
+Product specs (Confluence)
+
+API docs
+
+Screenshots or examples
+
+Definition of Done
+Acceptance criteria met
+
+Tests written and passing
+
+Code reviewed
+
+Documentation updated (if applicable)
+
+Feature enabled behind flag (if required)
+
+Estimation
+Story Points: [ ]
+
+Priority
+[Blocker | High | Medium | Low]
+
+Assignee / Owner
+[Name]
+
+🧠 Notes on Usage
+Use Gherkin by default for user-facing behavior
+
+Keep stories small enough to complete in one sprint
+
+If acceptance criteria exceed ~10 lines, consider splitting the story
+
+Technical-only work may skip User Story but should keep Acceptance Criteria
+
+If you want, I can also:
+
+Convert this into a Jira “Create Issue” template
+
+Provide a Bug template (Given/When/Then)
+
+Provide a Spike / Research template
+
+Adapt this for Scrum vs Kanban
+
+Just tell me 👍
+
+You said:
+I’d also say for coding reasons, we include what the git commit message will be for the work: they should be one liners that follow the typical standards (fix, chore, etc.). When you have that it’s like an ai decision log. 
+ChatGPT said:
+That’s a very strong practice — and you’re right: requiring a planned git commit message effectively becomes a lightweight decision log. It forces clarity before code is written and massively improves traceability, especially when combined with Jira + Git.
+
+This is not common everywhere, but it’s very mature engineering hygiene.
+
+Below is how I’d formalize it so it stays useful and doesn’t become ceremony.
+
+✅ Add: Planned Git Commit Message(s)
+Why this works so well
+Requiring a commit message up front:
+
+Forces the author to articulate what actually changed
+
+Reveals vague or oversized tickets early
+
+Creates a human-readable intent trail
+
+Aligns Jira ↔ Git ↔ PRs
+
+Becomes an “AI decision log” when revisiting history later
+
+If you can’t write the commit message, the work isn’t clear enough yet.
+
+✅ Commit Message Standard (Recommended)
+Use Conventional Commits (industry standard, widely supported):
+
+<type>(optional-scope): short, imperative summary
+Common Types
+feat – new feature
+
+fix – bug fix
+
+chore – maintenance, tooling, cleanup
+
+refactor – internal code change, no behavior change
+
+test – adding or updating tests
+
+docs – documentation only
+
+perf – performance improvement
+
+ci – CI/CD related changes
+
+Examples (Good One-Liners)
+feat(auth): allow users to reset password via email
+fix(api): return 400 for invalid pagination params
+chore(deps): bump lodash to 4.17.21
+refactor(search): extract query builder logic
+test(signup): add coverage for invalid email
+✅ How to Include This in a Jira Ticket
+New Required Section
+Planned Git Commit Message(s)
+feat(profile): allow users to update display name
+Notes:
+
+One-liner only
+
+Imperative tense
+
+Describes outcome, not implementation
+
+If more than ~3 commits are needed → ticket may be too large
+
+🧠 Advanced (Optional but Powerful)
+Multiple Planned Commits (Still Intent-Driven)
+feat(profile): allow users to update display name
+test(profile): add validation coverage for display name
+chore(profile): clean up unused profile fields
+This:
+
+Encourages clean, reviewable commits
+
+Makes PRs easier to understand
+
+Prevents “mega-commit” anti-patterns
+
+🚨 Guardrails (Important)
+To keep this from becoming noise:
+
+❌ Don’t require exact wording — intent matters
+
+❌ Don’t over-plan trivial commits
+
+✅ Allow updates during implementation
+
+✅ Use as a thinking tool, not a policing tool
+
+🧩 Updated Default Jira Story Template (Excerpt)
+Here’s how it fits cleanly into your existing template:
+
+### Planned Git Commit Message(s)
+feat(auth): allow users to reset password via email
+Guidgelines
+
+Conventional Commit format
+
+One line per commit
+
+Describes what changed, not how
+
+
+---
+
+## 🧠 Why This Scales with AI
+
+You’re spot on calling this an **AI decision log**:
+
+- Future devs (or AI agents) can infer *intent* from history
+- LLMs do much better with clean, structured commit messages
+- Jira + commits + PRs becomes a **semantic graph of decisions**
+- Makes automated changelogs and release notes trivial
+
+This is exactly the kind of practice that makes teams “AI-ready” without trying.
+
+---
+
+If you want, I can:
+- Update the **full default Jira story template** with this section included
+- Write a **1–2 paragraph internal engineering standard** explaining *why* this rule exists
+- Propose a **PR checklist** that enforces this lightly (without being annoying)
+
+Just say the word.
+You said:
+So what should the ticket look like? A prompt? A skill? A spec?
+ChatGPT said:
+Short answer: a great Jira ticket is a spec written as an executable prompt.
+
+Longer, more useful answer below 👇
+
+The Mental Model That Works
+A Jira ticket should not be just:
+
+❌ a prompt (too vague)
+
+❌ a skill description (too abstract)
+
+❌ a full spec doc (too heavy)
+
+It should be:
+
+A small, testable spec that can be executed by a human or an AI with minimal follow-up.
+
+That’s the sweet spot.
+
+Compare the Options
+🟡 Ticket as a Prompt
+What it is
+
+“Build X that does Y”
+
+Pros
+
+Fast to write
+
+Feels AI-friendly
+
+Cons
+
+Ambiguous
+
+Depends on tribal knowledge
+
+Hard to test or review
+
+Verdict
+Useful inside the ticket (user story, intent), but not sufficient on its own.
+
+🟡 Ticket as a Skill
+What it is
+
+“Implement user authentication”
+
+Pros
+
+Good at roadmap / epic level
+
+Clear capability focus
+
+Cons
+
+Not executable
+
+No definition of done
+
+Verdict
+Great for epics, bad for stories.
+
+🔵 Ticket as a Spec (Right-Sized)
+What it is
+
+Clear intent
+
+Behavioral examples
+
+Testable outcomes
+
+Guardrails, not micromanagement
+
+Pros
+
+Executable
+
+Reviewable
+
+Testable
+
+AI-compatible
+
+Scales across humans and tools
+
+Cons
+
+Requires discipline
+
+Verdict
+✅ This is the correct model for a Jira story.
+
+The Best Definition
+A Jira ticket is a right-sized specification that defines intent, constraints, and verifiable outcomes — not implementation.
+
+Or in plainer language:
+
+If you hand the ticket to a new engineer or an AI agent, they should be able to produce an acceptable PR without asking clarifying questions.
+
+Why Your Additions Matter
+What you’ve already included turns the ticket into something stronger:
+
+Element	Why it matters
+User Story	Declares intent
+Gherkin	Makes behavior executable
+Definition of Done	Sets quality bar
+Planned Commit Message	Forces decision clarity
+Resources	Grounds reality
+Together, these make the ticket self-contained.
+
+The “Executable Spec” Shape
+Visually, a strong ticket looks like this:
+
+Intent        → User Story
+Context       → Description
+Behavior      → Gherkin Acceptance Criteria
+Constraints   → Notes / Non-functionals
+Verification  → Definition of Done
+Traceability  → Planned Commit Message
+That’s not a prompt — it’s a contract.
+
+The AI Angle (You’re Already There)
+You called it an AI decision log — that’s exactly right.
+
+A ticket like this:
+
+Can be fed directly to an LLM
+
+Produces consistent results
+
+Minimizes hallucination
+
+Makes future automation easier
+
+In practice, this means:
+
+Humans write tickets
+
+Humans or AI execute them
+
+Humans review against acceptance criteria
+
+That’s a human-in-the-loop system, not chaos.
+
+Final Answer (One Line)
+A Jira ticket should be a small, executable specification — written clearly enough that both humans and AI can implement it and verify it without ambiguity.
+
+If you want, next we can:
+
+Turn this into a 1-page engineering philosophy
+
+Write a “What makes a good ticket” rubric
+
+Design a future-proof Jira template optimized for AI agents
+
+You’re asking the right questions.
+
+You said:
+Design a future-proof Jira template optimized for AI agents
+ChatGPT said:
+Below is a future-proof Jira story template optimized for AI agents and humans.
+It is designed to be:
+
+Executable (can be run by an AI agent)
+
+Verifiable (clear pass/fail)
+
+Traceable (intent → code → history)
+
+Resilient to team changes, tooling changes, and scale
+
+Think of it as an Executable Spec + Decision Log.
+
+🚀 Future-Proof Jira Story Template (AI-Optimized)
+1. Intent (Human + AI Prompt)
+This is the “why” and high-level ask. Keep it short and outcome-focused.
+
+As a [user / system]
+I want [capability]
+So that [business or user value]
+Success means:
+One sentence describing what “good” looks like.
+
+2. Context & Constraints
+Everything needed to understand the environment.
+
+Background / problem statement
+
+In-scope vs out-of-scope
+
+Assumptions
+
+Known constraints (tech, legal, performance, UX)
+
+Backward compatibility requirements
+
+3. Acceptance Criteria (Executable Behavior)
+Primary source of truth. Required.
+
+Format: Gherkin (BDD)
+Scenario: [clear, testable behavior]
+
+Given [initial state]
+And [preconditions]
+When [action or event]
+Then [expected outcome]
+And [side effects, if any]
+Additional Acceptance (if needed)
+Non-functional requirements
+
+Edge cases
+
+Error handling rules
+
+4. AI Execution Instructions
+This is what makes the ticket AI-ready.
+
+Allowed to change
+
+ UI
+
+ API
+
+ Database
+
+ Config / Infra
+
+Must NOT change
+
+[e.g., public API contract]
+
+[e.g., database schema]
+
+[e.g., existing behavior]
+
+Preferences
+
+Coding style
+
+Libraries / frameworks
+
+Patterns to follow or avoid
+
+Ambiguity resolution rule
+
+If unclear, prioritize acceptance criteria over implementation notes.
+
+5. Planned Git Commit Message(s) (Decision Log)
+Required. One-liners only. Conventional Commits.
+
+feat(auth): allow users to reset password via email
+test(auth): add coverage for password reset flow
+Rules
+
+Imperative tense
+
+Outcome-focused
+
+If >3 commits expected → split the ticket
+
+6. Implementation Notes (Optional, Non-Binding)
+Hints, not instructions.
+
+Suggested approach
+
+Known pitfalls
+
+Related modules or services
+
+Feature flags or rollout notes
+
+⚠️ Acceptance Criteria override this section.
+
+7. Verification & Definition of Done
+How we prove this worked.
+
+ Acceptance criteria pass
+
+ Tests written & passing
+
+ Code reviewed
+
+ No breaking changes
+
+ Monitoring/logging updated (if applicable)
+
+ Docs updated (if applicable)
+
+8. Dependencies & Links
+Blocks / blocked by
+
+Related tickets
+
+External dependencies
+
+9. Resources
+Designs (Figma)
+
+Specs (Confluence)
+
+API docs
+
+Examples / screenshots
+
+10. Meta (Planning Signals)
+Priority:
+
+Story Points:
+
+Sprint / Milestone:
+
+Owner:
+
+🧠 Why This Template Is AI-Proof
+It separates intent from execution
+AI agents are great at how, terrible at why. This fixes that.
+
+It resolves ambiguity explicitly
+Acceptance criteria > notes > preferences.
+
+It encodes decisions early
+Planned commit messages force clarity before code exists.
+
+It is test-first by design
+Gherkin = executable truth.
+
+It scales
+Works for humans
+
+Works for AI copilots
+
+Works for autonomous agents later
+
+🧩 How to Use This in Practice
+Human workflow
+
+PM / Eng writes sections 1–3
+
+Tech lead adds 4–5
+
+Dev or AI executes
+
+Review uses sections 3 & 7 only
+
+AI workflow
+
+Feed entire ticket as prompt
+
+Execute changes
+
+Validate against acceptance criteria
+
+Produce commits matching planned messages
+
+🔑 One-Sentence Philosophy
+A Jira ticket is an executable contract between intent and outcome — readable by humans, enforceable by tests, and operable by AI.
+
+If you want next, I can:
+
+Create a short “How to write AI-ready tickets” guide
+
+Design a Bug / Spike / Infra variant
+
+Convert this into a Jira Issue Template JSON
+
+Add a scoring rubric to reject weak tickets
+
+Just say where you want to go next.
+
+You said:
+Actually of that sounds good. Let’s do it one by one tho 
+ChatGPT said:
+Perfect 👍 — that’s the right instinct.
+This stuff only works if it’s introduced incrementally and internalized, not dumped all at once.
+
+Here’s a clean, logical rollout order that builds understanding step by step and avoids overwhelm.
+
+🧭 Proposed Sequence (One by One)
+We’ll treat each item as a small, adoptable standard, not a manifesto.
+
+Step 1 — “What Makes a Good Ticket” (Scoring Rubric)
+Establishes quality bar before templates or tooling.
+
+Why first:
+
+Aligns everyone on what good looks like
+
+Makes reviews objective
+
+Prevents template cargo-culting
+
+Outcome:
+
+People can evaluate tickets, not just write them
+
+Step 2 — AI-Ready Jira Story Template (Core)
+The main executable spec template (what we already designed).
+
+Why second:
+
+Now people know why each section exists
+
+Template feels helpful, not bureaucratic
+
+Outcome:
+
+Consistent, high-signal tickets
+
+Step 3 — Bug Ticket Template (Given/When/Then)
+Bugs benefit the most from behavior-first thinking.
+
+Why third:
+
+Fast win
+
+Very concrete
+
+Easy to enforce
+
+Outcome:
+
+Better reproduction, faster fixes, fewer regressions
+
+Step 4 — Spike / Research Template
+Prevents fake certainty and documents learning.
+
+Why fourth:
+
+Spikes often rot into undocumented decisions
+
+AI struggles most with ambiguous research goals
+
+Outcome:
+
+Clear learning goals + decision capture
+
+Step 5 — Infra / Refactor Template
+Where Gherkin doesn’t always fit, but rigor still matters.
+
+Why last:
+
+Requires more judgment
+
+Easier once team has baseline maturity
+
+Outcome:
+
+Technical work becomes reviewable and explainable
+
+🧠 How We’ll Work Through Each Step
+For each item, we’ll do:
+
+Purpose (1–2 paragraphs)
+
+Anti-patterns (what this prevents)
+
+Template or rubric
+
+Example (good vs bad)
+
+Adoption guidance (light, not dogmatic)
+
+No fluff. No framework worship.
+
+🔜 Let’s Start With Step 1
+Next up:
+
+✅ “What Makes a Good Jira Ticket” — Scoring Rubric
+Before I generate it, quick alignment check (no long answers needed):
+
+Do you want the rubric to be:
+
+🟢 Strict (used to block tickets)
+
+🔵 Guiding (used for coaching)
+
+🟣 Hybrid (guiding, but enforceable later)
+
+Just tell me which one, and I’ll generate Step 1 cleanly.
+
+You said:
+Hybrid 
+ChatGPT said:
+Perfect. Hybrid is exactly right — it sets a clear quality bar without turning Jira into a bureaucratic gate.
+
+Below is Step 1.
+
+✅ What Makes a Good Jira Ticket
+(Hybrid Scoring Rubric — Human + AI Ready)
+This rubric is used to:
+
+Guide authors while writing tickets
+
+Review ticket quality before work starts
+
+Block execution only when risk is high
+
+A ticket does not need a perfect score to proceed — but it must pass the “Executable” threshold.
+
+🎯 Scoring Overview
+Each dimension is scored 0–2.
+
+Score	Meaning
+0	Missing or unclear
+1	Present but ambiguous
+2	Clear, complete, executable
+Maximum score: 16
+Minimum to execute: 10
+Any 0 in “Critical” dimensions = block
+
+🧩 Rubric Dimensions
+1. Intent Clarity (Critical)
+Can a human or AI explain why this exists?
+
+0 – No clear goal or outcome
+
+1 – Goal stated but vague
+
+2 – Clear user/system intent and value
+
+✅ Pass condition: User Story + success statement
+
+2. Context & Constraints (Critical)
+Is there enough background to make safe decisions?
+
+0 – No context or constraints
+
+1 – Partial context, assumptions unclear
+
+2 – Scope, assumptions, and constraints explicit
+
+✅ Pass condition: In/out of scope is clear
+
+3. Acceptance Criteria (Behavior) (Critical)
+Can the work be verified without interpretation?
+
+0 – No acceptance criteria
+
+1 – Criteria exist but are vague
+
+2 – Clear, testable behavior (preferably Gherkin)
+
+✅ Pass condition: Pass/fail is unambiguous
+
+4. Execution Readiness
+Could someone start work now?
+
+0 – Missing inputs or dependencies
+
+1 – Minor unanswered questions
+
+2 – Fully actionable as written
+
+5. Decision Encoding (Commit Message)
+Is the intended change clearly named?
+
+0 – No planned commit message
+
+1 – Commit exists but vague or non-standard
+
+2 – Clear, conventional, outcome-focused
+
+6. Verification & Done Criteria
+Is “done” clearly defined?
+
+0 – No definition of done
+
+1 – Partial or implicit DoD
+
+2 – Explicit verification checklist
+
+7. Scope Size & Focus
+Is the ticket appropriately sized?
+
+0 – Too large or unclear scope
+
+1 – Slightly oversized
+
+2 – Single, focused outcome
+
+8. Resource Linking
+Are supporting materials easy to find?
+
+0 – No resources
+
+1 – Some links, missing key info
+
+2 – All relevant resources linked
+
+🚦 Decision Rules (Hybrid Enforcement)
+❌ Block Execution If:
+Any Critical dimension scores 0
+
+Acceptance criteria are not testable
+
+Commit intent cannot be articulated
+
+⚠️ Coach & Improve If:
+Total score is 8–9
+
+No critical failures, but ambiguity exists
+
+✅ Proceed If:
+Total score is 10+
+
+All Critical dimensions score ≥1
+
+🧠 Why This Works (Especially With AI)
+Prevents “just start coding” failures
+
+Makes tickets executable by AI agents
+
+Reduces clarification churn
+
+Turns Jira into a decision system, not a backlog
+
+If an AI fails on a ticket that passed this rubric, the rubric — not the AI — is at fault.
+
+📝 How to Use This Practically
+Authors
+
+Use the rubric as a checklist
+
+Aim for ≥10, not perfection
+
+Reviewers
+
+Score quickly (2–3 minutes)
+
+Leave comments only on 0s and 1s
+
+Team Leads
+
+Enforce Critical dimensions
+
+Coach on the rest
+
+🔜 Next Step
+Step 2:
+
+🚀 AI-Ready Jira Story Template (Core)
+We already designed it — next I’ll:
+
+Refine it using this rubric
+
+Add short guidance per section
+
+Include a “minimum viable ticket” version
+
+Say the word when you’re ready to move to Step 2.
+
+You said:
+Step 2
+ChatGPT said:
+Great — here’s Step 2, refined and locked.
+
+This is the AI-Ready Jira Story Template (Core), explicitly aligned to the Hybrid Rubric from Step 1 and designed to be:
+
+Executable by AI agents
+
+Understandable by humans
+
+Lightweight enough to actually be used
+
+I’ll give you:
+
+The template
+
+Why each section exists
+
+A Minimum Viable Ticket (MVT) version
+
+🚀 Step 2: AI-Ready Jira Story Template (Core)
+Definition:
+A Jira Story is a right-sized executable specification that defines intent, behavior, constraints, and verification — not implementation.
+
+1. Intent (Required)
+Primary prompt for humans and AI.
+
+As a [user or system]
+I want [capability]
+So that [value]
+Success looks like:
+One sentence describing the desired end state.
+
+🔍 Rubric mapping: Intent Clarity (Critical)
+
+2. Context & Constraints (Required)
+Everything needed to make safe decisions.
+
+Background / problem
+
+In scope
+
+Out of scope
+
+Assumptions
+
+Known constraints (tech, legal, UX, performance)
+
+🔍 Rubric mapping: Context & Constraints (Critical)
+
+3. Acceptance Criteria — Executable Behavior (Required)
+Source of truth. If this is wrong, the ticket is wrong.
+
+Format: Gherkin (Default)
+Scenario: [behavior name]
+
+Given [initial state]
+And [preconditions]
+When [action or event]
+Then [expected outcome]
+And [side effects]
+Additional Acceptance (Optional)
+Non-functional requirements
+
+Edge cases
+
+Error handling rules
+
+🔍 Rubric mapping: Acceptance Criteria (Critical)
+
+4. AI Execution Instructions (Required)
+Constrains autonomy without micromanaging.
+
+May change
+
+ UI
+
+ API
+
+ Database
+
+ Config / Infra
+
+Must NOT change
+
+Public contracts
+
+Data models
+
+Existing behavior
+
+Preferences
+
+Patterns to follow / avoid
+
+Libraries / frameworks
+
+Ambiguity rule
+
+When unclear, acceptance criteria override all other sections.
+
+🔍 Rubric mapping: Execution Readiness
+
+5. Planned Git Commit Message(s) (Required)
+Intent → history → future.
+
+feat(search): allow filtering results by date
+test(search): add coverage for date filter edge cases
+Rules
+
+One line per commit
+
+Conventional Commits
+
+Outcome-focused
+
+3 commits → split ticket
+
+🔍 Rubric mapping: Decision Encoding
+
+6. Implementation Notes (Optional, Non-Binding)
+Helpful hints, not instructions.
+
+Suggested approach
+
+Known pitfalls
+
+Feature flags / rollout notes
+
+⚠️ Acceptance criteria override this section.
+
+7. Verification & Definition of Done (Required)
+How we know this is actually finished.
+
+ Acceptance criteria pass
+
+ Tests written and passing
+
+ Code reviewed
+
+ No breaking changes
+
+ Docs updated (if applicable)
+
+ Monitoring/logging added (if applicable)
+
+🔍 Rubric mapping: Verification & Done Criteria
+
+8. Dependencies & Resources (Required if applicable)
+Linked tickets
+
+Designs
+
+Specs
+
+API docs
+
+Screenshots
+
+🔍 Rubric mapping: Resource Linking
+
+9. Meta (Planning Signals)
+Priority
+
+Story Points
+
+Sprint / Milestone
+
+Owner
+
+🧪 Minimum Viable Ticket (MVT)
+Smallest ticket that passes the rubric (10+).
+
+Required sections only:
+
+1. Intent
+2. Context & Constraints
+3. Acceptance Criteria
+4. Planned Commit Message
+5. Definition of Done
+If a ticket has only these five and they’re solid, it’s executable.
+
+🚦 Enforcement Guidance (Hybrid)
+❌ Block if sections 1–3 or 5 are missing
+
+⚠️ Coach if sections are present but vague
+
+✅ Proceed if acceptance criteria are testable
+
+🧠 Why This Template Works for AI
+Acceptance criteria are executable truth
+
+Commit messages encode intent explicitly
+
+Constraints prevent destructive autonomy
+
+Done criteria enable self-verification
+
+This is the smallest structure that lets AI act responsibly.
+
+🔜 Next Step
+Step 3:
+
+🐞 Bug Ticket Template (Behavior-First, Given/When/Then)
+This is where teams usually see the fastest improvement.
+
+Say “Step 3” when ready, or tell me if you want:
+
+Examples filled out
+
+A Jira issue-template JSON
+
+A Confluence explainer for rollout
+
+You said:
+Step 3 
+ChatGPT said:
+Excellent — Step 3 is where this really starts paying dividends.
+
+Bugs are pure behavior problems, which makes them ideal for a Given / When / Then model and for AI-assisted execution.
+
+🐞 Step 3: AI-Ready Bug Ticket Template
+(Behavior-First, Reproducible, Verifiable)
+Definition:
+A bug ticket describes unexpected behavior, not a solution.
+If the behavior can’t be reproduced, it can’t be fixed.
+
+1. Bug Summary (Required)
+One sentence describing what is broken.
+
+[Component]: [Observed behavior] instead of [Expected behavior]
+Example
+
+Checkout: submitting expired card returns 500 instead of validation error
+2. Expected vs Actual Behavior (Required)
+Expected
+
+What should happen (user or system perspective)
+
+Actual
+
+What actually happens
+
+🔍 Why this exists
+
+Removes interpretation
+
+Makes AI comparison explicit
+
+3. Reproduction Steps — Gherkin (Required)
+Source of truth.
+
+Scenario: [Bug scenario]
+
+Given [initial state]
+And [preconditions]
+When [action]
+Then [unexpected behavior occurs]
+Optional
+
+And [error message, status code, side effect]
+🔍 Rubric mapping: Acceptance Criteria (Critical)
+
+4. Impact & Severity (Required)
+Why this bug matters.
+
+Severity: Blocker / High / Medium / Low
+
+Who is affected?
+
+Frequency (always / intermittent / edge case)
+
+Business or user impact
+
+5. AI Execution Instructions (Required)
+Prevents accidental regressions.
+
+Must NOT change
+
+Existing behavior outside the bug scope
+
+Public APIs unless explicitly allowed
+
+May change
+
+Validation logic
+
+Error handling
+
+UI messaging
+
+Ambiguity rule
+
+Match expected behavior exactly, even if current behavior exists elsewhere.
+
+6. Planned Git Commit Message (Required)
+Encodes the fix intent.
+
+fix(checkout): return validation error for expired card
+Optional follow-ups:
+
+test(checkout): add coverage for expired card submission
+7. Verification / Definition of Done (Required)
+ Bug is no longer reproducible
+
+ New test covers failure case
+
+ No regression in related flows
+
+ Error handling/logging verified
+
+8. Environment & Diagnostics (Required if relevant)
+Critical for AI and humans.
+
+Environment (prod / staging / local)
+
+Browser / OS / device
+
+Logs / stack traces
+
+Request IDs
+
+Feature flags
+
+9. Resources
+Screenshots / videos
+
+Error logs
+
+Monitoring links
+
+Related tickets
+
+🧠 Why This Template Works
+Behavior-first
+Fixes what is wrong, not what we think is wrong.
+
+Reproducible
+AI agents can replay scenarios.
+
+Safe
+Explicit constraints prevent over-fixing.
+
+Auditable
+Commit message + reproduction = decision log.
+
+🚫 Common Anti-Patterns This Prevents
+❌ “It’s broken sometimes”
+❌ “Fix validation bug”
+❌ “Works on my machine”
+❌ Missing reproduction steps
+❌ Solution baked into description
+
+🧪 Minimum Viable Bug Ticket (MVB)
+If you’re in a rush, this is the minimum:
+
+1. Bug Summary
+2. Expected vs Actual
+3. Gherkin Repro Scenario
+4. Planned Commit Message
+5. Definition of Done
+🔜 Next Step
+Step 4:
+
+🔍 Spike / Research Ticket Template
+(Learning goals, decisions, and AI-safe uncertainty)
+
+This is where teams usually lose knowledge — we’ll fix that.
+
+Say “Step 4” when ready, or ask to tweak this one first.
+
+You said:
+Step 4 
+ChatGPT said:
+Perfect. Step 4 is where most teams quietly bleed knowledge — and where AI struggles the most if structure is missing.
+
+This template turns uncertainty into an explicit artifact instead of pretending we know the answer.
+
+🔍 Step 4: AI-Ready Spike / Research Ticket Template
+(Learning-First, Decision-Capturing, Non-Pretend)
+Definition:
+A Spike is not about delivery.
+It is about reducing uncertainty and recording decisions.
+
+1. Research Intent (Required)
+Why are we doing this spike?
+
+We need to understand [unknown]
+In order to decide [decision to be made]
+Success looks like:
+A concrete decision that can be made after this spike.
+
+2. Key Questions (Required)
+What must be answered for this spike to be useful?
+
+Q1:
+
+Q2:
+
+Q3:
+
+⚠️ If these can’t be listed, the spike is not ready.
+
+3. Scope & Constraints (Required)
+What this spike will and will not do.
+
+In scope
+
+Exploration areas
+
+Prototypes / experiments allowed
+
+Out of scope
+
+Production-ready code
+
+Performance optimization
+
+Full UX polish
+
+Constraints
+
+Timebox (e.g., 2 days)
+
+Tools / environments
+
+Legal or security boundaries
+
+4. AI Execution Instructions (Required)
+Controls exploration without over-constraining.
+
+Allowed
+
+Throwaway code
+
+POCs
+
+Experiments
+
+Not allowed
+
+Shipping to production
+
+Schema migrations
+
+Breaking changes
+
+Ambiguity rule
+
+Favor learning speed over correctness.
+
+5. Planned Git Commit Message(s) (Required)
+Yes — even spikes.
+
+chore(spike): explore passwordless auth options
+Optional follow-ups:
+
+docs(spike): record findings on passwordless auth
+🔍 Why this matters
+
+Makes experiments discoverable later
+
+Prevents “mystery commits”
+
+6. Deliverables / Artifacts (Required)
+What will exist when this spike is done.
+
+At least one of:
+
+Written findings
+
+Decision matrix
+
+Prototype or demo
+
+Recommendation doc
+
+Follow-up tickets
+
+7. Decision Outcome (Required)
+The most important section.
+
+Decision:
+We will / will not [do X]
+
+Rationale:
+- Reason 1
+- Reason 2
+
+Trade-offs:
+- Accepted downside
+- Deferred risks
+⚠️ A spike without this section is incomplete.
+
+8. Verification / Definition of Done (Required)
+ Key questions answered
+
+ Decision recorded
+
+ Artifacts linked
+
+ Follow-up tickets created (if needed)
+
+9. Resources
+Docs
+
+Links
+
+Benchmarks
+
+Vendor info
+
+Prior art
+
+🧠 Why This Template Is Critical for AI
+AI cannot guess why a decision was made
+
+This preserves institutional reasoning
+
+Enables future AI agents to respect past trade-offs
+
+Prevents re-running the same spike 6 months later
+
+This is where your “AI decision log” really becomes real.
+
+🚫 Common Spike Anti-Patterns Prevented
+❌ “Just research X”
+❌ No decision at the end
+❌ Production code sneaking in
+❌ Knowledge locked in someone’s head
+❌ Follow-up work not created
+
+🧪 Minimum Viable Spike (MVS)
+1. Research Intent
+2. Key Questions
+3. Timebox
+4. Planned Commit Message
+5. Decision Outcome
+If these exist, the spike did its job.
+
+🔜 Next Step
+Step 5:
+
+🧱 Infra / Refactor / Tech-Debt Ticket Template
+(Where behavior is indirect, but rigor still matters)
+
+Say “Step 5” when you’re ready — or ask to adapt this one first.
+
+You said:
+Step 5 
+ChatGPT said:
+Nice — Step 5 completes the system.
+This is the hardest category to get right, and the one most teams leave vague. We won’t.
+
+🧱 Step 5: AI-Ready Infra / Refactor / Tech-Debt Ticket Template
+(Outcome-Driven, Safe, Non-Behavioral)
+Definition:
+These tickets change how the system works, not what users see — but they still require clear intent, constraints, and verification.
+
+1. Technical Intent (Required)
+Why this work exists.
+
+We need to improve / change [technical area]
+In order to [measurable or concrete benefit]
+Examples
+
+Reduce latency
+
+Improve maintainability
+
+Remove deprecated dependency
+
+Enable future feature work
+
+2. Problem Statement (Required)
+What is wrong today?
+
+Current pain points
+
+Risks or failures
+
+Metrics (if available)
+
+Why this cannot wait
+
+⚠️ If this is unclear, the ticket is not ready.
+
+3. Scope & Safety Boundaries (Required)
+Prevents accidental behavior changes.
+
+In scope
+
+Files, modules, services affected
+
+Out of scope
+
+User-facing behavior
+
+Public APIs
+
+Schema changes (unless explicitly allowed)
+
+Safety constraints
+
+Backward compatibility requirements
+
+Rollback expectations
+
+4. Acceptance Criteria (Outcome-Focused) (Required)
+Not Gherkin — outcomes.
+
+Examples:
+
+No change in user-visible behavior
+
+Build time reduced by ≥20%
+
+Dependency X fully removed
+
+Cyclomatic complexity reduced in module Y
+
+Memory usage reduced under load test Z
+
+🔍 Rule
+
+If it can’t be measured or verified, it’s not an acceptance criterion.
+
+5. AI Execution Instructions (Required)
+How autonomous the agent may be.
+
+May change
+
+Internal code structure
+
+Internal APIs
+
+Tooling and config
+
+Must NOT change
+
+External behavior
+
+Public contracts
+
+Data models (unless stated)
+
+Ambiguity rule
+
+Preserve existing behavior over elegance.
+
+6. Planned Git Commit Message(s) (Required)
+Encodes intent and scope.
+
+refactor(search): extract query builder and remove duplication
+chore(deps): remove deprecated search-utils package
+Rules:
+
+Conventional Commits
+
+One-liners
+
+If intent can’t be named → ticket isn’t ready
+
+7. Verification / Definition of Done (Required)
+ Acceptance outcomes met
+
+ No behavior change verified
+
+ Tests still pass
+
+ No performance regression
+
+ Rollback plan documented (if risky)
+
+8. Risk Assessment (Required)
+Explicitly call out danger.
+
+Risk level: Low / Medium / High
+
+Failure modes
+
+Mitigations
+
+Rollback strategy
+
+AI agents must not proceed without this section.
+
+9. Dependencies & Resources
+Linked tickets
+
+Docs
+
+Benchmarks
+
+Code references
+
+🧠 Why This Template Works
+Prevents “stealth feature changes”
+Infra work accidentally breaks things more than feature work.
+
+Makes invisible work visible
+Outcomes replace vague “cleanup” language.
+
+Enables safe AI autonomy
+Clear boundaries + rollback = controlled execution.
+
+🚫 Common Anti-Patterns Prevented
+❌ “Refactor for readability”
+❌ “Cleanup tech debt”
+❌ No measurable outcome
+❌ Behavior accidentally changes
+❌ Risk discovered after merge
+
+🧪 Minimum Viable Infra Ticket (MVIT)
+1. Technical Intent
+2. Problem Statement
+3. Acceptance Outcomes
+4. Planned Commit Message
+5. Safety Constraints
+If these exist, the work can proceed safely.
+
+🎯 System Complete
+You now have:
+
+Hybrid quality rubric
+
+AI-ready story template
+
+Bug template
+
+Spike template
+
+Infra / refactor template
+
+Together, these turn Jira into:
+
+A system of executable decisions, not a task list.
+
+Where You Can Go Next (Optional)
+If you want to push this further, I can:
+
+Write a 1-page engineering standard (“Tickets as Executable Specs”)
+
+Create Jira issue-template JSON for all types
+
+Design a PR checklist that maps to tickets
+
+Build a scorecard bot concept that enforces the rubric
+
+Draft a team rollout plan (lightweight, non-annoying)
+
+Just tell me what’s next.

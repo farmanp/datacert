@@ -1,0 +1,71 @@
+# Hybrid Scoring Rubric for AI-Ready Tickets
+# Used to evaluate ticket quality. Target Score: 10+
+
+scoring:
+  max_score: 16
+  min_to_execute: 10
+  critical_dimensions:
+    - intent_clarity
+    - context_constraints
+    - acceptance_criteria
+
+dimensions:
+  intent_clarity:
+    weight: critical
+    score_0: "No clear goal or outcome."
+    score_1: "Goal stated but vague."
+    score_2: "Clear user/system intent and value (User Story + Success Statement)."
+
+  context_constraints:
+    weight: critical
+    score_0: "No context or constraints."
+    score_1: "Partial context, assumptions unclear."
+    score_2: "Scope, assumptions, and constraints explicit (In/Out of scope defined)."
+
+  acceptance_criteria:
+    weight: critical
+    score_0: "No acceptance criteria."
+    score_1: "Criteria exist but are vague."
+    score_2: "Clear, testable behavior (Gherkin preferred for Stories/Bugs)."
+
+  execution_readiness:
+    weight: standard
+    score_0: "Missing inputs or dependencies."
+    score_1: "Minor unanswered questions."
+    score_2: "Fully actionable as written."
+
+  decision_encoding:
+    weight: standard
+    score_0: "No planned commit message."
+    score_1: "Commit exists but vague or non-standard."
+    score_2: "Clear, conventional, outcome-focused commit message."
+
+  verification_criteria:
+    weight: standard
+    score_0: "No definition of done."
+    score_1: "Partial or implicit DoD."
+    score_2: "Explicit verification checklist."
+
+  scope_size:
+    weight: standard
+    score_0: "Too large or unclear scope."
+    score_1: "Slightly oversized."
+    score_2: "Single, focused outcome."
+
+  resource_linking:
+    weight: standard
+    score_0: "No resources."
+    score_1: "Some links, missing key info."
+    score_2: "All relevant resources linked."
+
+enforcement:
+  block:
+    - "Any 'critical' dimension scores 0"
+    - "Total score < 10"
+    - "Acceptance criteria are not testable"
+  coach:
+    - "Total score 8-9"
+    - "No critical failures, but ambiguity exists"
+  proceed:
+    - "Total score >= 10"
+    - "All critical dimensions score >= 1"

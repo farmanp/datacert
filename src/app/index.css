@@ -3,18 +3,39 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.6;
+  font-weight: 450;
+  /* Slightly heavier for better dark-mode legibility */
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(255, 255, 255, 0.92);
   background-color: #0f172a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.015em;
+  /* Loosened from -0.02em for better breathability */
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
 }
 
 body {

@@ -1,0 +1,51 @@
+id,name,email,age,salary,department,hire_date,is_active,performance_rating,last_login
+1,John Doe,john@example.com,28,75000,Engineering,2020-03-15,true,4.2,2023-12-01 09:30:00
+2,Jane Smith,,35,82000,Marketing,2019-08-22,true,4.8,2023-12-05 14:15:00
+3,Bob Johnson,bob@company.com,42,95000,Engineering,2015-11-03,true,3.9,2023-11-28 10:00:00
+4,Alice Williams,alice@test.org,31,68000,Sales,2021-06-12,true,4.5,2023-12-05 16:45:00
+5,Charlie Brown,charlie@web.net,25,52000,Support,,true,3.2,2023-12-02 08:00:00
+6,Diana Prince,diana@hero.com,,120000,Executive,2010-01-01,true,5.0,2023-12-06 07:00:00
+7,Evan Wright,evan@dev.io,29,71000,Engineering,2020-09-15,true,4.0,2023-12-03 11:20:00
+8,Fiona Green,,33,65000,Marketing,2018-04-30,false,2.8,
+9,George King,george@sales.com,45,,Sales,2012-07-19,true,4.1,2023-11-30 15:30:00
+10,Hannah Scott,hannah@hr.com,27,58000,HR,2022-02-14,true,4.3,2023-12-04 09:45:00
+11,Ian White,ian@support.net,30,54000,Support,2019-11-11,true,3.5,2023-12-01 13:00:00
+12,Julia Roberts,,38,88000,Product,2017-05-20,true,4.6,2023-12-06 10:30:00
+13,Kevin Lee,kevin@design.io,26,62000,Design,2021-08-01,true,4.2,2023-12-02 14:00:00
+14,Laura Chen,laura@finance.com,40,92000,Finance,2016-03-10,true,4.4,2023-12-05 11:00:00
+15,Mike Ross,,32,78000,Legal,2018-09-25,true,3.8,2023-11-29 16:00:00
+16,Nancy Drew,nancy@investigate.com,24,50000,Operations,2022-07-07,true,4.0,2023-12-03 08:30:00
+17,Oscar Wilde,oscar@writer.com,50,105000,Content,2011-12-12,false,,
+18,Peter Parker,peter@daily.com,23,48000,Marketing,2023-01-15,true,4.5,2023-12-06 09:00:00
+19,Quinn Fabray,quinn@glee.com,,67000,Sales,2019-02-28,true,3.7,2023-12-01 15:00:00
+20,Rachel Green,rachel@fashion.com,34,72000,Design,2017-10-10,true,4.1,2023-12-04 12:30:00
+21,Steve Rogers,steve@hero.com,95,110000,Executive,1945-09-02,true,5.0,2023-12-06 06:00:00
+22,Tony Stark,tony@stark.com,48,250000,Engineering,2008-05-02,true,4.9,2023-12-06 08:00:00
+23,Ursula Le Guin,,88,98000,Content,1980-01-01,false,5.0,
+24,Victor Stone,victor@cyber.net,22,85000,Engineering,2021-11-17,true,4.3,2023-12-05 13:45:00
+25,Wanda Maximoff,wanda@magic.com,29,80000,Product,,true,4.7,2023-12-02 10:15:00
+26,Xander Cage,xander@extreme.com,35,70000,Operations,2015-06-15,true,3.5,2023-11-30 14:00:00
+27,Yara Greyjoy,yara@iron.com,30,88000,Executive,2016-04-24,true,4.2,2023-12-03 09:00:00
+28,Zack Snyder,,54,120000,Content,2004-03-10,true,3.0,2023-12-01 11:00:00
+29,Adam West,adam@bat.com,60,95000,Legal,1990-01-01,false,,2023-10-31 12:00:00
+30,Barry Allen,barry@flash.com,28,70000,Support,2020-01-01,true,4.8,2023-12-06 08:01:00
+31,Clark Kent,clark@daily.com,33,65000,Content,2013-06-14,true,4.9,2023-12-06 07:30:00
+32,Bruce Wayne,bruce@wayne.com,42,500000,Executive,2005-06-15,true,4.5,2023-12-06 02:00:00
+33,Natasha Romanoff,,34,90000,Operations,2010-05-07,true,4.8,2023-12-05 18:00:00
+34,Clint Barton,clint@arrow.com,38,85000,Operations,2011-05-06,true,4.4,2023-12-04 15:30:00
+35,Thor Odinson,thor@asgard.com,1500,,Executive,,true,4.6,2023-12-03 12:00:00
+36,Loki Laufeyson,,1000,95000,Product,2012-05-04,false,3.8,
+37,Peter Quill,peter@guardians.com,34,75000,Sales,2014-08-01,true,4.0,2023-12-01 10:00:00
+38,Gamora Zen,gamora@guardians.com,29,88000,Operations,2014-08-01,true,4.7,2023-12-02 09:00:00
+39,Drax Destroyer,,40,60000,Support,2014-08-01,true,3.5,2023-12-01 11:30:00
+40,Rocket Raccoon,rocket@tech.net,8,110000,Engineering,2014-08-01,true,4.9,2023-12-06 05:00:00
+41,Groot Tree,,3,45000,Support,2014-08-01,true,4.5,2023-12-06 05:00:00
+42,Scott Lang,scott@ant.com,40,78000,Engineering,2015-07-17,true,4.2,2023-12-04 13:00:00
+43,Hope Van Dyne,hope@wasp.com,35,92000,Engineering,2015-07-17,true,4.8,2023-12-04 13:15:00
+44,TChalla King,,35,200000,Executive,2016-05-06,true,5.0,2023-12-03 10:00:00
+45,Shuri Princess,shuri@wakanda.tech,18,150000,Engineering,2018-02-16,true,5.0,2023-12-06 09:00:00
+46,Okoye General,okoye@wakanda.mil,30,95000,Operations,2018-02-16,true,4.9,2023-12-05 08:00:00
+47,Stephen Strange,doctor@strange.com,42,180000,Content,2016-11-04,true,4.7,2023-12-04 14:00:00
+48,Wong Librarian,,45,60000,Content,2016-11-04,true,4.8,2023-12-04 14:30:00
+49,Carol Danvers,carol@marvel.com,30,120000,Operations,2019-03-08,true,4.9,2023-12-06 04:00:00
+50,Nick Fury,nick@shield.gov,65,160000,Executive,1995-01-01,true,4.5,2023-12-06 06:30:00
