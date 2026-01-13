@@ -1,6 +1,7 @@
 mod parser;
 mod stats;
 mod export;
+mod quality;
 
 use wasm_bindgen::prelude::*;
 use parser::{CsvParser, JsonParser, JsonFormat, JsonParserConfig};
