@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0f172a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .bg-slate-900,
+  .bg-slate-800,
+  .bg-slate-800\/40,
+  .bg-slate-800\/50 {
+    background-color: white !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .text-white,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300,
+  .text-blue-400,
+  .text-emerald-400 {
+    color: black !important;
+  }
+
+  canvas {
+    filter: invert(1) hue-rotate(180deg) brightness(0.8) !important;
+  }
+
+  button,
+  .view-toggle {
+    display: none !important;
+  }
+
+  .column-section,
+  .column-card {
+    break-inside: avoid;
+    border: 1px solid #e2e8f0 !important;
+    margin-bottom: 20px !important;
+    padding: 20px !important;
+  }
+
+  @page {
+    margin: 20mm;
+  }
+}
