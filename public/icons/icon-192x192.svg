@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#3b82f6" rx="24"/>
+  <text x="96" y="110" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">DL</text>
+  <rect x="40" y="130" width="112" height="8" fill="white" opacity="0.8" rx="4"/>
+  <rect x="56" y="145" width="80" height="6" fill="white" opacity="0.6" rx="3"/>
+</svg>
