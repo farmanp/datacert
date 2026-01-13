@@ -69,6 +69,15 @@ This directory contains the implementation tickets for DataLens Profiler, a brow
 18. FEAT-014 - Correlation Matrix
 19. INFRA-004 - Test Suite
 
+### Phase 4: Cloud & Database Integration Research
+
+| ID | Type | Title | Priority | Dependencies |
+|----|------|-------|----------|--------------|
+| SPIKE-002 | Spike | Cloud Storage Feasibility | P2 | None |
+| SPIKE-003 | Spike | GCS Integration Design | P2 | SPIKE-002 |
+| FEAT-015 | Story | GCS Integration | P2 | SPIKE-002, SPIKE-003 |
+| SPIKE-004 | Spike | Database Warehouse Feasibility | P2 | None |
+
 ## Priority Legend
 
 - **P0**: Must have for MVP launch
