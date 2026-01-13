@@ -39,11 +39,11 @@ export default function UpdateNotification() {
 
   return (
     <Show when={showUpdate()}>
-      <div class="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
+      <div class="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-4 z-50">
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <div class="flex-shrink-0 w-10 h-10 bg-emerald-900/50 rounded-full flex items-center justify-center">
             <svg
-              class="w-6 h-6 text-green-600"
+              class="w-6 h-6 text-emerald-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -57,14 +57,14 @@ export default function UpdateNotification() {
             </svg>
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-semibold text-gray-900">Update Available</h3>
-            <p class="mt-1 text-sm text-gray-500">
+            <h3 class="text-sm font-semibold text-slate-100">Update Available</h3>
+            <p class="mt-1 text-sm text-slate-400">
               A new version of DataLens Profiler is available.
             </p>
           </div>
           <button
             onClick={handleDismiss}
-            class="flex-shrink-0 text-gray-400 hover:text-gray-500"
+            class="flex-shrink-0 text-slate-400 hover:text-slate-300"
             aria-label="Dismiss"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -79,13 +79,13 @@ export default function UpdateNotification() {
         <div class="mt-4 flex gap-2">
           <button
             onClick={handleUpdate}
-            class="flex-1 px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+            class="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-500 hover:to-green-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all"
           >
             Update Now
           </button>
           <button
             onClick={handleDismiss}
-            class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            class="px-4 py-2 bg-slate-700 text-slate-300 text-sm font-semibold rounded-lg hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all border border-slate-600"
           >
             Later
           </button>
