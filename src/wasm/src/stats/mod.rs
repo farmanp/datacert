@@ -22,6 +22,7 @@ pub struct ColumnProfile {
     pub min_length: Option<usize>,
     pub max_length: Option<usize>,
     pub notes: Vec<String>,
+    pub quality_metrics: Option<crate::quality::ColumnQualityMetrics>,
     
     #[serde(skip)]
     hll: HyperLogLogPlus<String, RandomState>,
@@ -38,6 +39,13 @@ pub struct ColumnProfile {
     boolean_count: u64,
     date_count: u64,
     total_valid: u64,
+    
+    // Sample values for display (up to 5 unique non-null values)
+    pub sample_values: Vec<String>,
+    
+    // Sample values for PII detection (separate to avoid confusion)
+    #[serde(skip)]
+    pii_samples: Vec<String>,
 }
 
 impl Clone for ColumnProfile {
@@ -51,6 +59,7 @@ impl Clone for ColumnProfile {
             min_length: self.min_length.clone(),
             max_length: self.max_length.clone(),
             notes: self.notes.clone(),
+            quality_metrics: self.quality_metrics.clone(),
             hll: HyperLogLogPlus::new(12, RandomState::new()).unwrap(),
             hist_acc: None,
             cat_acc: CategoricalAccumulator::new(1000),
@@ -59,6 +68,8 @@ impl Clone for ColumnProfile {
             boolean_count: self.boolean_count,
             date_count: self.date_count,
             total_valid: self.total_valid,
+            sample_values: self.sample_values.clone(),
+            pii_samples: Vec::new(),
         }
     }
 }
@@ -81,6 +92,7 @@ impl ColumnProfile {
             min_length: None,
             max_length: None,
             notes: Vec::new(),
+            quality_metrics: None,
             hll,
             hist_acc: None,
             cat_acc: CategoricalAccumulator::new(1000),
@@ -89,6 +101,8 @@ impl ColumnProfile {
             boolean_count: 0,
             date_count: 0,
             total_valid: 0,
+            sample_values: Vec::new(),
+            pii_samples: Vec::new(),
         }
     }
 
@@ -104,6 +118,16 @@ impl ColumnProfile {
         self.total_valid += 1;
         self.hll.insert(&trimmed.to_string());
         self.cat_acc.update(trimmed);
+        
+        // Store sample values for display (max 5 unique non-null values)
+        if self.sample_values.len() < 5 && !self.sample_values.contains(&trimmed.to_string()) {
+            self.sample_values.push(trimmed.to_string());
+        }
+        
+        // Store sample values for PII detection (max 100)
+        if self.pii_samples.len() < 100 {
+            self.pii_samples.push(trimmed.to_string());
+        }
 
         let len = trimmed.len();
         if self.min_length.map_or(true, |min| len < min) { self.min_length = Some(len); }
@@ -185,6 +209,102 @@ impl ColumnProfile {
                 self.notes.push("Potentially numeric with exceptions".to_string());
             }
         }
+        
+        // Calculate quality metrics
+        self.calculate_quality_metrics();
+    }
+    
+    fn calculate_quality_metrics(&mut self) {
+        use crate::quality::completeness;
+        use crate::quality::uniqueness;
+        use crate::quality::patterns;
+        
+        let mut metrics = crate::quality::ColumnQualityMetrics::new();
+        
+        // Calculate completeness
+        metrics.completeness = completeness::calculate_completeness(
+            self.base_stats.count,
+            self.base_stats.missing,
+        );
+        
+        // Calculate uniqueness
+        metrics.uniqueness = uniqueness::calculate_uniqueness(
+            self.base_stats.count,
+            self.base_stats.missing,
+            self.base_stats.distinct_estimate,
+        );
+        
+        // Check for quality issues
+        let mut all_issues = Vec::new();
+        
+        // Completeness issues
+        all_issues.extend(completeness::check_completeness_issues(
+            metrics.completeness,
+            &self.name,
+        ));
+        
+        // Uniqueness issues
+        let type_str = format!("{:?}", self.base_stats.inferred_type);
+        all_issues.extend(uniqueness::check_uniqueness_issues(
+            metrics.uniqueness,
+            &self.name,
+            &type_str,
+        ));
+        
+        // PII detection
+        if !self.pii_samples.is_empty() {
+            let sample_refs: Vec<&str> = self.pii_samples.iter()
+                .map(|s| s.as_str())
+                .collect();
+            
+            let pii_type = patterns::detect_pii_pattern(&sample_refs);
+            all_issues.extend(patterns::check_pii_issues(pii_type, &self.name));
+        }
+        
+        metrics.issues = all_issues;
+        
+        // Calculate composite quality score
+        metrics.score = self.calculate_quality_score(&metrics);
+        
+        self.quality_metrics = Some(metrics);
+    }
+    
+    fn calculate_quality_score(&self, metrics: &crate::quality::ColumnQualityMetrics) -> f64 {
+        // Weighted quality score formula:
+        // Base score starts at 1.0
+        // - Completeness weight: 40%
+        // - Uniqueness weight: 20% (for non-identifier columns)
+        // - Issue penalties: Error = -0.3, Warning = -0.15, Info = -0.05
+        
+        let mut score = 0.0;
+        
+        // Completeness contribution (40%)
+        score += metrics.completeness * 0.4;
+        
+        // Uniqueness contribution (20%)
+        // For high-cardinality string columns, uniqueness doesn't contribute to quality
+        let type_str = format!("{:?}", self.base_stats.inferred_type);
+        if type_str != "String" || metrics.uniqueness < 0.9 {
+            score += metrics.uniqueness * 0.2;
+        } else {
+            score += 0.2; // Neutral contribution for identifier-like columns
+        }
+        
+        // Base quality contribution (40%)
+        score += 0.4;
+        
+        // Apply issue penalties
+        use crate::quality::Severity;
+        for issue in &metrics.issues {
+            match issue.severity {
+                Severity::Error => score -= 0.3,
+                Severity::Warning => score -= 0.15,
+                Severity::Info => score -= 0.05,
+            }
+        }
+        
+        // Clamp score between 0.0 and 1.0
+        score.max(0.0).min(1.0)
     }
 }
 

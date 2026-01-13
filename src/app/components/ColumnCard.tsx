@@ -41,7 +41,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
           <h3 class="text-sm font-bold text-slate-100 truncate mb-1" title={props.profile.name}>
             {props.profile.name}
           </h3>
-          <span class="px-2 py-0.5 rounded bg-slate-700/50 text-slate-400 text-[10px] font-mono uppercase tracking-wider">
+          <span class="px-2 py-0.5 rounded bg-slate-700/50 text-slate-300 text-[10px] font-mono uppercase tracking-wider">
             {props.profile.base_stats.inferred_type}
           </span>
         </div>
@@ -68,7 +68,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
       <Show when={props.profile.histogram}>
         {(hist) => (
           <div class="mt-2 p-3 bg-slate-900/50 rounded-xl border border-slate-700/50">
-            <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">
+            <p class="text-[10px] text-slate-300 uppercase font-black tracking-widest mb-2">
               Distribution
             </p>
             <MiniHistogram histogram={hist()} width={240} height={48} />
@@ -80,7 +80,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
         {(stats) => (
           <Show when={props.profile.base_stats.inferred_type === 'string'}>
             <div class="mt-2 space-y-2">
-              <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest">
+              <p class="text-[10px] text-slate-300 uppercase font-black tracking-widest">
                 Top Values
               </p>
               <div class="space-y-1">
@@ -100,7 +100,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
                             style={{ width: `${entry.percentage}%` }}
                           />
                         </div>
-                        <span class="text-[10px] text-slate-500 tabular-nums">
+                        <span class="text-[10px] text-slate-300 tabular-nums">
                           {entry.percentage.toFixed(1)}%
                         </span>
                       </div>
@@ -115,7 +115,8 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
 
       <button
         onClick={() => setIsExpanded(!isExpanded())}
-        class="mt-auto pt-3 text-[11px] font-black text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-1 uppercase tracking-widest"
+        aria-expanded={isExpanded()}
+        class="mt-auto pt-3 text-[11px] font-black text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-1 uppercase tracking-widest rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
       >
         {isExpanded() ? 'Show Less' : 'Deep Dive'}
         <svg
@@ -138,7 +139,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
           <Show when={props.profile.histogram}>
             {(hist) => (
               <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-700/50">
-                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-4 text-center">
+                <p class="text-[10px] text-slate-300 uppercase font-black tracking-widest mb-4 text-center">
                   Data Density
                 </p>
                 <Histogram data={hist()} height={120} />
@@ -162,6 +163,35 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
               </div>
             )}
           </Show>
+
+          {/* Sample Values Section */}
+          <div class="p-4 bg-slate-900/30 rounded-xl border border-slate-700/30">
+            <p class="text-[10px] text-slate-300 uppercase font-black tracking-widest mb-3">
+              Sample Values
+            </p>
+            <Show
+              when={props.profile.sample_values && props.profile.sample_values.length > 0}
+              fallback={
+                <p class="text-xs text-slate-400 italic">No sample data available</p>
+              }
+            >
+              <div class="flex flex-wrap gap-2">
+                <For each={props.profile.sample_values}>
+                  {(value) => {
+                    const truncated = value.length > 30 ? value.substring(0, 30) + '...' : value;
+                    return (
+                      <span
+                        class="px-2.5 py-1 bg-slate-800 text-slate-300 text-xs rounded-lg border border-slate-700 font-mono hover:bg-slate-700 transition-colors"
+                        title={value}
+                      >
+                        {truncated}
+                      </span>
+                    );
+                  }}
+                </For>
+              </div>
+            </Show>
+          </div>
 
           <Show when={props.profile.notes.length > 0}>
             <div class="p-3 bg-amber-500/5 rounded-xl border border-amber-500/10">

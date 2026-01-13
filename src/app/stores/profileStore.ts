@@ -56,6 +56,7 @@ export interface ColumnProfile {
   min_length: number | null;
   max_length: number | null;
   notes: string[];
+  sample_values: string[];
 }
 
 export interface ProfileResult {
