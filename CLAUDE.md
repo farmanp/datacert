@@ -9,12 +9,20 @@ DataLens Profiler is a browser-based Progressive Web Application for data profil
 ## Development Commands
 
 ```bash
-npm run dev          # Start Vite dev server (port 3000)
-npm run build        # Full build: Rust/WASM + Vite bundle
-npm run build:wasm   # WASM only: cd src/wasm && wasm-pack build --target web --out-dir pkg
-npm run test         # Run Vitest tests
-npm run lint         # ESLint check (src/app, ts/tsx files, max-warnings 0)
-npm run preview      # Preview production build
+npm run dev             # Start Vite dev server (port 3000)
+npm run build           # Full build: Rust/WASM + Vite bundle
+npm run build:wasm      # WASM only: cd src/wasm && wasm-pack build --target web
+npm run test            # Run all Vitest tests
+npm run test:all        # Run all test suites (Rust + TS Unit + Integration + Accuracy)
+npm run test:unit       # Run only TypeScript unit tests
+npm run test:integration # Run integration tests
+npm run test:accuracy    # Run statistical accuracy tests
+npm run test:rust       # Run Rust tests only
+npm run typecheck       # Run TypeScript type checker
+npm run lint            # ESLint check (src/app, max-warnings 0)
+npm run format          # Format codebase (Prettier + Rustfmt)
+npm run check           # Run all checks (typecheck + lint + format:check)
+npm run preview         # Preview production build
 ```
 
 **Prerequisites**: Node.js LTS, Rust + Cargo, `wasm-pack` (`cargo install wasm-pack`)
