@@ -109,6 +109,7 @@ const FileDropzone: Component = () => {
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
+        aria-hidden="true"
       >
         <path
           stroke-linecap="round"
@@ -119,7 +120,7 @@ const FileDropzone: Component = () => {
       </svg>
     }>
       <Match when={store.state === 'processing'}>
-        <svg class="w-12 h-12 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle
             class="opacity-25"
             cx="12"
@@ -136,7 +137,7 @@ const FileDropzone: Component = () => {
         </svg>
       </Match>
       <Match when={store.state === 'error'}>
-        <svg class="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -151,6 +152,7 @@ const FileDropzone: Component = () => {
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path
             stroke-linecap="round"
@@ -162,10 +164,11 @@ const FileDropzone: Component = () => {
       </Match>
       <Match when={store.state === 'hover'}>
         <svg
-          class="w-12 h-12 text-blue-500 animate-bounce"
+          class="w-12 h-12 text-blue-500 hover:scale-110 transition-transform"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path
             stroke-linecap="round"
@@ -222,21 +225,21 @@ const FileDropzone: Component = () => {
         {/* Text content based on state */}
         <Show when={store.state === 'idle' || store.state === 'hover'}>
           <div class="text-center">
-            <p class="text-lg font-medium text-slate-200">
+            <p class="text-lg font-bold font-heading text-slate-200 tracking-tight">
               {store.state === 'hover' ? 'Drop your file here' : 'Drag and drop your file here'}
             </p>
             <p class="mt-1 text-sm text-slate-400">
               or <span class="text-blue-400 underline">click to browse</span>
             </p>
-            <p id="dropzone-description" class="mt-3 text-xs text-slate-500">
-              Supported formats: {SUPPORTED_EXTENSIONS.join(', ').toUpperCase()}
+            <p id="dropzone-description" class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black">
+              Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
             </p>
           </div>
         </Show>
 
         <Show when={store.state === 'processing'}>
           <div class="text-center">
-            <p class="text-lg font-medium text-amber-400">Processing {store.file?.name}...</p>
+            <p class="text-lg font-bold font-heading text-amber-400 tracking-tight">Processing {store.file?.name}...</p>
             <div class="mt-4 w-full max-w-xs">
               {/* Progress bar */}
               <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -269,9 +272,9 @@ const FileDropzone: Component = () => {
         <Show when={store.state === 'success' && store.file}>
           <div class="text-center">
             <p class="text-lg font-medium text-emerald-400">File ready for analysis</p>
-            <div class="mt-3 p-3 bg-slate-800 rounded-lg">
-              <p class="text-sm font-medium text-slate-200">{store.file?.name}</p>
-              <p class="text-xs text-slate-400 mt-1">{formatFileSize(store.file?.size || 0)}</p>
+            <div class="mt-3 p-3 bg-slate-800/80 rounded-lg border border-slate-700">
+              <p class="text-sm font-bold text-slate-200">{store.file?.name}</p>
+              <p class="text-xs text-slate-400 mt-1 font-mono tracking-tighter">{formatFileSize(store.file?.size || 0)}</p>
             </div>
             <button
               type="button"

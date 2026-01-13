@@ -1,6 +1,7 @@
 import { createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { fileStore } from './fileStore';
+import { gcsStreamingService } from '../services/gcs-streaming.service';
 
 export interface HistogramBin {
   start: number;
@@ -135,6 +136,114 @@ function createProfileStore() {
     worker.postMessage({ type: 'init' });
   };
 
+  const profileGCSUrl = async (url: string) => {
+    try {
+      fileStore.store.state = 'processing';
+      fileStore.store.progress = 0;
+      
+      const { stream, size, name } = await gcsStreamingService.getFileStream(url, (_bytes, _total) => {
+          // Update download progress if we want to show it separately? 
+          // For now, we combine download + processing into one progress bar in the UI
+          // But here we can't easily distinguish download speed vs processing speed unless we pipe.
+          // The fetch stream yields chunks as they download.
+      });
+
+      // Update file store with metadata
+      fileStore.setRemoteFile(name, size, url);
+
+      setStore({
+          isProfiling: true,
+          error: null,
+          progress: 0,
+          results: null,
+      });
+
+      worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+          type: 'module',
+      });
+
+      worker.onmessage = (e) => {
+          const { type, result, error } = e.data;
+          switch (type) {
+              case 'ready':
+                  worker?.postMessage({
+                      type: 'start_profiling',
+                      data: { delimiter: undefined, hasHeaders: true },
+                  });
+                  break;
+              case 'started':
+                  processStream(stream, size);
+                  break;
+              case 'final_stats':
+                  setStore({
+                      results: result as ProfileResult,
+                      isProfiling: false,
+                      progress: 100,
+                  });
+                  worker?.terminate();
+                  break;
+              case 'error': {
+                  const errMsg = error || 'Unknown worker error';
+                  setStore({ error: errMsg, isProfiling: false });
+                  fileStore.setError(errMsg);
+                  worker?.terminate();
+                  break;
+              }
+          }
+      };
+      
+      worker.postMessage({ type: 'init' });
+
+    } catch (err: any) {
+       console.error('GCS Profile Error', err);
+       fileStore.setError(err.message);
+       setStore({ isProfiling: false, error: err.message });
+    }
+  };
+
+  const processStream = async (stream: ReadableStream<Uint8Array>, totalSize: number) => {
+      if (!worker) return;
+      
+      const reader = stream.getReader();
+      let processedBytes = 0;
+      
+      try {
+          let done = false;
+          while (!done) {
+              const result = await reader.read();
+              done = result.done;
+              const value = result.value;
+              if (done) break;
+              
+              if (value) {
+                  // value is Uint8Array
+                  // We need to transfer it to worker
+                  // Note: value.buffer might be larger than value.byteLength if it's a view
+                  // slice it to ensure we send only the data
+                  const buffer = value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+                  
+                  worker.postMessage({
+                      type: 'process_chunk',
+                      data: buffer
+                  }, [buffer]);
+                  
+                  processedBytes += value.byteLength;
+                  const progress = totalSize > 0 ? Math.round((processedBytes / totalSize) * 100) : 0;
+                  setStore('progress', Math.min(progress, 99));
+                  fileStore.setProgress(progress);
+              }
+          }
+          
+          worker.postMessage({ type: 'finalize' });
+          
+      } catch (err: any) {
+          console.error('Stream processing error', err);
+          worker.postMessage({ type: 'error', error: err.message });
+      } finally {
+          reader.releaseLock();
+      }
+  };
+
   const processFile = async (file: File) => {
     if (!worker) return;
 
@@ -185,6 +294,7 @@ function createProfileStore() {
   return {
     store,
     startProfiling,
+    profileGCSUrl,
     setViewMode,
     reset,
   };
