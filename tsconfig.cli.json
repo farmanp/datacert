@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "outDir": "dist/cli",
+        "rootDir": "src",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ESNext",
+        "lib": [
+            "ESNext"
+        ],
+        "types": [
+            "node"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "noEmit": false,
+        "allowImportingTsExtensions": false,
+        "strict": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true
+    },
+    "include": [
+        "src/cli/**/*.ts",
+        "src/wasm/pkg/*.js"
+    ],
+    "exclude": [
+        "src/app"
+    ]
+}

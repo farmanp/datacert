@@ -1,117 +1,162 @@
-# DataLens Profiler
+# DataCert
 
-## Project Overview
+**DataCert** is a local-first, in-browser data quality certification toolkit powered by WebAssembly. Profile, query, and validate your data without leaving your browser - all processing happens locally on your device.
 
-**DataLens Profiler** is a high-performance, browser-based Progressive Web Application (PWA) for data profiling. It analyzes datasets (CSV, JSON, JSONL, Parquet) to provide statistical summaries, quality metrics, and visualizations without data ever leaving the user's device.
+## What is DataCert?
 
-The application supports cloud storage integration with Google Cloud Storage (GCS) for seamless access to remote datasets, and includes a comparison mode for analyzing differences between datasets.
+DataCert is the tool you reach for when you need to quickly understand and certify your data quality without spinning up infrastructure. It's your data certification toolkit - always ready.
 
-### Architecture
+**Core Capabilities:**
+- **Profile** - Comprehensive statistical profiling with quality metrics
+- **Query** - SQL Mode powered by DuckDB-WASM for ad-hoc analysis
+- **Validate** - Import/export Great Expectations, Soda Checks, JSON Schema
+- **Compare** - Side-by-side dataset comparison and schema drift detection
+- **Export** - HTML reports, JSON, CSV, Markdown, and more
 
-The project employs a hybrid architecture:
+## Why DataCert?
 
-- **Frontend:** Built with **SolidJS** and **TypeScript** for a reactive, performant UI. Styled with **Tailwind CSS**.
-- **Core Engine:** Data parsing and statistical analysis are implemented in **Rust** and compiled to **WebAssembly (Wasm)** for near-native performance.
-- **Build Tool:** **Vite** handles the bundling and development server, integrating both the SolidJS frontend and the Wasm module.
+| Problem | DataCert Solution |
+|---------|-------------------|
+| "I need to quickly check this CSV" | Drop it in, instant profile |
+| "pandas-profiling requires Python setup" | Browser-based, no install |
+| "I can't upload sensitive data to cloud tools" | 100% local processing |
+| "I need to run a quick SQL query" | DuckDB-WASM built-in |
+| "I want to compare two versions of a dataset" | Compare Mode |
 
-## Tech Stack
+## Features
 
-- **Frontend Framework:** SolidJS (v1.8+)
-- **Language:** TypeScript (v5.0+)
-- **Styling:** Tailwind CSS (v3.3+)
-- **Core Logic:** Rust (Edition 2021) -> WebAssembly (`wasm-bindgen`)
-- **Build System:** Vite (v5.0+), wasm-pack
-- **Testing:** Vitest, Testing Library
-- **Linting/Formatting:** ESLint, Prettier
-
-## Key Features
-
-- **Multi-format support:** CSV, JSON, JSONL, Parquet with automatic delimiter detection for CSV/TSV
-- **Comprehensive statistics:** Mean, median, standard deviation, percentiles, min/max, and more
-- **Data quality metrics:** Missing value percentages, uniqueness ratios, and data type detection
-- **Histogram visualizations:** Auto-binned histograms for numeric column distributions
+- **Multi-format support:** CSV, TSV, JSON, JSONL, Parquet, Excel (.xlsx)
+- **Comprehensive statistics:** Mean, median, std dev, percentiles, min/max
+- **Data quality metrics:** Missing values, uniqueness, type detection, PII detection
+- **Histogram visualizations:** Auto-binned distributions for numeric columns
 - **Correlation matrix:** Visualize relationships between numeric columns
-- **File comparison mode:** Compare two datasets side-by-side to identify differences
-- **Cloud storage integration:** Connect to Google Cloud Storage (GCS) for remote file access
-- **Export capabilities:** Export reports to HTML, JSON, CSV, or PDF formats
-- **PWA with offline support:** Install as a native-like app with full offline functionality
-- **Privacy-first:** All data processing happens locally in your browser - no data leaves your device
+- **SQL Mode:** Query your data with DuckDB-WASM, profile results
+- **Comparison mode:** Detect schema drift and statistical changes
+- **Validation exports:** Great Expectations, Soda Checks, JSON Schema
+- **Cloud integration:** Google Cloud Storage (GCS) support
+- **PWA:** Install as a native-like app with offline support
+- **Privacy-first:** No data leaves your device
 
-## Supported File Formats
+## Quick Start
 
-| Format  | Extensions | Notes                  |
-| :------ | :--------- | :--------------------- |
-| CSV     | .csv       | Auto-detects delimiter |
-| TSV     | .tsv       | Tab-separated          |
-| JSON    | .json      | Array of objects       |
-| JSONL   | .jsonl     | JSON Lines format      |
-| Parquet | .parquet   | Apache Parquet         |
+Run locally:
 
-## Directory Structure
+```bash
+# Clone and install
+git clone https://github.com/farmanp/datacert.git
+cd datacert
+npm install
 
-- **`src/app/`**: SolidJS frontend application code.
-  - `components/`: Reusable UI components.
-  - `pages/`: Application views/routes.
-  - `stores/`: State management (SolidJS signals/stores).
-  - `workers/`: Web Workers for off-loading heavy tasks.
-  - `types/`: TypeScript type definitions.
-  - `services/`: External service integrations (GCS, etc.).
-- **`src/wasm/`**: Rust source code for the data profiling engine.
-  - `src/parser/`: CSV/Data parsing logic.
-  - `src/stats/`: Statistical analysis modules.
-- **`docs/architecture/`**: Architecture Decision Records (ADRs) and design documentation.
-- **`docs/user-guides/`**: User documentation and setup guides.
-- **`tickets/`**: Documentation of features and tasks (Agile/Jira-style tickets).
+# Build WASM and start dev server
+npm run build:wasm
+npm run dev
+```
 
-## Development Workflow
+## CLI Usage
+
+DataCert includes a powerful CLI for automation and CI/CD pipelines. For detailed instructions, see the [CLI Guide](docs/guides/cli.md).
+
+```bash
+# Profile a single file to JSON (stdout)
+npx datacert profile data.csv
+
+# Profile multiple files and save to a directory
+npx datacert profile "*.csv" --output reports/ --format html
+
+# CI/CD Quality Gate: fail if more than 5% missing values
+npx datacert profile data.csv --fail-on-missing 5
+```
+
+**Options:**
+- `-o, --output <path>`: Output file or directory
+- `-f, --format <type>`: Output format: `json`|`html`|`markdown` (default: `json`)
+- `-q, --quiet`: Suppress progress output
+- `--fail-on-missing <pct>`: Exit 1 if any column > pct% missing
+- `--fail-on-duplicates`: Exit 1 if any column has duplicates
+- `--help`: Show usage information
+
+## Architecture
+
+```
+datacert
+├── Frontend: SolidJS + TypeScript + Tailwind CSS
+├── Core Engine: Rust → WebAssembly (wasm-bindgen)
+├── SQL Mode: DuckDB-WASM (lazy-loaded)
+└── Build: Vite + wasm-pack
+```
+
+**Key Design Principles:**
+- All data processing in Rust/WASM for performance
+- Streaming architecture processes files in 64KB chunks
+- Web Workers offload computation from main thread
+- No data leaves the user's device
+
+## Development
 
 ### Prerequisites
 
-- Node.js (Latest LTS recommended)
-- Rust & Cargo (Latest stable)
-- `wasm-pack` (`cargo install wasm-pack`)
+- Node.js (LTS)
+- Rust + Cargo
+- wasm-pack (`cargo install wasm-pack`)
 
-### Key Commands
+### Commands
 
-| Command                   | Description                                                                    |
-| :------------------------ | :----------------------------------------------------------------------------- |
-| `npm run dev`             | Starts the Vite development server.                                            |
-| `npm run build`           | Builds the complete project (Wasm + Frontend) for production.                  |
-| `npm run build:wasm`      | Compiles the Rust code to WebAssembly (required before `dev` if Wasm changes). |
-| `npm run test`            | Runs the test suite using Vitest.                                              |
-| `npm run test:all`        | Runs all test suites (Rust + TypeScript + Integration + Accuracy).             |
-| `npm run test:unit`       | Runs only TypeScript unit tests.                                               |
-| `npm run test:rust`       | Runs Rust tests only.                                                          |
-| `npm run typecheck`       | Runs the TypeScript type checker.                                              |
-| `npm run lint`            | Runs ESLint to check for code quality issues.                                  |
-| `npm run format`          | Formats code using Prettier and Rustfmt.                                       |
-| `npm run check`           | Runs all checks (typecheck + lint + format:check).                             |
-| `npm run preview`         | Previews the production build locally.                                         |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Full production build (WASM + Frontend) |
+| `npm run build:wasm` | Compile Rust to WebAssembly |
+| `npm run test` | Run test suite |
+| `npm run typecheck` | TypeScript type checking |
+| `npm run lint` | ESLint checks |
+| `npm run check` | All checks (typecheck + lint + format) |
 
-### Building the Project
+### Directory Structure
 
-The build process is two-step:
+```
+src/
+├── app/          # SolidJS frontend
+│   ├── components/
+│   ├── pages/
+│   ├── stores/
+│   └── workers/
+└── wasm/         # Rust core engine
+    └── src/
+        ├── parser/
+        └── stats/
 
-1.  **Wasm Compilation:** Rust code in `src/wasm` is compiled to `src/wasm/pkg` using `wasm-pack`.
-2.  **Frontend Bundling:** Vite bundles the SolidJS app and imports the Wasm module from `src/wasm/pkg`.
+docs/             # Documentation
+tickets/          # Development tickets
+```
 
-_Note: The `npm run build` command handles both steps sequentially._
+## Supported Formats
 
-## Cloud Storage
+| Format | Extensions | Notes |
+|--------|------------|-------|
+| CSV | .csv | Auto-detects delimiter |
+| TSV | .tsv | Tab-separated |
+| JSON | .json | Array of objects |
+| JSONL | .jsonl | JSON Lines format |
+| Parquet | .parquet | Apache Parquet |
+| Excel | .xlsx | Multi-sheet support |
 
-DataLens Profiler supports Google Cloud Storage (GCS) integration, allowing you to profile files directly from your cloud buckets without downloading them first.
+## Roadmap
 
-For setup instructions and authentication configuration, see [GCS Setup Guide](docs/user-guides/gcs-setup.md).
+See [tickets/README.md](tickets/README.md) for the full backlog. Highlights:
+
+- **CLI / Headless Mode** - CI/CD integration
+- **Profile Diff** - Schema drift detection
+- **Shareable Links** - Collaboration without uploading data
+- **VS Code Extension** - Profile files in your editor
 
 ## Documentation
 
-- **[User Guide](USER_GUIDE.md):** Complete guide for using DataLens Profiler
-- **[Architecture Decision Records](docs/architecture/):** Technical decisions and rationale
-- **[User Guides](docs/user-guides/):** Setup guides and tutorials
+- [SQL Mode Guide](docs/guides/sql-mode.md)
+- [Export Formats](docs/guides/exports.md)
+- [Validation Guide](docs/guides/validation.md)
+- [Statistics Reference](docs/reference/statistics.md)
+- [GCS Setup](docs/user-guides/gcs-setup.md)
 
-## Conventions & Guidelines
+## License
 
-- **Ticket-Driven:** Development follows the tickets defined in the `tickets/` directory. Refer to them for requirements and acceptance criteria.
-- **State Management:** Use SolidJS primitives (`createSignal`, `createStore`) for local and global state.
-- **Styling:** Utility-first CSS using Tailwind. Avoid writing custom CSS files unless necessary.
-- **Wasm Interop:** Communication between JS and Rust should handle data types carefully using `serde-wasm-bindgen`. Heavy computation belongs in Rust; UI rendering belongs in SolidJS.
+MIT
