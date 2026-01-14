@@ -2,6 +2,7 @@
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     google: any;
   }
 }
@@ -18,6 +19,7 @@ const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const SCOPES = 'https://www.googleapis.com/auth/devstorage.read_only https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 class GCSAuthService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private tokenClient: any;
   private resolveAuth: ((response: TokenResponse) => void) | null = null;
   private rejectAuth: ((error: Error) => void) | null = null;

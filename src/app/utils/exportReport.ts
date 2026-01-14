@@ -54,6 +54,25 @@ export async function generateHTMLReport(
         return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(n);
     };
 
+    // Calculate overall health score
+    const calculateHealthScore = () => {
+        let totalCount = 0;
+        let totalMissing = 0;
+        for (const p of results.column_profiles) {
+            totalCount += p.base_stats.count;
+            totalMissing += p.base_stats.missing;
+        }
+        if (totalCount === 0) return { value: 0, color: '#f43f5e' };
+        const score = ((totalCount - totalMissing) / totalCount) * 100;
+        const rounded = Math.round(score * 10) / 10;
+        let color = '#10b981'; // emerald-500
+        if (rounded < 70) color = '#f43f5e'; // rose-500
+        else if (rounded < 90) color = '#f59e0b'; // amber-500
+        return { value: rounded, color };
+    };
+
+    const health = calculateHealthScore();
+
     const getQualityBadge = (missing: number, count: number) => {
         const p = (missing / count) * 100;
         if (p < 5) return `<span class="badge badge-excellent">${p.toFixed(1)}% missing</span>`;
@@ -129,7 +148,7 @@ export async function generateHTMLReport(
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Quality Score</div>
-            <div class="kpi-value" style="color: #10b981;">98%</div>
+            <div class="kpi-value" style="color: ${health.color};">${health.value}%</div>
           </div>
         </div>
 

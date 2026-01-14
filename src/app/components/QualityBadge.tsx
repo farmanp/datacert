@@ -7,9 +7,16 @@ interface QualityBadgeProps {
 const QualityBadge: Component<QualityBadgeProps> = (props) => {
   const status = createMemo(() => {
     const p = props.missingPercentage;
-    if (p < 5) return 'excellent';
-    if (p < 20) return 'warning';
+    if (p < 10) return 'excellent';
+    if (p <= 25) return 'warning';
     return 'critical';
+  });
+
+  const statusLabel = createMemo(() => {
+    const s = status();
+    if (s === 'excellent') return 'Excellent';
+    if (s === 'warning') return 'Warning';
+    return 'Critical';
   });
 
   const styles = {
@@ -20,7 +27,7 @@ const QualityBadge: Component<QualityBadgeProps> = (props) => {
 
   return (
     <span class={`px-2 py-0.5 rounded-full text-xs font-medium border ${styles[status()]}`}>
-      {props.missingPercentage.toFixed(1)}% missing
+      {statusLabel()} - {props.missingPercentage.toFixed(1)}% missing
     </span>
   );
 };

@@ -68,9 +68,10 @@ export class GCSStreamingService {
 
       return { stream, size, name };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         // Fetch throws TypeError for network errors or CORS
-        if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+        const error = err as Error;
+        if (error.name === 'TypeError' && error.message?.includes('Failed to fetch')) {
             throw new Error('Network error or CORS not configured. Please check your connection and bucket CORS settings.');
         }
         throw err;

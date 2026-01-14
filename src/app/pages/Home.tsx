@@ -4,6 +4,7 @@ import FileDropzone from '../components/FileDropzone';
 import ProfileReport from '../components/ProfileReport';
 import GCSAuthButton from '../components/GCSAuthButton';
 import GCSUrlInput from '../components/GCSUrlInput';
+import ErrorDisplay from '../components/ErrorDisplay';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import { authStore } from '../stores/auth.store';
@@ -75,6 +76,28 @@ const Home: Component = () => {
                   <h2 id="import-heading" class="text-xl font-bold text-slate-100 mb-4">
                     Import Your Data
                   </h2>
+
+                  {/* Profiling Error Display */}
+                  <Show when={!store.isProfiling && fileStore.store.state !== 'error' && store.profilerError}>
+                    {(profilerError) => (
+                      <div class="mb-6">
+                        <ErrorDisplay
+                          error={profilerError()}
+                          onRetry={() => {
+                            profileStore.reset();
+                          }}
+                          onUploadDifferent={() => {
+                            profileStore.reset();
+                          }}
+                          onReauthenticate={() => {
+                            authStore.logout();
+                            profileStore.reset();
+                          }}
+                        />
+                      </div>
+                    )}
+                  </Show>
+
                   <FileDropzone />
 
                   <div class="mt-4 flex items-center justify-center gap-2">

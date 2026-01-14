@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createEffect, Show } from 'solid-js';
+import { Component, createSignal, createMemo, onMount, onCleanup, createEffect, Show } from 'solid-js';
 import { Histogram as HistogramData } from '../stores/profileStore';
 
 interface HistogramProps {
@@ -20,6 +20,7 @@ const Histogram: Component<HistogramProps> = (props) => {
     text: '',
     visible: false,
   });
+  const [touchActive, setTouchActive] = createSignal(false);
 
   const draw = () => {
     if (!canvasRef || !containerRef) return;
@@ -80,10 +81,10 @@ const Histogram: Component<HistogramProps> = (props) => {
     );
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!canvasRef) return;
+  const getBinAtPosition = (clientX: number, clientY: number) => {
+    if (!canvasRef) return null;
     const rect = canvasRef.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const x = clientX - rect.left;
     const { bins } = props.data;
     const padding = { left: 10, right: 10 };
     const chartWidth = rect.width - padding.left - padding.right;
@@ -92,14 +93,58 @@ const Histogram: Component<HistogramProps> = (props) => {
     const binIdx = Math.floor((x - padding.left) / binWidth);
 
     if (binIdx >= 0 && binIdx < bins.length) {
-      const bin = bins[binIdx];
+      return { bin: bins[binIdx], clientX, clientY };
+    }
+    return null;
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    // Don't update tooltip on mouse move if touch is active
+    if (touchActive()) return;
+
+    const result = getBinAtPosition(e.clientX, e.clientY);
+    if (result) {
       setTooltip({
-        x: e.clientX,
-        y: e.clientY - 40,
-        text: `Value: [${bin.start.toFixed(2)}, ${bin.end.toFixed(2)}] | Count: ${bin.count.toLocaleString()}`,
+        x: result.clientX,
+        y: result.clientY - 40,
+        text: `Value: [${result.bin.start.toFixed(2)}, ${result.bin.end.toFixed(2)}] | Count: ${result.bin.count.toLocaleString()}`,
         visible: true,
       });
     } else {
+      setTooltip((prev) => ({ ...prev, visible: false }));
+    }
+  };
+
+  const handleTouchStart = (e: TouchEvent) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const result = getBinAtPosition(touch.clientX, touch.clientY);
+
+    if (result) {
+      setTouchActive(true);
+      setTooltip({
+        x: result.clientX,
+        y: result.clientY - 40,
+        text: `Value: [${result.bin.start.toFixed(2)}, ${result.bin.end.toFixed(2)}] | Count: ${result.bin.count.toLocaleString()}`,
+        visible: true,
+      });
+    }
+  };
+
+  const handleDocumentTouchStart = (e: TouchEvent) => {
+    if (!canvasRef) return;
+    const touch = e.touches[0];
+    const rect = canvasRef.getBoundingClientRect();
+
+    // Check if touch is outside the canvas
+    const isOutside =
+      touch.clientX < rect.left ||
+      touch.clientX > rect.right ||
+      touch.clientY < rect.top ||
+      touch.clientY > rect.bottom;
+
+    if (isOutside) {
+      setTouchActive(false);
       setTooltip((prev) => ({ ...prev, visible: false }));
     }
   };
@@ -111,11 +156,39 @@ const Histogram: Component<HistogramProps> = (props) => {
 
   onCleanup(() => {
     window.removeEventListener('resize', draw);
+    document.removeEventListener('touchstart', handleDocumentTouchStart);
+  });
+
+  // Add/remove document touch listener when touch tooltip is active
+  createEffect(() => {
+    if (touchActive() && tooltip().visible) {
+      document.addEventListener('touchstart', handleDocumentTouchStart);
+    } else {
+      document.removeEventListener('touchstart', handleDocumentTouchStart);
+    }
   });
 
   createEffect(() => {
     props.data;
     draw();
+  });
+
+  // Generate accessible aria-label for the histogram
+  const ariaLabel = createMemo(() => {
+    const { bins, min, max } = props.data;
+    if (bins.length === 0) return 'Empty distribution chart';
+
+    // Find the peak bin (highest count)
+    let peakBin = bins[0];
+    for (const bin of bins) {
+      if (bin.count > peakBin.count) {
+        peakBin = bin;
+      }
+    }
+
+    const formatNum = (n: number) => new Intl.NumberFormat().format(Math.round(n * 100) / 100);
+
+    return `Distribution chart with ${bins.length} bins, range ${formatNum(min)} to ${formatNum(max)}, peak at ${formatNum(peakBin.start)}-${formatNum(peakBin.end)}`;
   });
 
   return (
@@ -124,7 +197,9 @@ const Histogram: Component<HistogramProps> = (props) => {
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
+        onTouchStart={handleTouchStart}
         class="cursor-crosshair"
+        aria-label={ariaLabel()}
       />
       <Show when={tooltip().visible}>
         <div

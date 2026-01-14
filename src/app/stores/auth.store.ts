@@ -68,9 +68,9 @@ function createAuthStore() {
       sessionStorage.setItem('gcs_token_expiry', expiry.toString());
       sessionStorage.setItem('gcs_user', JSON.stringify(user));
 
-    } catch (err: any) {
-      console.error('Login failed', err);
-      setState({ error: err.message || 'Authentication failed' });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setState({ error: error.message || 'Authentication failed' });
     }
   };
 
@@ -99,11 +99,9 @@ function createAuthStore() {
     if (state.tokenExpiry && Date.now() > state.tokenExpiry - 5 * 60 * 1000) {
         // Token expired or close to expiring
         try {
-            console.log('Token expiring, refreshing...');
             await login(); // Triggers GIS which might auto-approve if signed in to Google
             return state.accessToken;
-        } catch (e) {
-            console.error('Token refresh failed', e);
+        } catch {
             return null;
         }
     }

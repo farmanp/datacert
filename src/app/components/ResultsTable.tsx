@@ -57,6 +57,11 @@ const ResultsTable: Component<ResultsTableProps> = (props) => {
     }
   };
 
+  const getAriaSort = (key: SortKey): 'ascending' | 'descending' | 'none' => {
+    if (sortKey() !== key) return 'none';
+    return sortOrder() === 'asc' ? 'ascending' : 'descending';
+  };
+
   const SortIcon = (props: { active: boolean; order: 'asc' | 'desc' }) => (
     <span
       class={`ml-1 transition-opacity ${props.active ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`}
@@ -68,36 +73,46 @@ const ResultsTable: Component<ResultsTableProps> = (props) => {
   return (
     <div class="overflow-x-auto rounded-xl border border-slate-700 bg-slate-800/50 backdrop-blur-sm">
       <table class="w-full text-left border-collapse">
+        <caption class="sr-only">Column profiling statistics</caption>
         <thead class="sticky top-0 bg-slate-800 z-10 shadow-sm">
           <tr>
-            <th
-              class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 cursor-pointer group"
-              onClick={() => toggleSort('name')}
-            >
-              Column <SortIcon active={sortKey() === 'name'} order={sortOrder()} />
+            <th class="p-4 border-b border-slate-700">
+              <button
+                onClick={() => toggleSort('name')}
+                aria-sort={getAriaSort('name')}
+                class="text-sm font-semibold text-slate-300 cursor-pointer group flex items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              >
+                Column <SortIcon active={sortKey() === 'name'} order={sortOrder()} />
+              </button>
             </th>
-            <th
-              class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 cursor-pointer group"
-              onClick={() => toggleSort('inferred_type')}
-            >
-              Type <SortIcon active={sortKey() === 'inferred_type'} order={sortOrder()} />
+            <th class="p-4 border-b border-slate-700">
+              <button
+                onClick={() => toggleSort('inferred_type')}
+                aria-sort={getAriaSort('inferred_type')}
+                class="text-sm font-semibold text-slate-300 cursor-pointer group flex items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              >
+                Type <SortIcon active={sortKey() === 'inferred_type'} order={sortOrder()} />
+              </button>
             </th>
             <th class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
               Count
             </th>
-            <th
-              class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 cursor-pointer group text-right"
-              onClick={() => toggleSort('missing_percent')}
-            >
-              Missing % <SortIcon active={sortKey() === 'missing_percent'} order={sortOrder()} />
+            <th class="p-4 border-b border-slate-700 text-right">
+              <button
+                onClick={() => toggleSort('missing_percent')}
+                aria-sort={getAriaSort('missing_percent')}
+                class="text-sm font-semibold text-slate-300 cursor-pointer group flex items-center ml-auto rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              >
+                Missing % <SortIcon active={sortKey() === 'missing_percent'} order={sortOrder()} />
+              </button>
             </th>
-            <th class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
+            <th class="hidden md:table-cell p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
               Distinct
             </th>
-            <th class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
+            <th class="hidden md:table-cell p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
               Mean
             </th>
-            <th class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
+            <th class="hidden md:table-cell p-4 text-sm font-semibold text-slate-300 border-b border-slate-700 text-right">
               Median
             </th>
             <th class="p-4 text-sm font-semibold text-slate-300 border-b border-slate-700">
@@ -130,13 +145,13 @@ const ResultsTable: Component<ResultsTableProps> = (props) => {
                     }
                   />
                 </td>
-                <td class="p-4 text-right text-slate-300 tabular-nums text-sm">
+                <td class="hidden md:table-cell p-4 text-right text-slate-300 tabular-nums text-sm">
                   {formatNumber(profile.base_stats.distinct_estimate)}
                 </td>
-                <td class="p-4 text-right text-slate-300 tabular-nums text-sm">
+                <td class="hidden md:table-cell p-4 text-right text-slate-300 tabular-nums text-sm">
                   {formatNumber(profile.numeric_stats?.mean)}
                 </td>
-                <td class="p-4 text-right text-slate-300 tabular-nums text-sm">
+                <td class="hidden md:table-cell p-4 text-right text-slate-300 tabular-nums text-sm">
                   {formatNumber(profile.numeric_stats?.median)}
                 </td>
                 <td class="p-4 min-w-[140px]">

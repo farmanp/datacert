@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createComparisonStore } from './comparisonStore';
+import { createComparisonStore, ColumnComparison } from './comparisonStore';
 import { createRoot } from 'solid-js';
-import { ComparisonFileKey } from './comparisonStore';
 
 describe('comparisonStore', () => {
     let mockWorker: {
-        postMessage: any;
-        terminate: any;
+        postMessage: ReturnType<typeof vi.fn>;
+        terminate: ReturnType<typeof vi.fn>;
         onmessage: ((e: MessageEvent) => void) | null;
     };
 
@@ -17,7 +16,7 @@ describe('comparisonStore', () => {
             onmessage: null,
         };
 
-        // @ts-ignore
+        // @ts-expect-error - test mock setup
         global.Worker = vi.fn(() => mockWorker);
 
         // Mock URL.createObjectURL/revokeObjectURL if needed, though mostly used in components
@@ -89,13 +88,13 @@ describe('comparisonStore', () => {
             const { store, getSummary } = createComparisonStore();
 
             // Manually populate comparisons for testing
-            // @ts-ignore - bypassing readonly/private for test setup
+            // @ts-expect-error - test mock setup - bypassing readonly/private for test setup
             store.comparisons = [
-                { status: 'added', name: 'col1' } as any,
-                { status: 'removed', name: 'col2' } as any,
-                { status: 'modified', name: 'col3' } as any,
-                { status: 'unchanged', name: 'col4' } as any,
-                { status: 'unchanged', name: 'col5' } as any,
+                { status: 'added', name: 'col1' } as ColumnComparison,
+                { status: 'removed', name: 'col2' } as ColumnComparison,
+                { status: 'modified', name: 'col3' } as ColumnComparison,
+                { status: 'unchanged', name: 'col4' } as ColumnComparison,
+                { status: 'unchanged', name: 'col5' } as ColumnComparison,
             ];
 
             const summary = getSummary();

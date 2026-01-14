@@ -1,6 +1,9 @@
 import { Component, Show, Switch, Match, createMemo } from 'solid-js';
 import { fileStore, FILE_ACCEPT, SUPPORTED_EXTENSIONS } from '../stores/fileStore';
 import { profileStore } from '../stores/profileStore';
+import ErrorDisplay from './ErrorDisplay';
+
+const LARGE_FILE_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 /**
  * FileDropzone Component
@@ -99,6 +102,20 @@ const FileDropzone: Component = () => {
     if (file) {
       onFileSelected(file);
     }
+  };
+
+  // Handle cancel button click
+  const handleCancel = (e: MouseEvent) => {
+    e.stopPropagation();
+    const fileSize = store.file?.size || 0;
+
+    // For large files (>50MB), show confirmation
+    if (fileSize > LARGE_FILE_THRESHOLD) {
+      const confirmed = window.confirm('Cancel processing?');
+      if (!confirmed) return;
+    }
+
+    profileStore.cancelProfiling();
   };
 
   // Get icon based on state using Switch/Match for proper reactivity
@@ -239,34 +256,78 @@ const FileDropzone: Component = () => {
 
         <Show when={store.state === 'processing'}>
           <div class="text-center">
-            <p class="text-lg font-bold font-heading text-amber-400 tracking-tight">Processing {store.file?.name}...</p>
+            <p class="text-lg font-bold font-heading text-amber-400 tracking-tight">
+              {profileStore.store.isCancelling ? 'Cancelling...' : `Processing ${store.file?.name}...`}
+            </p>
             <div class="mt-4 w-full max-w-xs">
               {/* Progress bar */}
               <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  class="h-full bg-amber-500 rounded-full transition-all duration-200"
+                  class={`h-full rounded-full transition-all duration-200 ${
+                    profileStore.store.isCancelling ? 'bg-red-500' : 'bg-amber-500'
+                  }`}
                   style={{ width: `${store.progress}%` }}
                 />
               </div>
               <p class="mt-2 text-sm text-slate-400">{store.progress}% complete</p>
             </div>
+            {/* Cancel button */}
+            <Show when={!profileStore.store.isCancelling}>
+              <button
+                type="button"
+                class="mt-4 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 inline-flex items-center gap-2 pointer-events-auto"
+                onClick={handleCancel}
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Cancel
+              </button>
+            </Show>
           </div>
         </Show>
 
         <Show when={store.state === 'error'}>
-          <div class="text-center">
-            <p class="text-lg font-medium text-red-400">{store.error}</p>
-            <button
-              type="button"
-              class="mt-4 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-              onClick={(e) => {
-                e.stopPropagation();
-                reset();
-              }}
-            >
-              Try Again
-            </button>
-          </div>
+          <Show
+            when={store.profilerError}
+            fallback={
+              <div class="text-center">
+                <p class="text-lg font-medium text-red-400">{store.error}</p>
+                <button
+                  type="button"
+                  class="mt-4 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    reset();
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            }
+          >
+            {(profilerError) => (
+              <div onClick={(e) => e.stopPropagation()}>
+                <ErrorDisplay
+                  error={profilerError()}
+                  onRetry={() => reset()}
+                  onUploadDifferent={() => reset()}
+                  compact
+                />
+              </div>
+            )}
+          </Show>
         </Show>
 
         <Show when={store.state === 'success' && store.file}>

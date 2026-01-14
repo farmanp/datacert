@@ -30,14 +30,14 @@ Assuming SPIKE-002 determined that cloud storage integration is feasible and des
 
 ## 3. Success Criteria (Required)
 **Deliverables:**
-- [ ] Working prototype: Stream GCS file → Browser → WASM profiler
-- [ ] Authentication flow decision: OAuth vs signed URLs vs service account
-- [ ] CORS configuration guide for GCS buckets
-- [ ] Error handling strategy documented
-- [ ] Performance benchmarks: GCS streaming vs local file processing
-- [ ] Cost analysis for 10MB, 100MB, 1GB files (egress + API calls)
-- [ ] Security assessment: credential storage, token expiration, least privilege
-- [ ] Recommendation: Preferred authentication method and architecture
+- [x] Working prototype: Stream GCS file -> Browser -> WASM profiler (See `src/app/services/gcs-streaming.service.ts`)
+- [x] Authentication flow decision: OAuth vs signed URLs vs service account (Decision: Hybrid - OAuth + Signed URLs)
+- [x] CORS configuration guide for GCS buckets (See Section 4)
+- [x] Error handling strategy documented (See Section 5)
+- [x] Performance benchmarks: GCS streaming vs local file processing (See Section 7)
+- [x] Cost analysis for 10MB, 100MB, 1GB files (egress + API calls) (See SPIKE-002 Section 7.5)
+- [x] Security assessment: credential storage, token expiration, least privilege (See Section 8)
+- [x] Recommendation: Preferred authentication method and architecture (Decision: Hybrid with OAuth 2.0 + PKCE and Signed URL input)
 
 ## 4. Research Plan
 
