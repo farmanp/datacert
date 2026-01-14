@@ -2,6 +2,7 @@ import { Component, createMemo } from 'solid-js';
 
 interface QualityBadgeProps {
   missingPercentage: number;
+  onClick?: () => void;
 }
 
 const QualityBadge: Component<QualityBadgeProps> = (props) => {
@@ -26,9 +27,13 @@ const QualityBadge: Component<QualityBadgeProps> = (props) => {
   };
 
   return (
-    <span class={`px-2 py-0.5 rounded-full text-xs font-medium border ${styles[status()]}`}>
+    <button
+      onClick={() => props.onClick?.()}
+      disabled={!props.onClick}
+      class={`px-2 py-0.5 rounded-full text-xs font-medium border ${styles[status()]} ${props.onClick ? 'cursor-pointer hover:bg-opacity-20 transition-colors' : 'cursor-default'}`}
+    >
       {statusLabel()} - {props.missingPercentage.toFixed(1)}% missing
-    </span>
+    </button>
   );
 };
 

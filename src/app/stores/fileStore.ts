@@ -4,15 +4,18 @@ import type { ProfilerError } from '../types/errors';
 import { createTypedError } from '../types/errors';
 
 // Supported file types
-export const SUPPORTED_EXTENSIONS = ['.csv', '.tsv', '.json', '.jsonl', '.parquet'] as const;
+export const SUPPORTED_EXTENSIONS = ['.csv', '.tsv', '.json', '.jsonl', '.parquet', '.xlsx', '.xls', '.avro'] as const;
 export const SUPPORTED_MIME_TYPES = [
   'text/csv',
   'text/tab-separated-values',
   'application/json',
   'application/x-jsonlines',
   'application/jsonl',
-  'application/octet-stream', // Parquet often shows as this
+  'application/octet-stream', 
   'application/x-parquet',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'avro/binary',
 ] as const;
 
 // Accept attribute for file input
@@ -35,6 +38,8 @@ export interface FileStoreState {
   error: string | null;
   profilerError: ProfilerError | null;
   isDemo: boolean;
+  sheets: string[];
+  selectedSheet: string | null;
 }
 
 function createFileStore() {
@@ -45,6 +50,8 @@ function createFileStore() {
     error: null,
     profilerError: null,
     isDemo: false,
+    sheets: [],
+    selectedSheet: null,
   });
 
   // Signal for tracking if we're dragging over the dropzone
@@ -88,9 +95,11 @@ function createFileStore() {
         state: 'error',
         file: null,
         progress: 0,
-        error: 'Unsupported file type. Please use CSV, TSV, JSON, JSONL, or Parquet.',
+        error: 'Unsupported file type. Please use CSV, TSV, JSON, JSONL, Parquet, or Excel.',
         profilerError,
         isDemo: false,
+        sheets: [],
+        selectedSheet: null,
       });
       return false;
     }
@@ -108,6 +117,8 @@ function createFileStore() {
       error: null,
       profilerError: null,
       isDemo: false,
+      sheets: [],
+      selectedSheet: null,
     });
 
     return true;
@@ -127,9 +138,11 @@ function createFileStore() {
         state: 'error',
         file: null,
         progress: 0,
-        error: 'Unsupported file extension. Please use CSV, TSV, JSON, JSONL, or Parquet.',
+        error: 'Unsupported file extension. Please use CSV, TSV, JSON, JSONL, Parquet, or Excel.',
         profilerError,
         isDemo: false,
+        sheets: [],
+        selectedSheet: null,
       });
       return false;
     }
@@ -146,6 +159,8 @@ function createFileStore() {
       error: null,
       profilerError: null,
       isDemo: false,
+      sheets: [],
+      selectedSheet: null,
     });
     return true;
   };
@@ -155,7 +170,7 @@ function createFileStore() {
    */
   const loadDemoFile = async (): Promise<File | null> => {
     try {
-      setStore({ state: 'processing', progress: 10, error: null, profilerError: null, isDemo: true });
+      setStore({ state: 'processing', progress: 10, error: null, profilerError: null, isDemo: true, sheets: [], selectedSheet: null });
 
       const response = await fetch('/samples/demo-data.csv');
       if (!response.ok) throw new Error('Failed to load demo data');
@@ -223,6 +238,14 @@ function createFileStore() {
     });
   };
 
+  const setSheets = (sheets: string[]) => {
+      setStore('sheets', sheets);
+  };
+
+  const setSelectedSheet = (sheet: string | null) => {
+      setStore('selectedSheet', sheet);
+  };
+
   /**
    * Resets the store to initial state
    */
@@ -235,6 +258,8 @@ function createFileStore() {
       error: null,
       profilerError: null,
       isDemo: false,
+      sheets: [],
+      selectedSheet: null,
     });
   };
 
@@ -263,6 +288,8 @@ function createFileStore() {
     setProgress,
     setHover,
     setError,
+    setSheets,
+    setSelectedSheet,
     reset,
     clearError,
 

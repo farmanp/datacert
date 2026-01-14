@@ -37,7 +37,7 @@ impl Profiler {
             self.total_rows += 1;
             for (i, value) in row.iter().enumerate() {
                 if i < self.column_profiles.len() {
-                    self.column_profiles[i].update(value);
+                    self.column_profiles[i].update(value, self.total_rows as usize);
                 }
             }
         }

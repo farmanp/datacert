@@ -87,9 +87,9 @@ describe('comparisonStore', () => {
         createRoot((dispose) => {
             const { store, getSummary } = createComparisonStore();
 
-            // Manually populate comparisons for testing
-            // @ts-expect-error - test mock setup - bypassing readonly/private for test setup
-            store.comparisons = [
+            // Manually populate comparisons for testing by direct assignment
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (store as any).comparisons = [
                 { status: 'added', name: 'col1' } as ColumnComparison,
                 { status: 'removed', name: 'col2' } as ColumnComparison,
                 { status: 'modified', name: 'col3' } as ColumnComparison,

@@ -5,9 +5,11 @@ import ProfileReport from '../components/ProfileReport';
 import GCSAuthButton from '../components/GCSAuthButton';
 import GCSUrlInput from '../components/GCSUrlInput';
 import ErrorDisplay from '../components/ErrorDisplay';
+import SheetSelector from '../components/SheetSelector';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import { authStore } from '../stores/auth.store';
+import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 
 /**
  * Home Page Component
@@ -38,13 +40,14 @@ const Home: Component = () => {
 
   return (
     <div class="min-h-screen bg-slate-900 text-white flex flex-col items-center">
+      <AnomalyDrilldown />
       <Show
         when={store.results}
         fallback={
           <div class="w-full flex flex-col items-center p-4 sm:p-8 animate-in fade-in duration-500 relative">
             {/* Top Right Auth Button */}
             <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-20">
-                <GCSAuthButton />
+              <GCSAuthButton />
             </div>
 
             {/* Header */}
@@ -124,14 +127,27 @@ const Home: Component = () => {
                       Try with Sample Data
                     </button>
                   </div>
-                  
+
                   {/* GCS Input */}
                   <GCSUrlInput />
+
+                  {/* Sheet Selector for Excel */}
+                  <Show when={fileStore.store.sheets.length > 1}>
+                    <div class="mt-6 flex justify-center w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full max-w-sm shadow-xl">
+                        <SheetSelector
+                          sheets={fileStore.store.sheets}
+                          selectedSheet={fileStore.store.selectedSheet}
+                          onSelect={(sheet) => profileStore.selectSheet(sheet)}
+                        />
+                      </div>
+                    </div>
+                  </Show>
                 </section>
               </div>
 
               {/* Feature Cards */}
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <div class="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-xl p-6 hover:border-blue-500/50 transition-colors group">
                   <div class="flex items-center space-x-3 mb-3">
                     <div class="p-2 bg-blue-500/20 rounded-lg">
@@ -207,6 +223,34 @@ const Home: Component = () => {
                   <p class="text-slate-400 text-sm">
                     Compare two datasets side-by-side to detect schema drift and statistical
                     changes between versions.
+                  </p>
+                </A>
+
+                <A
+                  href="/batch"
+                  class="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-xl p-6 hover:border-amber-500/50 transition-colors group cursor-pointer block"
+                >
+                  <div class="flex items-center space-x-3 mb-3">
+                    <div class="p-2 bg-amber-500/20 rounded-lg">
+                      <svg
+                        class="w-6 h-6 text-amber-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-bold font-heading tracking-tight">Batch Mode</h3>
+                  </div>
+                  <p class="text-slate-400 text-sm">
+                    Process multiple files at once with sequential profiling, merging, or N-way
+                    comparison modes.
                   </p>
                 </A>
               </div>

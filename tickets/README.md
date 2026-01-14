@@ -77,6 +77,16 @@ This directory contains the implementation tickets for DataLens Profiler, a brow
 | SPIKE-003 | Spike | GCS Integration Design | P2 | SPIKE-002 |
 | FEAT-015 | Story | GCS Integration | P2 | SPIKE-002, SPIKE-003 |
 | SPIKE-004 | Spike | Database Warehouse Feasibility | P2 | None |
+| SPIKE-005 | Spike | DuckDB-WASM Feasibility | P2 | None |
+
+### Phase 5: User Experience & Format Expansion
+
+| ID | Type | Title | Priority | Dependencies |
+|----|------|-------|----------|--------------|
+| FEAT-016 | Story | Anomaly Drill-Down | P1 | FEAT-006 |
+| FEAT-017 | Story | Excel (.xlsx/.xls) Support | P1 | FEAT-001 |
+| FEAT-018 | Story | Apache Avro Support | P1 | FEAT-001 |
+| FEAT-019 | Story | Markdown Export (Copy to Clipboard) | P1 | FEAT-010 |
 
 ## Priority Legend
 

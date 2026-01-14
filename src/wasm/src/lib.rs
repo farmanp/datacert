@@ -4,9 +4,9 @@ mod export;
 mod quality;
 
 use wasm_bindgen::prelude::*;
-use parser::{CsvParser, JsonParser, JsonFormat, JsonParserConfig};
+use parser::{CsvParser, JsonParser, JsonFormat, JsonParserConfig, AvroProfiler};
 use stats::profiler::Profiler;
-use stats::correlation::{CorrelationMatrix, compute_correlation_matrix};
+use stats::correlation::compute_correlation_matrix;
 
 #[wasm_bindgen]
 pub fn init() {

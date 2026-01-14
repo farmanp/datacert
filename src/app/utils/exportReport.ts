@@ -398,7 +398,11 @@ export function generateJSONReport(
         }),
     };
 
-    return JSON.stringify(report, null, 2);
+    return JSON.stringify(
+        report,
+        (_, v) => (typeof v === 'bigint' ? v.toString() : v),
+        2
+    );
 }
 
 /**

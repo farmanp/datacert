@@ -177,3 +177,12 @@ See `tickets/README.md` for the full backlog. Key phases:
 - `SPIKE-002` - Cloud storage feasibility (planned)
 - `SPIKE-003` - GCS integration design (planned)
 - `SPIKE-004` - Database warehouse feasibility (planned)
+- `SPIKE-005` - DuckDB-WASM for SQL query profiling (completed) - **HIGHLY FEASIBLE**
+  - 1M rows: 97ms generate, 12ms aggregate, 85MB memory
+  - Enables SQL mode, remote Parquet, instant drill-downs
+
+### Upcoming High-Impact Features (P1)
+- `FEAT-016` - Anomaly drill-down (view failing rows, not just counts)
+- `FEAT-017` - Excel (.xlsx/.xls) support
+- `FEAT-018` - Apache Avro support
+- `FEAT-019` - Markdown export (copy to clipboard for PRs/tickets)

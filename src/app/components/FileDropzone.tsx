@@ -249,7 +249,7 @@ const FileDropzone: Component = () => {
               or <span class="text-blue-400 underline">click to browse</span>
             </p>
             <p id="dropzone-description" class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black">
-              Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
+              Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}, .avro</span>
             </p>
           </div>
         </Show>

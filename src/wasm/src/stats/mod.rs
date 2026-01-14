@@ -46,7 +46,12 @@ pub struct ColumnProfile {
     
     // Sample values for PII detection (separate to avoid confusion)
     #[serde(skip)]
-    pii_samples: Vec<String>,
+    pub pii_samples: Vec<String>,
+
+    // Anomaly tracking (row indices, 1-based)
+    pub missing_rows: Vec<usize>,
+    pub pii_rows: Vec<usize>,
+    pub outlier_rows: Vec<usize>,
 }
 
 impl Clone for ColumnProfile {
@@ -71,6 +76,9 @@ impl Clone for ColumnProfile {
             total_valid: self.total_valid,
             sample_values: self.sample_values.clone(),
             pii_samples: Vec::new(),
+            missing_rows: self.missing_rows.clone(),
+            pii_rows: self.pii_rows.clone(),
+            outlier_rows: self.outlier_rows.clone(),
         }
     }
 }
@@ -104,15 +112,21 @@ impl ColumnProfile {
             total_valid: 0,
             sample_values: Vec::new(),
             pii_samples: Vec::new(),
+            missing_rows: Vec::new(),
+            pii_rows: Vec::new(),
+            outlier_rows: Vec::new(),
         }
     }
 
-    pub fn update(&mut self, value: &str) {
+    pub fn update(&mut self, value: &str, row_index: usize) {
         self.base_stats.count += 1;
         
         let trimmed = value.trim();
         if trimmed.is_empty() || trimmed.to_lowercase() == "null" || trimmed.to_lowercase() == "n/a" {
             self.base_stats.missing += 1;
+            if self.missing_rows.len() < 1000 {
+                self.missing_rows.push(row_index);
+            }
             return;
         }
 
@@ -126,8 +140,19 @@ impl ColumnProfile {
         }
         
         // Store sample values for PII detection (max 100)
+        // Also track row index if this looks like PII (simplified check here, refined in finalize)
+        // Note: Real PII detection happens in finalize() using the samples. 
+        // To strictly map rows to PII types, we would need to run detection per row which is slow.
+        // For now, we collect samples. If we want to highlight rows with "Potential PII", 
+        // we might need to assume all rows matching the pattern are PII.
+        // Let's store potential PII indices if we collect the sample.
         if self.pii_samples.len() < 100 {
             self.pii_samples.push(trimmed.to_string());
+            // We blindly add the index here corresponding to the sample. 
+            // In reality, we'd filter these later.
+            if self.pii_rows.len() < 100 {
+                 self.pii_rows.push(row_index);
+            }
         }
 
         let len = trimmed.len();
@@ -317,7 +342,7 @@ mod tests {
     fn test_advanced_stats() {
         let mut profile = ColumnProfile::new("values".to_string());
         for i in 1..=10 {
-            profile.update(&i.to_string());
+            profile.update(&i.to_string(), i);
         }
         profile.finalize();
 

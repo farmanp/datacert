@@ -1,5 +1,6 @@
 import { Component, Show, For, createSignal } from 'solid-js';
-import { ColumnProfile } from '../stores/profileStore';
+import { ColumnProfile, profileStore } from '../stores/profileStore';
+import { drilldownStore } from '../stores/drilldownStore';
 import QualityBadge from './QualityBadge';
 import MiniHistogram from './MiniHistogram';
 import Histogram from './Histogram';
@@ -49,6 +50,12 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
           missingPercentage={
             (props.profile.base_stats.missing / props.profile.base_stats.count) * 100
           }
+          onClick={() => {
+            if (props.profile.missing_rows && props.profile.missing_rows.length > 0) {
+              const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
+              drilldownStore.openDrilldown(props.profile, 'missing', props.profile.missing_rows, headers);
+            }
+          }}
         />
       </header>
 
@@ -199,6 +206,17 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
               <For each={props.profile.notes}>
                 {(note) => <p class="text-[10px] text-amber-500/70 leading-relaxed">• {note}</p>}
               </For>
+              <Show when={props.profile.pii_rows && props.profile.pii_rows.length > 0}>
+                <button
+                  onClick={() => {
+                    const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
+                    drilldownStore.openDrilldown(props.profile, 'pii', props.profile.pii_rows, headers);
+                  }}
+                  class="mt-2 text-[10px] font-bold text-amber-600 hover:underline cursor-pointer"
+                >
+                  View {props.profile.pii_rows.length} PII Rows
+                </button>
+              </Show>
             </div>
           </Show>
         </div>
