@@ -51,7 +51,7 @@ impl Histogram {
 
 #[derive(Debug)]
 pub struct HistogramAccumulator {
-    pub samples: Vec<f64>,
+    pub samples: Vec<(f64, usize)>,
     max_samples: usize,
     count: u64,
 }
@@ -65,15 +65,15 @@ impl HistogramAccumulator {
         }
     }
 
-    pub fn update(&mut self, val: f64) {
+    pub fn update(&mut self, val: f64, row_index: usize) {
         self.count += 1;
         if self.samples.len() < self.max_samples {
-            self.samples.push(val);
+            self.samples.push((val, row_index));
         } else {
             // Simple deterministic LCG for reservoir sampling in WASM/CLI
             let j = (self.count * 1103515245 + 12345) as usize % self.count as usize;
             if j < self.max_samples {
-                self.samples[j] = val;
+                self.samples[j] = (val, row_index);
             }
         }
     }
@@ -86,6 +86,7 @@ impl HistogramAccumulator {
             10
         }.clamp(5, 50);
 
-        Histogram::generate(&self.samples, min, max, num_bins)
+        let sample_values: Vec<f64> = self.samples.iter().map(|(v, _)| *v).collect();
+        Histogram::generate(&sample_values, min, max, num_bins)
     }
 }

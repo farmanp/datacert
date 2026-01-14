@@ -1,4 +1,4 @@
-import { Component, For } from 'solid-js';
+import { Component, For, Show } from 'solid-js';
 import { drilldownStore } from '../stores/drilldownStore';
 
 export const FilteredRowsTable: Component = () => {
@@ -37,12 +37,24 @@ export const FilteredRowsTable: Component = () => {
                                     {(cell, i) => (
                                         <td
                                             class={`px-3 py-2 whitespace-nowrap max-w-[300px] overflow-hidden text-ellipsis ${i() === highlightIndex()
-                                                    ? 'bg-amber-50/50 dark:bg-amber-900/10 font-medium text-slate-900 dark:text-slate-200'
-                                                    : ''
+                                                ? store.anomalyType === 'outlier'
+                                                    ? 'bg-rose-500/10 dark:bg-rose-900/20 font-medium text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-rose-500/20'
+                                                    : 'bg-amber-50/50 dark:bg-amber-900/10 font-medium text-slate-900 dark:text-slate-200'
+                                                : ''
                                                 }`}
                                             title={cell}
                                         >
-                                            {cell === '' ? <span class="text-slate-300 italic">null</span> : cell}
+                                            {cell === '' ? (
+                                                <span class="text-slate-400 italic font-light">null</span>
+                                            ) : (
+                                                <Show
+                                                    when={store.anomalyType === 'pii' && i() === highlightIndex()}
+                                                    fallback={cell}
+                                                >
+                                                    {/* Simple PII highlighting for common patterns */}
+                                                    <span class="text-amber-600 dark:text-amber-400 font-semibold">{cell}</span>
+                                                </Show>
+                                            )}
                                         </td>
                                     )}
                                 </For>

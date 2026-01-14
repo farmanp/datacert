@@ -159,20 +159,20 @@ impl ColumnProfile {
         if self.min_length.map_or(true, |min| len < min) { self.min_length = Some(len); }
         if self.max_length.map_or(true, |max| len > max) { self.max_length = Some(len); }
 
-        self.infer_and_update(trimmed);
+        self.infer_and_update(trimmed, row_index);
     }
 
-    fn infer_and_update(&mut self, trimmed: &str) {
+    fn infer_and_update(&mut self, trimmed: &str, row_index: usize) {
         if let Ok(_) = trimmed.parse::<i64>() {
             self.integer_count += 1;
             self.numeric_count += 1;
-            self.update_numeric(trimmed.parse::<f64>().unwrap());
+            self.update_numeric(trimmed.parse::<f64>().unwrap(), row_index);
             return;
         }
 
         if let Ok(val) = trimmed.parse::<f64>() {
             self.numeric_count += 1;
-            self.update_numeric(val);
+            self.update_numeric(val, row_index);
             return;
         }
 
@@ -192,7 +192,7 @@ impl ColumnProfile {
         (s.contains('-') || s.contains('/')) && s.len() >= 8 && s.chars().any(|c| c.is_numeric())
     }
 
-    fn update_numeric(&mut self, val: f64) {
+    fn update_numeric(&mut self, val: f64, row_index: usize) {
         if self.numeric_stats.is_none() {
             self.numeric_stats = Some(NumericStats::new());
             self.hist_acc = Some(HistogramAccumulator::new(1000));
@@ -201,7 +201,7 @@ impl ColumnProfile {
             stats.update(val);
         }
         if let Some(ref mut acc) = self.hist_acc {
-            acc.update(val);
+            acc.update(val, row_index);
         }
     }
 
@@ -213,6 +213,18 @@ impl ColumnProfile {
             if let Some(ref mut acc) = self.hist_acc {
                 stats.finalize(&mut acc.samples);
                 self.histogram = Some(acc.finalize(stats.min, stats.max));
+                
+                // Identify outliers from samples
+                if stats.count > 10 && stats.std_dev > 0.0 {
+                    let threshold = 3.0 * stats.std_dev;
+                    for (val, idx) in &acc.samples {
+                        if (val - stats.mean).abs() > threshold {
+                            if self.outlier_rows.len() < 1000 {
+                                self.outlier_rows.push(*idx);
+                            }
+                        }
+                    }
+                }
             } else {
                 stats.finalize(&mut []);
             }

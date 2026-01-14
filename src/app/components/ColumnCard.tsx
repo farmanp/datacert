@@ -212,9 +212,20 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
                     const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
                     drilldownStore.openDrilldown(props.profile, 'pii', props.profile.pii_rows, headers);
                   }}
-                  class="mt-2 text-[10px] font-bold text-amber-600 hover:underline cursor-pointer"
+                  class="mt-2 text-[10px] font-bold text-amber-600 hover:underline cursor-pointer block"
                 >
                   View {props.profile.pii_rows.length} PII Rows
+                </button>
+              </Show>
+              <Show when={props.profile.outlier_rows && props.profile.outlier_rows.length > 0}>
+                <button
+                  onClick={() => {
+                    const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
+                    drilldownStore.openDrilldown(props.profile, 'outlier', props.profile.outlier_rows, headers);
+                  }}
+                  class="mt-2 text-[10px] font-bold text-rose-500 hover:underline cursor-pointer block"
+                >
+                  View {props.profile.outlier_rows.length} Outlier Rows
                 </button>
               </Show>
             </div>

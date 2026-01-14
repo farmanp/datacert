@@ -70,7 +70,7 @@ impl NumericStats {
         self.m2 += term1;
     }
 
-    pub fn finalize(&mut self, samples: &mut [f64]) {
+    pub fn finalize(&mut self, samples: &mut [(f64, usize)]) {
         if self.count > 1 {
             let n = self.count as f64;
             self.variance = self.m2 / (n - 1.0);
@@ -83,15 +83,15 @@ impl NumericStats {
         }
 
         if !samples.is_empty() {
-            samples.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-            let _n = samples.len();
+            samples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+            let values: Vec<f64> = samples.iter().map(|s| s.0).collect();
             
-            self.median = self.get_quantile(samples, 0.5);
-            self.p25 = self.get_quantile(samples, 0.25);
-            self.p75 = self.get_quantile(samples, 0.75);
-            self.p90 = self.get_quantile(samples, 0.9);
-            self.p95 = self.get_quantile(samples, 0.95);
-            self.p99 = self.get_quantile(samples, 0.99);
+            self.median = self.get_quantile(&values, 0.5);
+            self.p25 = self.get_quantile(&values, 0.25);
+            self.p75 = self.get_quantile(&values, 0.75);
+            self.p90 = self.get_quantile(&values, 0.9);
+            self.p95 = self.get_quantile(&values, 0.95);
+            self.p99 = self.get_quantile(&values, 0.99);
         }
     }
 
