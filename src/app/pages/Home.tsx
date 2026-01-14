@@ -8,6 +8,7 @@ import { fileStore } from '../stores/fileStore';
 import { authStore } from '../stores/auth.store';
 import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 import RemoteSourcesModal from '../components/RemoteSourcesModal';
+import TourModal from '../components/TourModal';
 
 /**
  * Home Page Component
@@ -18,6 +19,7 @@ const Home: Component = () => {
   const [wasmStatus, setWasmStatus] = createSignal('Loading WASM...');
   const [wasmReady, setWasmReady] = createSignal(false);
   const [isRemoteModalOpen, setIsRemoteModalOpen] = createSignal(false);
+  const [isTourOpen, setIsTourOpen] = createSignal(false);
 
   const { store } = profileStore;
 
@@ -46,13 +48,26 @@ const Home: Component = () => {
         isOpen={isRemoteModalOpen()}
         onClose={() => setIsRemoteModalOpen(false)}
       />
+      <TourModal
+        isOpen={isTourOpen()}
+        onClose={() => setIsTourOpen(false)}
+      />
 
       <Show
         when={store.results}
         fallback={
           <div class="w-full flex flex-col items-center p-4 sm:p-8 animate-in fade-in duration-700 relative">
             {/* Top Right Auth Button */}
-            <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-20">
+            <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 flex items-center gap-3">
+              <button
+                onClick={() => setIsTourOpen(true)}
+                class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white rounded-xl border border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Take a Tour
+              </button>
               <GCSAuthButton />
             </div>
 
