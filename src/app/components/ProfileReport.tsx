@@ -1,30 +1,21 @@
 import { Component, Show, For, createSignal, createMemo, createEffect, onCleanup } from 'solid-js';
+import { A } from '@solidjs/router';
 import { profileStore, CorrelationMatrixResult } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
 import EmptyState from './EmptyState';
-import Toast from './Toast';
+
 import CorrelationMatrix from './CorrelationMatrix';
-import {
-  generateHTMLReport,
-  generateJSONReport,
-  generateCSVReport,
-  generateMarkdownReport,
-  downloadFile,
-} from '../utils/exportReport';
+import { ExportFormatSelector } from './ExportFormatSelector';
 
 const ProfileReport: Component = () => {
   const { store, setViewMode, reset } = profileStore;
-  const [isExporting, setIsExporting] = createSignal(false);
-  const [showExportMenu, setShowExportMenu] = createSignal(false);
+  const [showExportModal, setShowExportModal] = createSignal(false);
   const [showClearConfirm, setShowClearConfirm] = createSignal(false);
   const [searchQuery, setSearchQuery] = createSignal('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = createSignal('');
-  const [focusedMenuIndex, setFocusedMenuIndex] = createSignal(0);
-  const [toastMessage, setToastMessage] = createSignal('');
-  const [toastType, setToastType] = createSignal<'success' | 'error'>('success');
-  const [showToast, setShowToast] = createSignal(false);
+
 
   // Correlation Matrix state
   const [showCorrelationMatrix, setShowCorrelationMatrix] = createSignal(false);
@@ -34,19 +25,9 @@ const ProfileReport: Component = () => {
 
   let cancelButtonRef: HTMLButtonElement | undefined;
   let exportButtonRef: HTMLButtonElement | undefined;
-  const menuItemRefs: HTMLButtonElement[] = [];
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   let correlationWorker: Worker | null = null;
 
-  const displayToast = (message: string, type: 'success' | 'error') => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-  };
-
-  const dismissToast = () => {
-    setShowToast(false);
-  };
 
   // Debounce search query updates (150ms)
   const handleSearchInput = (value: string) => {
@@ -137,71 +118,7 @@ const ProfileReport: Component = () => {
     }
   });
 
-  // Handle keyboard navigation for export menu
-  createEffect(() => {
-    if (showExportMenu()) {
-      const menuItemCount = 5; // HTML, Markdown, JSON, CSV, Print to PDF
 
-      // Reset focus index and focus first item when menu opens
-      setFocusedMenuIndex(0);
-      // Use setTimeout to ensure refs are populated after render
-      setTimeout(() => {
-        menuItemRefs[0]?.focus();
-      }, 0);
-
-      const handleExportMenuKeyDown = (e: KeyboardEvent) => {
-        switch (e.key) {
-          case 'Escape':
-            e.preventDefault();
-            setShowExportMenu(false);
-            exportButtonRef?.focus();
-            break;
-          case 'ArrowDown':
-            e.preventDefault();
-            setFocusedMenuIndex((prev) => {
-              const next = (prev + 1) % menuItemCount;
-              menuItemRefs[next]?.focus();
-              return next;
-            });
-            break;
-          case 'ArrowUp':
-            e.preventDefault();
-            setFocusedMenuIndex((prev) => {
-              const next = (prev - 1 + menuItemCount) % menuItemCount;
-              menuItemRefs[next]?.focus();
-              return next;
-            });
-            break;
-          case 'Enter':
-            // Let the button's onClick handle the action
-            // Menu will close via the handler
-            break;
-          case 'Tab':
-            // Trap focus within the menu
-            e.preventDefault();
-            if (e.shiftKey) {
-              setFocusedMenuIndex((prev) => {
-                const next = (prev - 1 + menuItemCount) % menuItemCount;
-                menuItemRefs[next]?.focus();
-                return next;
-              });
-            } else {
-              setFocusedMenuIndex((prev) => {
-                const next = (prev + 1) % menuItemCount;
-                menuItemRefs[next]?.focus();
-                return next;
-              });
-            }
-            break;
-        }
-      };
-
-      document.addEventListener('keydown', handleExportMenuKeyDown);
-      onCleanup(() => {
-        document.removeEventListener('keydown', handleExportMenuKeyDown);
-      });
-    }
-  });
 
   // Calculate health score from column profiles (completeness metric)
   const healthScore = createMemo(() => {
@@ -335,81 +252,7 @@ const ProfileReport: Component = () => {
     }
   });
 
-  const getBaseFilename = () => {
-    const fullFilename = fileStore.store.file?.name || 'data_profile.csv';
-    return fullFilename.split('.')[0];
-  };
 
-  const handleHTMLExport = async () => {
-    if (!store.results) return;
-    setIsExporting(true);
-    setShowExportMenu(false);
-
-    try {
-      const filename = fileStore.store.file?.name || 'data_profile.csv';
-      const html = await generateHTMLReport(store.results, filename);
-      downloadFile(html, `${getBaseFilename()}_profile.html`, 'text/html');
-      displayToast('Report downloaded successfully', 'success');
-    } catch (err) {
-      console.error('Export failed', err);
-      const errorMessage = err instanceof Error ? err.message : 'Export failed';
-      displayToast(errorMessage, 'error');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleJSONExport = () => {
-    if (!store.results) return;
-    setShowExportMenu(false);
-    try {
-      const filename = fileStore.store.file?.name || 'data_profile.csv';
-      const fileSize = fileStore.store.file?.size || 0;
-      const json = generateJSONReport(store.results, filename, {
-        fileSize,
-        processingTimeMs: 0, // Processing time not currently tracked
-      });
-      downloadFile(json, `${getBaseFilename()}_profile.json`, 'application/json');
-      displayToast('Report downloaded successfully', 'success');
-    } catch (err) {
-      console.error('Export failed', err);
-      const errorMessage = err instanceof Error ? err.message : 'Export failed';
-      displayToast(errorMessage, 'error');
-    }
-  };
-
-  const handleCSVExport = () => {
-    if (!store.results) return;
-    setShowExportMenu(false);
-    try {
-      const csv = generateCSVReport(store.results);
-      downloadFile(csv, `${getBaseFilename()}_stats.csv`, 'text/csv');
-      displayToast('Report downloaded successfully', 'success');
-    } catch (err) {
-      console.error('Export failed', err);
-      const errorMessage = err instanceof Error ? err.message : 'Export failed';
-      displayToast(errorMessage, 'error');
-    }
-  };
-
-  const handleMarkdownCopy = async () => {
-    if (!store.results) return;
-    setShowExportMenu(false);
-    try {
-      const filename = fileStore.store.file?.name || 'data_profile.csv';
-      const markdown = generateMarkdownReport(store.results, filename);
-      await navigator.clipboard.writeText(markdown);
-      displayToast('Markdown summary copied to clipboard', 'success');
-    } catch (err) {
-      console.error('Copy failed', err);
-      displayToast('Failed to copy markdown', 'error');
-    }
-  };
-
-  const handlePrintPDF = () => {
-    setShowExportMenu(false);
-    window.print();
-  };
 
   return (
     <div class="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 print:p-0">
@@ -465,175 +308,32 @@ const ProfileReport: Component = () => {
             Clear
           </button>
 
+          <A
+            href="/sql-mode"
+            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+              />
+            </svg>
+            SQL Mode
+          </A>
+
           <div class="relative">
             <button
               ref={exportButtonRef}
-              onClick={() => setShowExportMenu(!showExportMenu())}
-              disabled={isExporting()}
-              aria-haspopup="menu"
-              aria-expanded={showExportMenu()}
-              class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50 flex items-center gap-2"
+              onClick={() => setShowExportModal(true)}
+              class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
             >
-              <Show when={isExporting()}>
-                <svg
-                  class="w-4 h-4 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  />
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              </Show>
-              {isExporting() ? 'Exporting...' : 'Export Results'}
-              <Show when={!isExporting()}>
-                <svg
-                  class={`w-4 h-4 transition-transform ${showExportMenu() ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M19 9l-7 7-7-7"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </Show>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export Profile
             </button>
-
-            <Show when={showExportMenu()}>
-              <div role="menu" class="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in duration-150">
-                <button
-                  ref={(el) => (menuItemRefs[0] = el)}
-                  role="menuitem"
-                  tabIndex={focusedMenuIndex() === 0 ? 0 : -1}
-                  onClick={handleHTMLExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors flex items-center gap-3"
-                >
-                  <svg
-                    class="w-4 h-4 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  Interactive HTML
-                </button>
-                <button
-                  ref={(el) => (menuItemRefs[1] = el)}
-                  role="menuitem"
-                  tabIndex={focusedMenuIndex() === 1 ? 0 : -1}
-                  onClick={handleMarkdownCopy}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
-                >
-                  <svg
-                    class="w-4 h-4 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  Copy as Markdown
-                </button>
-                <button
-                  ref={(el) => (menuItemRefs[2] = el)}
-                  role="menuitem"
-                  tabIndex={focusedMenuIndex() === 2 ? 0 : -1}
-                  onClick={handleJSONExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
-                >
-                  <svg
-                    class="w-4 h-4 text-purple-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  Data Profile (JSON)
-                </button>
-                <button
-                  ref={(el) => (menuItemRefs[3] = el)}
-                  role="menuitem"
-                  tabIndex={focusedMenuIndex() === 3 ? 0 : -1}
-                  onClick={handleCSVExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
-                >
-                  <svg
-                    class="w-4 h-4 text-orange-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  Column Stats (CSV)
-                </button>
-                <button
-                  ref={(el) => (menuItemRefs[4] = el)}
-                  role="menuitem"
-                  tabIndex={focusedMenuIndex() === 4 ? 0 : -1}
-                  onClick={handlePrintPDF}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
-                >
-                  <svg
-                    class="w-4 h-4 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  Print to PDF
-                </button>
-              </div>
-            </Show>
           </div>
         </div>
       </header>
@@ -920,14 +620,18 @@ const ProfileReport: Component = () => {
         </div>
       </Show>
 
-      {/* Toast Notification */}
-      <Show when={showToast()}>
-        <Toast
-          message={toastMessage()}
-          type={toastType()}
-          onDismiss={dismissToast}
+      {/* Export Format Selector Modal */}
+      <Show when={store.results}>
+        <ExportFormatSelector
+          isOpen={showExportModal()}
+          onClose={() => setShowExportModal(false)}
+          profileResult={store.results!}
+          fileName={fileStore.store.file?.name || 'data.csv'}
+          fileSize={fileStore.store.file?.size || 0}
         />
       </Show>
+
+
     </div>
   );
 };

@@ -1,4 +1,17 @@
 import { ProfileResult, Histogram } from '../stores/profileStore';
+export { generateJsonSchemaReport } from './exportJsonSchema';
+
+// Re-export Great Expectations export utilities
+export {
+    generateGXSuite,
+    generateGXSuiteJSON,
+    getExpectationSummary,
+} from './exportGreatExpectations';
+export type { GXSuite, GXExpectation, GXExportOptions } from './exportGreatExpectations';
+
+// Re-export Soda Checks export utilities
+export { generateSodaChecksYAML } from './exportSodaChecks';
+export type { SodaExportOptions } from './exportSodaChecks';
 
 /**
  * Generates a standalone HTML report for the profiling results.
