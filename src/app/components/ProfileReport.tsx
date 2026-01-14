@@ -139,6 +139,44 @@ const ProfileReport: Component = () => {
 
 
 
+  // Compute columns with PII detected
+  const piiColumns = createMemo(() => {
+    const profiles = store.results?.column_profiles;
+    if (!profiles) return [];
+
+    const columnsWithPii: Array<{
+      name: string;
+      piiType: string;
+      rowCount: number;
+      severity: 'error' | 'warning' | 'info';
+    }> = [];
+
+    for (const profile of profiles) {
+      const issues = profile.quality_metrics?.issues || [];
+      const piiIssue = issues.find((issue) => issue.message.toLowerCase().includes('pii'));
+
+      if (piiIssue) {
+        // Extract PII type from message like "Potential PII detected: email"
+        const piiTypeMatch = piiIssue.message.match(/:\s*(.+)$/);
+        const piiType = piiTypeMatch ? piiTypeMatch[1] : 'unknown';
+
+        columnsWithPii.push({
+          name: profile.name,
+          piiType,
+          rowCount: profile.pii_rows?.length || 0,
+          severity: piiIssue.severity,
+        });
+      }
+    }
+
+    return columnsWithPii;
+  });
+
+  // Check if there are any high-severity PII issues (error severity)
+  const hasHighSeverityPii = createMemo(() =>
+    piiColumns().some((col) => col.severity === 'error')
+  );
+
   // Calculate health score from column profiles (completeness metric)
   const healthScore = createMemo(() => {
     const profiles = store.results?.column_profiles;
@@ -264,6 +302,74 @@ const ProfileReport: Component = () => {
       {/* Avro Schema Section */}
       <Show when={store.results?.avro_schema}>
         {(schema) => <AvroSchemaViewer schema={schema()} />}
+      </Show>
+
+      {/* PII Summary Banner */}
+      <Show when={piiColumns().length > 0}>
+        <div
+          class={`rounded-xl p-4 mb-2 border ${
+            hasHighSeverityPii()
+              ? 'bg-rose-500/10 border-rose-500/30'
+              : 'bg-amber-500/10 border-amber-500/30'
+          } print:bg-amber-50 print:border-amber-200`}
+        >
+          <div class="flex items-start gap-3">
+            <div
+              class={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                hasHighSeverityPii() ? 'bg-rose-500/20' : 'bg-amber-500/20'
+              }`}
+            >
+              <svg
+                class={`w-5 h-5 ${hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3
+                class={`font-bold text-base ${
+                  hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'
+                } print:text-amber-600`}
+              >
+                Potential PII Detected
+              </h3>
+              <p class="text-sm text-slate-400 mt-0.5 print:text-slate-600">
+                {piiColumns().length} column{piiColumns().length !== 1 ? 's' : ''} may contain
+                sensitive data. Review before uploading to a data warehouse.
+              </p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <For each={piiColumns()}>
+                  {(col) => (
+                    <div
+                      class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
+                        col.severity === 'error'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          : col.severity === 'warning'
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
+                      }`}
+                    >
+                      <span class="font-semibold">{col.name}</span>
+                      <span class="opacity-60">({col.piiType})</span>
+                      <Show when={col.rowCount > 0}>
+                        <span class="opacity-50">{col.rowCount} rows</span>
+                      </Show>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </div>
+          </div>
+        </div>
       </Show>
 
       {/* Summary KPI Cards */}

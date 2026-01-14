@@ -295,14 +295,19 @@ impl ColumnProfile {
             &type_str,
         ));
         
-        // PII detection
+        // PII detection (with column name heuristics)
         if !self.pii_samples.is_empty() {
             let sample_refs: Vec<&str> = self.pii_samples.iter()
                 .map(|s| s.as_str())
                 .collect();
-            
-            let pii_type = patterns::detect_pii_pattern(&sample_refs);
+
+            let pii_type = patterns::detect_pii_pattern_with_column_name(&sample_refs, Some(&self.name));
             all_issues.extend(patterns::check_pii_issues(pii_type, &self.name));
+        } else {
+            // Even without samples, check column name for PII hints
+            if let Some(pii_type) = patterns::detect_pii_from_column_name(&self.name) {
+                all_issues.extend(patterns::check_pii_issues(Some(pii_type), &self.name));
+            }
         }
         
         metrics.issues = all_issues;

@@ -4,18 +4,48 @@ let profiler: DataCertProfiler | ParquetProfiler | JsonProfiler | AvroProfiler |
 let extractor: RowExtractor | null = null;
 let mode: 'csv' | 'parquet' | 'json' | 'avro' = 'csv';
 
+// Size threshold for large file mode (100MB)
+// Files exceeding this size for Parquet/Avro will be routed to DuckDB
+const LARGE_FILE_THRESHOLD_BYTES = 100 * 1024 * 1024; // 100MB
+
 // Worker globals for buffering
 interface ProfilerWorkerGlobals {
     parquetBuffer: Uint8Array[] | null;
     avroBuffer: Uint8Array[] | null;
     extractedRows: [number, string[]][] | null;
+    totalBytesReceived: number;
+    useLargeFileMode: boolean;
 }
 
 const workerGlobals: ProfilerWorkerGlobals = {
     parquetBuffer: null,
     avroBuffer: null,
-    extractedRows: null
+    extractedRows: null,
+    totalBytesReceived: 0,
+    useLargeFileMode: false
 };
+
+/**
+ * Check memory pressure using performance.memory API (Chrome only)
+ * Returns the memory usage ratio (0-1) or null if API not available
+ */
+function checkMemoryPressure(): { ratio: number; usedMB: number; limitMB: number } | null {
+    // performance.memory is Chrome-specific
+    const perf = performance as Performance & {
+        memory?: {
+            usedJSHeapSize: number;
+            jsHeapSizeLimit: number;
+        };
+    };
+
+    if (perf.memory) {
+        const usedMB = perf.memory.usedJSHeapSize / (1024 * 1024);
+        const limitMB = perf.memory.jsHeapSizeLimit / (1024 * 1024);
+        const ratio = usedMB / limitMB;
+        return { ratio, usedMB, limitMB };
+    }
+    return null;
+}
 
 self.onmessage = async (e: MessageEvent) => {
     const { type, data } = e.data;
@@ -28,7 +58,29 @@ self.onmessage = async (e: MessageEvent) => {
                 break;
 
             case 'start_profiling': {
-                const { delimiter, hasHeaders, format } = data;
+                const { delimiter, hasHeaders, format, fileSize } = data;
+
+                // Reset worker globals for new profiling session
+                workerGlobals.totalBytesReceived = 0;
+                workerGlobals.useLargeFileMode = false;
+                workerGlobals.parquetBuffer = null;
+                workerGlobals.avroBuffer = null;
+
+                // Check if this is a large Parquet/Avro file that should use DuckDB
+                const isLargeFile = fileSize && fileSize > LARGE_FILE_THRESHOLD_BYTES;
+                const isBinaryFormat = format === 'parquet' || format === 'avro';
+
+                if (isLargeFile && isBinaryFormat) {
+                    // Signal to main thread that this file should use DuckDB path
+                    workerGlobals.useLargeFileMode = true;
+                    self.postMessage({
+                        type: 'use_large_file_mode',
+                        format: format,
+                        fileSize: fileSize,
+                        threshold: LARGE_FILE_THRESHOLD_BYTES
+                    });
+                    return; // Don't proceed with WASM profiler
+                }
 
                 if (format === 'parquet') {
                     mode = 'parquet';
@@ -51,6 +103,37 @@ self.onmessage = async (e: MessageEvent) => {
             case 'process_chunk': {
                 if (!profiler) throw new Error('Profiler not initialized');
                 const chunk = new Uint8Array(data);
+
+                // Track total bytes received
+                workerGlobals.totalBytesReceived += chunk.byteLength;
+
+                // Check memory pressure for binary formats that buffer
+                if (mode === 'parquet' || mode === 'avro') {
+                    const memoryStatus = checkMemoryPressure();
+                    if (memoryStatus) {
+                        if (memoryStatus.ratio > 0.9) {
+                            // Critical memory pressure - abort to prevent OOM
+                            self.postMessage({
+                                type: 'memory_critical',
+                                usedMB: Math.round(memoryStatus.usedMB),
+                                limitMB: Math.round(memoryStatus.limitMB),
+                                ratio: memoryStatus.ratio
+                            });
+                            throw new Error(
+                                `Memory pressure critical (${Math.round(memoryStatus.ratio * 100)}% used). ` +
+                                `File too large for in-memory processing. Try using SQL Mode for large Parquet files.`
+                            );
+                        } else if (memoryStatus.ratio > 0.8) {
+                            // High memory pressure - warn but continue
+                            self.postMessage({
+                                type: 'memory_warning',
+                                usedMB: Math.round(memoryStatus.usedMB),
+                                limitMB: Math.round(memoryStatus.limitMB),
+                                ratio: memoryStatus.ratio
+                            });
+                        }
+                    }
+                }
 
                 let parseResult;
                 if (mode === 'parquet') {

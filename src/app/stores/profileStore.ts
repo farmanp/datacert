@@ -4,6 +4,12 @@ import { fileStore } from './fileStore';
 import { gcsStreamingService } from '../services/gcs-streaming.service';
 import type { ProfilerError } from '../types/errors';
 import { createProfilerError, createTypedError } from '../types/errors';
+import {
+  initDuckDB,
+  executeQuery,
+  registerParquet,
+  DuckDBError,
+} from '../utils/duckdb';
 
 // Re-export generated types for backwards compatibility
 // Other files can continue importing from profileStore
@@ -35,6 +41,10 @@ export interface ProfileStoreState {
   profilerError: ProfilerError | null;
   progress: number;
   viewMode: 'table' | 'cards' | 'validation';
+  /** True when processing large binary files (>100MB Parquet/Avro) via DuckDB */
+  largeFileMode: boolean;
+  /** Memory warning message if memory pressure detected */
+  memoryWarning: string | null;
 }
 
 function createProfileStore() {
@@ -46,6 +56,8 @@ function createProfileStore() {
     profilerError: null,
     progress: 0,
     viewMode: 'table',
+    largeFileMode: false,
+    memoryWarning: null,
   });
 
   let worker: Worker | null = null;
@@ -61,6 +73,8 @@ function createProfileStore() {
       profilerError: null,
       progress: 0,
       results: null,
+      largeFileMode: false,
+      memoryWarning: null,
     });
 
     worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
@@ -94,9 +108,43 @@ function createProfileStore() {
             data: {
               delimiter: undefined,
               hasHeaders: true,
-              format: format
+              format: format,
+              fileSize: fileInfo.size, // Pass file size for large file detection
             },
           });
+          break;
+        }
+
+        case 'use_large_file_mode': {
+          // Worker detected large binary file - switch to DuckDB path
+          setStore('largeFileMode', true);
+          setStore('progress', 10);
+          worker?.terminate();
+          worker = null;
+
+          // Route to DuckDB profiling
+          if (fileInfo.file) {
+            profileLargeFileWithDuckDB(fileInfo.file, e.data.format);
+          }
+          break;
+        }
+
+        case 'memory_warning': {
+          const { usedMB, limitMB, ratio } = e.data;
+          setStore(
+            'memoryWarning',
+            `High memory usage: ${usedMB}MB / ${limitMB}MB (${Math.round(ratio * 100)}%)`
+          );
+          break;
+        }
+
+        case 'memory_critical': {
+          // Memory is critically high - error will be thrown by worker
+          const { usedMB, limitMB } = e.data;
+          setStore(
+            'memoryWarning',
+            `Critical memory: ${usedMB}MB / ${limitMB}MB - Consider using SQL Mode`
+          );
           break;
         }
 
@@ -111,6 +159,7 @@ function createProfileStore() {
             results: result as ProfilerResult,
             isProfiling: false,
             progress: 100,
+            largeFileMode: false,
           });
           worker?.terminate();
           break;
@@ -121,6 +170,7 @@ function createProfileStore() {
             error,
             profilerError,
             isProfiling: false,
+            largeFileMode: false,
           });
           worker?.terminate();
           break;
@@ -451,6 +501,307 @@ function createProfileStore() {
     worker.postMessage({ type: 'init' });
   };
 
+  /**
+   * Profile large Parquet/Avro files using DuckDB-WASM.
+   * This path is used when files exceed 100MB to avoid OOM in the WASM profiler.
+   * DuckDB handles large Parquet files efficiently with columnar reads.
+   *
+   * @param file - The File object to profile
+   * @param format - The file format ('parquet' or 'avro')
+   */
+  const profileLargeFileWithDuckDB = async (file: File, format: string) => {
+    try {
+      setStore('progress', 20);
+
+      // Initialize DuckDB (lazy-loaded, singleton)
+      await initDuckDB();
+      setStore('progress', 40);
+
+      // Register the file with DuckDB
+      const tableName = 'large_file_data';
+      const fileName = `${tableName}.${format}`;
+
+      // For Parquet, use registerParquet
+      if (format === 'parquet') {
+        await registerParquet(fileName, file);
+      } else {
+        // For Avro, we need to fall back to error since DuckDB doesn't support Avro natively
+        throw new Error(
+          'Large Avro files are not yet supported. Consider converting to Parquet format.'
+        );
+      }
+
+      setStore('progress', 50);
+
+      // Create table from the registered file
+      await executeQuery(`DROP TABLE IF EXISTS ${tableName}`);
+      await executeQuery(
+        `CREATE TABLE ${tableName} AS SELECT * FROM read_parquet('${fileName}')`
+      );
+
+      setStore('progress', 60);
+
+      // Get column information
+      const schemaResult = await executeQuery<{ column_name: string; column_type: string }>(
+        `DESCRIBE ${tableName}`
+      );
+
+      // Get total row count
+      const countResult = await executeQuery<{ cnt: string }>(`SELECT COUNT(*) as cnt FROM ${tableName}`);
+      const totalRows = parseInt(countResult.rows[0]?.cnt || '0', 10);
+
+      setStore('progress', 70);
+
+      // Generate profile statistics for each column using SQL
+      const columnProfiles = await Promise.all(
+        schemaResult.rows.map(async (col) => {
+          const colName = col.column_name;
+          const colType = col.column_type.toUpperCase();
+          const quotedCol = `"${colName}"`;
+
+          // Base stats query
+          const baseStatsQuery = `
+            SELECT
+              COUNT(*) as total_count,
+              COUNT(${quotedCol}) as non_null_count,
+              COUNT(*) - COUNT(${quotedCol}) as missing_count,
+              COUNT(DISTINCT ${quotedCol}) as distinct_count
+            FROM ${tableName}
+          `;
+
+          const baseStats = await executeQuery<{
+            total_count: string;
+            non_null_count: string;
+            missing_count: string;
+            distinct_count: string;
+          }>(baseStatsQuery);
+
+          const totalCount = parseInt(baseStats.rows[0]?.total_count || '0', 10);
+          const missingCount = parseInt(baseStats.rows[0]?.missing_count || '0', 10);
+          const distinctCount = parseInt(baseStats.rows[0]?.distinct_count || '0', 10);
+
+          // Determine if numeric type
+          const isNumeric =
+            colType.includes('INT') ||
+            colType.includes('FLOAT') ||
+            colType.includes('DOUBLE') ||
+            colType.includes('DECIMAL') ||
+            colType.includes('NUMERIC') ||
+            colType.includes('REAL') ||
+            colType.includes('BIGINT') ||
+            colType.includes('SMALLINT') ||
+            colType.includes('TINYINT');
+
+          let numericStats = null;
+          let categoricalStats = null;
+          let histogram = null;
+          let inferredType: 'Integer' | 'Numeric' | 'String' | 'Boolean' | 'Date' = 'String';
+
+          if (isNumeric) {
+            inferredType = colType.includes('INT') ? 'Integer' : 'Numeric';
+
+            // Numeric stats query
+            const numericQuery = `
+              SELECT
+                MIN(${quotedCol}) as min_val,
+                MAX(${quotedCol}) as max_val,
+                AVG(${quotedCol}) as mean_val,
+                SUM(${quotedCol}) as sum_val,
+                STDDEV_POP(${quotedCol}) as std_dev,
+                VAR_POP(${quotedCol}) as variance,
+                PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY ${quotedCol}) as p25,
+                PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY ${quotedCol}) as median,
+                PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY ${quotedCol}) as p75,
+                PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY ${quotedCol}) as p90,
+                PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY ${quotedCol}) as p95,
+                PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY ${quotedCol}) as p99
+              FROM ${tableName}
+              WHERE ${quotedCol} IS NOT NULL
+            `;
+
+            const numStats = await executeQuery<{
+              min_val: string;
+              max_val: string;
+              mean_val: string;
+              sum_val: string;
+              std_dev: string;
+              variance: string;
+              p25: string;
+              median: string;
+              p75: string;
+              p90: string;
+              p95: string;
+              p99: string;
+            }>(numericQuery);
+
+            const row = numStats.rows[0];
+            if (row) {
+              const minVal = parseFloat(row.min_val || '0');
+              const maxVal = parseFloat(row.max_val || '0');
+
+              numericStats = {
+                min: minVal,
+                max: maxVal,
+                mean: parseFloat(row.mean_val || '0'),
+                sum: parseFloat(row.sum_val || '0'),
+                count: totalCount - missingCount,
+                std_dev: parseFloat(row.std_dev || '0'),
+                variance: parseFloat(row.variance || '0'),
+                skewness: 0, // DuckDB doesn't have built-in skewness
+                kurtosis: 0, // DuckDB doesn't have built-in kurtosis
+                median: parseFloat(row.median || '0'),
+                p25: parseFloat(row.p25 || '0'),
+                p75: parseFloat(row.p75 || '0'),
+                p90: parseFloat(row.p90 || '0'),
+                p95: parseFloat(row.p95 || '0'),
+                p99: parseFloat(row.p99 || '0'),
+              };
+
+              // Generate histogram bins
+              const range = maxVal - minVal;
+              const binCount = 10;
+              const binWidth = range / binCount || 1;
+
+              const histogramQuery = `
+                SELECT
+                  FLOOR((${quotedCol} - ${minVal}) / ${binWidth}) as bin_idx,
+                  COUNT(*) as bin_count
+                FROM ${tableName}
+                WHERE ${quotedCol} IS NOT NULL
+                GROUP BY bin_idx
+                ORDER BY bin_idx
+              `;
+
+              const histResult = await executeQuery<{ bin_idx: string; bin_count: string }>(
+                histogramQuery
+              );
+
+              const bins = [];
+              for (let i = 0; i < binCount; i++) {
+                const binStart = minVal + i * binWidth;
+                const binEnd = minVal + (i + 1) * binWidth;
+                const found = histResult.rows.find(
+                  (r) => parseInt(r.bin_idx || '0', 10) === i
+                );
+                bins.push({
+                  start: binStart,
+                  end: binEnd,
+                  count: found ? parseInt(found.bin_count || '0', 10) : 0,
+                });
+              }
+
+              histogram = {
+                bins,
+                min: minVal,
+                max: maxVal,
+                bin_width: binWidth,
+              };
+            }
+          } else {
+            // Categorical stats - get top values
+            if (colType.includes('BOOL')) {
+              inferredType = 'Boolean';
+            } else if (colType.includes('DATE') || colType.includes('TIME')) {
+              inferredType = 'Date';
+            }
+
+            const topValuesQuery = `
+              SELECT
+                CAST(${quotedCol} AS VARCHAR) as value,
+                COUNT(*) as count
+              FROM ${tableName}
+              WHERE ${quotedCol} IS NOT NULL
+              GROUP BY ${quotedCol}
+              ORDER BY count DESC
+              LIMIT 10
+            `;
+
+            const topValues = await executeQuery<{ value: string; count: string }>(topValuesQuery);
+            const totalNonNull = totalCount - missingCount;
+
+            categoricalStats = {
+              top_values: topValues.rows.map((row) => ({
+                value: row.value || '',
+                count: parseInt(row.count || '0', 10),
+                percentage:
+                  totalNonNull > 0
+                    ? (parseInt(row.count || '0', 10) / totalNonNull) * 100
+                    : 0,
+              })),
+              unique_count: distinctCount,
+            };
+          }
+
+          // Build column profile
+          return {
+            name: colName,
+            base_stats: {
+              count: totalCount,
+              missing: missingCount,
+              distinct_estimate: distinctCount,
+              inferred_type: inferredType,
+            },
+            numeric_stats: numericStats,
+            categorical_stats: categoricalStats,
+            histogram: histogram,
+            min_length: null,
+            max_length: null,
+            notes: ['Profiled via DuckDB (large file mode)'],
+            quality_metrics: null,
+            integer_count: inferredType === 'Integer' ? totalCount - missingCount : 0,
+            numeric_count: inferredType === 'Numeric' ? totalCount - missingCount : 0,
+            boolean_count: inferredType === 'Boolean' ? totalCount - missingCount : 0,
+            date_count: inferredType === 'Date' ? totalCount - missingCount : 0,
+            total_valid: totalCount - missingCount,
+            sample_values: [],
+            missing_rows: [],
+            pii_rows: [],
+            outlier_rows: [],
+          };
+        })
+      );
+
+      setStore('progress', 95);
+
+      // Clean up the temporary table
+      await executeQuery(`DROP TABLE IF EXISTS ${tableName}`);
+
+      // Build the final result
+      const profilerResult: ProfilerResult = {
+        column_profiles: columnProfiles,
+        total_rows: totalRows,
+        duplicate_issues: [],
+        avro_schema: null,
+      };
+
+      setStore({
+        results: profilerResult,
+        isProfiling: false,
+        progress: 100,
+        largeFileMode: false,
+      });
+
+      fileStore.setProgress(100);
+    } catch (err: unknown) {
+      const error = err as Error;
+      const isDuckDBError = err instanceof DuckDBError;
+      const profilerError = createProfilerError(
+        isDuckDBError
+          ? `DuckDB Error: ${error.message}`
+          : `Large file profiling failed: ${error.message}`
+      );
+
+      setStore({
+        error: error.message,
+        profilerError,
+        isProfiling: false,
+        largeFileMode: false,
+      });
+
+      fileStore.setError(error.message);
+    }
+  };
+
   const setViewMode = (mode: 'table' | 'cards' | 'validation') => {
     setStore('viewMode', mode);
   };
@@ -464,6 +815,8 @@ function createProfileStore() {
       profilerError: null,
       progress: 0,
       viewMode: 'table',
+      largeFileMode: false,
+      memoryWarning: null,
     });
     if (worker) {
       worker.terminate();
@@ -497,6 +850,8 @@ function createProfileStore() {
         error: null,
         profilerError: null,
         progress: 0,
+        largeFileMode: false,
+        memoryWarning: null,
       });
       fileStore.reset();
     }, 300);
