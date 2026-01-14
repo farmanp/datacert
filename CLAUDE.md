@@ -46,6 +46,41 @@ DataLensProfiler (WASM) → CsvParser → Profiler → Stats modules
 ProfileResult → profileStore.results → ProfileReport UI
 ```
 
+### SQL Mode Architecture (DuckDB-WASM)
+
+```
+ProfileReport UI
+    ↓
+[SQL Mode Button]
+    ↓
+SqlMode.tsx ← fileStore (file persists across navigation)
+    ↓
+duckdb.ts (lazy-loads DuckDB-WASM from JSDelivr CDN, ~30MB)
+    ↓
+sqlStore.loadFileIntoTable() → CREATE TABLE data AS SELECT * FROM 'file.csv'
+    ↓
+SqlEditor.tsx → User writes SQL query
+    ↓
+sqlStore.executeQuery() → DuckDB executes query in-browser
+    ↓
+QueryResults.tsx (preview first 1,000 rows, BigInt→string serialization)
+    ↓
+[Profile Results Button]
+    ↓
+Convert results to CSV → fileStore.setFile() → profileStore.startProfiling()
+    ↓
+ProfileReport UI (for filtered/transformed data)
+```
+
+**SQL Mode design decisions:**
+
+- **Lazy loading**: DuckDB-WASM (~30MB) loaded only when user enters SQL Mode
+- **Singleton pattern**: Single DuckDB instance reused across queries
+- **30s query timeout**: Prevents runaway queries from freezing browser
+- **BigInt serialization**: All BigInt values converted to strings for JSON safety
+- **1,000 row preview**: Full results available for profiling, UI shows preview
+- **File persistence**: fileStore maintains file across page navigation
+
 **Key design principles:**
 
 - All data processing in Rust/WASM for performance
@@ -57,11 +92,22 @@ ProfileResult → profileStore.results → ProfileReport UI
 
 ```
 src/app/                    # SolidJS frontend
-├── pages/Home.tsx          # Main page with dropzone/results toggle
-├── components/             # UI components (FileDropzone, ProfileReport, ColumnCard, Histogram, etc.)
-├── stores/                 # State management
-│   ├── fileStore.ts        # File upload state
-│   └── profileStore.ts     # Profiling results and worker coordination
+├── pages/
+│   ├── Home.tsx            # Main page with dropzone/results toggle
+│   └── SqlMode.tsx         # SQL Mode page with DuckDB query interface
+├── components/
+│   ├── FileDropzone.tsx    # File upload dropzone
+│   ├── ProfileReport.tsx   # Profile results display (includes SQL Mode button)
+│   ├── SqlEditor.tsx       # SQL query editor with syntax highlighting
+│   ├── QueryResults.tsx    # SQL query results table
+│   └── ...                 # ColumnCard, Histogram, etc.
+├── stores/
+│   ├── fileStore.ts        # File upload state (persists across navigation)
+│   ├── profileStore.ts     # Profiling results and worker coordination
+│   └── sqlStore.ts         # SQL Mode state (DuckDB, queries, results)
+├── utils/
+│   ├── duckdb.ts           # DuckDB-WASM lazy loader and query utilities
+│   └── duckdbToCSV.ts      # Convert query results to CSV for profiling
 └── workers/
     └── profiler.worker.ts  # Web Worker that loads WASM and processes chunks
 
@@ -84,8 +130,9 @@ tickets/                    # Development tickets (active/, done/)
 
 Uses SolidJS stores created via `createRoot` for singleton instances:
 
-- `fileStore`: Manages file selection, validation, upload progress
+- `fileStore`: Manages file selection, validation, upload progress (persists across navigation)
 - `profileStore`: Manages profiling state, spawns worker, stores results
+- `sqlStore`: Manages SQL Mode state, DuckDB initialization, query execution, results
 
 ### Worker Communication Protocol
 
@@ -151,6 +198,9 @@ File → ReadableStream (64KB chunks) → Transferable ArrayBuffer → Worker �
 | Modify WASM exports    | `src/wasm/src/lib.rs`                |
 | Add/modify statistics  | `src/wasm/src/stats/`                |
 | Modify CSV parsing     | `src/wasm/src/parser/csv.rs`         |
+| Modify SQL Mode        | `src/app/pages/SqlMode.tsx`          |
+| Change SQL state       | `src/app/stores/sqlStore.ts`         |
+| Modify DuckDB loading  | `src/app/utils/duckdb.ts`            |
 
 ## Testing
 
@@ -180,6 +230,9 @@ See `tickets/README.md` for the full backlog. Key phases:
 - `SPIKE-005` - DuckDB-WASM for SQL query profiling (completed) - **HIGHLY FEASIBLE**
   - 1M rows: 97ms generate, 12ms aggregate, 85MB memory
   - Enables SQL mode, remote Parquet, instant drill-downs
+
+### Completed Features
+- `FEAT-020` - DuckDB SQL Mode (completed) - query data with SQL, profile results
 
 ### Upcoming High-Impact Features (P1)
 - `FEAT-016` - Anomaly drill-down (view failing rows, not just counts)

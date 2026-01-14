@@ -33,3 +33,4 @@ ADRs should follow a consistent format, typically including:
 *   [0007-gcs-cloud-integration.md](0007-gcs-cloud-integration.md)
 *   [0008-error-handling-strategy.md](0008-error-handling-strategy.md)
 *   [0009-comparison-mode.md](0009-comparison-mode.md)
+*   [0010-batch-processing.md](0010-batch-processing.md)

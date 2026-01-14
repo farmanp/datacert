@@ -69,6 +69,19 @@ This directory contains the implementation tickets for DataLens Profiler, a brow
 18. FEAT-014 - Correlation Matrix
 19. INFRA-004 - Test Suite
 
+### Sprint 6 (Data Quality Export)
+20. SPIKE-006 - Research Great Expectations Suite Format
+21. SPIKE-007 - Research Soda Checks YAML Format
+22. FEAT-021 - Export to Great Expectations Suite
+23. FEAT-022 - Export to JSON Schema
+24. FEAT-023 - Export to Soda Checks YAML
+25. FEAT-024 - Export Format Selector UI
+
+### Sprint 7 (Data Quality Validation)
+26. FEAT-025 - Import Great Expectations Suite for Validation
+27. FEAT-026 - Import Soda Checks for Validation
+28. FEAT-027 - Import JSON Schema for Validation
+
 ### Phase 4: Cloud & Database Integration Research
 
 | ID | Type | Title | Priority | Dependencies |
@@ -87,6 +100,21 @@ This directory contains the implementation tickets for DataLens Profiler, a brow
 | FEAT-017 | Story | Excel (.xlsx/.xls) Support | P1 | FEAT-001 |
 | FEAT-018 | Story | Apache Avro Support | P1 | FEAT-001 |
 | FEAT-019 | Story | Markdown Export (Copy to Clipboard) | P1 | FEAT-010 |
+| FEAT-020 | Story | DuckDB SQL Mode | P1 | SPIKE-005 |
+
+### Phase 6: Data Quality Framework Integration
+
+| ID | Type | Title | Priority | Dependencies |
+|----|------|-------|----------|--------------|
+| SPIKE-006 | Spike | Research Great Expectations Suite Format | P0 | None |
+| SPIKE-007 | Spike | Research Soda Checks YAML Format | P0 | None |
+| FEAT-021 | Story | Export to Great Expectations Suite | P1 | SPIKE-006 |
+| FEAT-022 | Story | Export to JSON Schema | P1 | None |
+| FEAT-023 | Story | Export to Soda Checks YAML | P1 | SPIKE-007 |
+| FEAT-024 | Story | Export Format Selector UI | P1 | FEAT-021, FEAT-022, FEAT-023 |
+| FEAT-025 | Story | Import Great Expectations Suite for Validation | P2 | SPIKE-006 |
+| FEAT-026 | Story | Import Soda Checks for Validation | P2 | SPIKE-007, FEAT-025 |
+| FEAT-027 | Story | Import JSON Schema for Validation | P2 | FEAT-025 |
 
 ## Priority Legend
 

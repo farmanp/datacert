@@ -105,14 +105,14 @@ If unclear, acceptance criteria override all other sections.
 - test(excel): add excel parsing test suite with fixtures
 
 ## 6. Verification & Definition of Done (Required)
-- [ ] All acceptance criteria scenarios pass
-- [ ] .xlsx files parse correctly
-- [ ] .xls files parse correctly
-- [ ] Multi-sheet selector works
-- [ ] Merged cells handled gracefully
-- [ ] Performance: 50MB file < 60s
-- [ ] Bundle size increase < 150KB (lazy loaded)
-- [ ] Code reviewed
+- [x] All acceptance criteria scenarios pass
+- [x] .xlsx files parse correctly
+- [x] .xls files parse correctly
+- [x] Multi-sheet selector works
+- [x] Merged cells handled gracefully
+- [x] Performance: 50MB file < 60s
+- [x] Bundle size increase < 150KB (lazy loaded)
+- [x] Code reviewed
 
 ## 7. Resources
 - SheetJS (xlsx): https://sheetjs.com/ / https://github.com/SheetJS/sheetjs
