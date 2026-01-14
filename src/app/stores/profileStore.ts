@@ -485,10 +485,88 @@ function createProfileStore() {
     }, 300);
   };
 
+  const profileRemoteUrl = async (url: string) => {
+    try {
+      fileStore.store.state = 'processing';
+      fileStore.store.progress = 0;
+
+      const { stream, size, name } = await gcsStreamingService.getFileStream(url);
+
+      // Update file store with metadata
+      fileStore.setRemoteFile(name, size, url);
+
+      setStore({
+        isProfiling: true,
+        isCancelling: false,
+        error: null,
+        profilerError: null,
+        progress: 0,
+        results: null,
+      });
+
+      worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+        type: 'module',
+      });
+
+      worker.onmessage = (e) => {
+        const { type, result, error } = e.data;
+        switch (type) {
+          case 'ready': {
+            const nameLower = name.toLowerCase();
+            const isParquet = nameLower.endsWith('.parquet');
+            const isJson = nameLower.endsWith('.json') || nameLower.endsWith('.jsonl');
+
+            let format = 'csv';
+            if (isParquet) format = 'parquet';
+            else if (isJson) format = 'json';
+            else if (nameLower.endsWith('.avro')) format = 'avro';
+
+            worker?.postMessage({
+              type: 'start_profiling',
+              data: {
+                delimiter: undefined,
+                hasHeaders: true,
+                format: format
+              },
+            });
+            break;
+          }
+          case 'started':
+            processStream(stream, size);
+            break;
+          case 'final_stats':
+            setStore({
+              results: result as ProfileResult,
+              isProfiling: false,
+              progress: 100,
+            });
+            worker?.terminate();
+            break;
+          case 'error': {
+            const errMsg = error || 'Unknown worker error';
+            const profilerError = createProfilerError(errMsg);
+            setStore({ error: errMsg, profilerError, isProfiling: false });
+            fileStore.setError(errMsg);
+            worker?.terminate();
+            break;
+          }
+        }
+      };
+
+      worker.postMessage({ type: 'init' });
+    } catch (err: unknown) {
+      const error = err as Error;
+      const profilerError = createTypedError('NETWORK_ERROR', error.message);
+      fileStore.setError(error.message);
+      setStore({ isProfiling: false, error: error.message, profilerError });
+    }
+  };
+
   return {
     store,
     startProfiling,
     profileGCSUrl,
+    profileRemoteUrl,
     processExcel,
     selectSheet,
     setViewMode,
