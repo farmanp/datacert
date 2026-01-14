@@ -6,7 +6,7 @@ sidebar_label: ADRs
 
 # Architecture Decision Records (ADRs)
 
-This directory contains records of significant architectural decisions made during the development of DataLens Profiler.
+This directory contains records of significant architectural decisions made during the development of DataCert.
 
 ## What is an ADR?
 

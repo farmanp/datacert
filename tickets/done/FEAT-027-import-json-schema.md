@@ -97,14 +97,14 @@ If unclear, acceptance criteria override all other sections.
 
 ## 6. Verification & Definition of Done (Required)
 
-- [ ] Acceptance criteria pass
-- [ ] JSON Schema parses correctly
-- [ ] Type mapping works (JSON Schema types ↔ DataLens types)
-- [ ] Required fields validated
-- [ ] Numeric bounds validated
-- [ ] Reuses ValidationResultsView from FEAT-025
-- [ ] Unit tests for import logic
-- [ ] Code reviewed
+- [x] Acceptance criteria pass
+- [x] JSON Schema parses correctly
+- [x] Type mapping works (JSON Schema types ↔ DataCert types)
+- [x] Required fields validated
+- [x] Numeric bounds validated
+- [x] Reuses ValidationResultsView from FEAT-025
+- [x] Unit tests for import logic
+- [x] Code reviewed
 
 ## 7. Dependencies
 
@@ -112,9 +112,9 @@ If unclear, acceptance criteria override all other sections.
 
 ## 8. Technical Notes
 
-**Type Mapping (JSON Schema → DataLens):**
+**Type Mapping (JSON Schema → DataCert):**
 
-| JSON Schema Type | DataLens Types (Pass) |
+| JSON Schema Type | DataCert Types (Pass) |
 |------------------|----------------------|
 | "integer" | Integer |
 | "number" | Integer, Numeric |

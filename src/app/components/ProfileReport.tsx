@@ -5,9 +5,12 @@ import { fileStore } from '../stores/fileStore';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
 import EmptyState from './EmptyState';
+import AvroSchemaViewer from './AvroSchemaViewer';
 
 import CorrelationMatrix from './CorrelationMatrix';
 import { ExportFormatSelector } from './ExportFormatSelector';
+import { ValidationRuleImporter } from './ValidationRuleImporter';
+import { ValidationResultsView } from './ValidationResultsView';
 
 const ProfileReport: Component = () => {
   const { store, setViewMode, reset } = profileStore;
@@ -297,6 +300,15 @@ const ProfileReport: Component = () => {
             >
               Card View
             </button>
+            <button
+              onClick={() => setViewMode('validation')}
+              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'validation'
+                ? 'bg-slate-700 text-white shadow-lg'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              Quality
+            </button>
           </div>
 
           <div class="h-8 w-[1px] bg-slate-700 hidden sm:block" />
@@ -337,6 +349,11 @@ const ProfileReport: Component = () => {
           </div>
         </div>
       </header>
+
+      {/* Avro Schema Section */}
+      <Show when={store.results?.avro_schema}>
+        {(schema) => <AvroSchemaViewer schema={schema()} />}
+      </Show>
 
       {/* Summary KPI Cards */}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-2 print:gap-4 print:mt-8">
@@ -427,57 +444,70 @@ const ProfileReport: Component = () => {
         </Show>
       </div>
 
-      {/* Main Results Display */}
       <Show
-        when={filteredProfiles().length > 0}
+        when={store.viewMode !== 'validation'}
         fallback={
-          <Show when={hasActiveSearch()}>
-            <EmptyState
-              icon={
-                <svg
-                  class="w-16 h-16 text-slate-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              }
-              title="No columns match your search"
-              description={
-                <>
-                  Try adjusting your search term or{' '}
-                  <button
-                    onClick={clearSearch}
-                    class="text-blue-400 hover:text-blue-300 transition-colors underline"
-                  >
-                    clear the filter
-                  </button>
-                </>
-              }
-            />
-          </Show>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div class="lg:col-span-1">
+              <ValidationRuleImporter />
+            </div>
+            <div class="lg:col-span-2">
+              <ValidationResultsView />
+            </div>
+          </div>
         }
       >
         <Show
-          when={store.viewMode === 'table'}
+          when={filteredProfiles().length > 0}
           fallback={
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 print:grid-cols-2">
-              <For each={filteredProfiles()}>
-                {(profile) => <ColumnCard profile={profile} />}
-              </For>
-            </div>
+            <Show when={hasActiveSearch()}>
+              <EmptyState
+                icon={
+                  <svg
+                    class="w-16 h-16 text-slate-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+                title="No columns match your search"
+                description={
+                  <>
+                    Try adjusting your search term or{' '}
+                    <button
+                      onClick={clearSearch}
+                      class="text-blue-400 hover:text-blue-300 transition-colors underline"
+                    >
+                      clear the filter
+                    </button>
+                  </>
+                }
+              />
+            </Show>
           }
         >
-          <div class="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <ResultsTable profiles={filteredProfiles()} />
-          </div>
+          <Show
+            when={store.viewMode === 'table'}
+            fallback={
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 print:grid-cols-2">
+                <For each={filteredProfiles()}>
+                  {(profile) => <ColumnCard profile={profile} />}
+                </For>
+              </div>
+            }
+          >
+            <div class="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <ResultsTable profiles={filteredProfiles()} />
+            </div>
+          </Show>
         </Show>
       </Show>
 

@@ -68,6 +68,8 @@ export interface ColumnProfile {
 export interface ProfileResult {
   column_profiles: ColumnProfile[];
   total_rows: number;
+  duplicate_issues?: any[];
+  avro_schema?: string;
 }
 
 export interface CorrelationMatrixResult {
@@ -82,7 +84,7 @@ export interface ProfileStoreState {
   error: string | null;
   profilerError: ProfilerError | null;
   progress: number;
-  viewMode: 'table' | 'cards';
+  viewMode: 'table' | 'cards' | 'validation';
 }
 
 function createProfileStore() {
@@ -215,20 +217,21 @@ function createProfileStore() {
             const isParquet = nameLower.endsWith('.parquet');
             const isJson = nameLower.endsWith('.json') || nameLower.endsWith('.jsonl');
 
-                              let format = 'csv';
-                              if (isParquet) format = 'parquet';
-                              else if (isJson) format = 'json';
-                              else if (nameLower.endsWith('.avro')) format = 'avro';
-            
-                              worker?.postMessage({
-                                  type: 'start_profiling',
-                                  data: { 
-                                      delimiter: undefined, 
-                                      hasHeaders: true,
-                                      format: format
-                                  },
-                              });
-                              break;          }
+            let format = 'csv';
+            if (isParquet) format = 'parquet';
+            else if (isJson) format = 'json';
+            else if (nameLower.endsWith('.avro')) format = 'avro';
+
+            worker?.postMessage({
+              type: 'start_profiling',
+              data: {
+                delimiter: undefined,
+                hasHeaders: true,
+                format: format
+              },
+            });
+            break;
+          }
           case 'started':
             processStream(stream, size);
             break;
@@ -431,7 +434,7 @@ function createProfileStore() {
     });
   };
 
-  const setViewMode = (mode: 'table' | 'cards') => {
+  const setViewMode = (mode: 'table' | 'cards' | 'validation') => {
     setStore('viewMode', mode);
   };
 

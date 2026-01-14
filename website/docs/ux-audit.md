@@ -1,4 +1,4 @@
-# UX Audit Assessment - DataLens Profiler
+# UX Audit Assessment - DataCert
 
 **Date:** January 13, 2026
 **Application Type:** Local-First Data Profiling PWA
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The DataLens Profiler offers a modern, high-quality user experience that adheres to many best practices for data-intensive applications. The "Local-First" architecture is effectively communicated, and the UI provides excellent feedback during the critical file processing stages. The dark-themed aesthetic is polished and professional.
+The DataCert offers a modern, high-quality user experience that adheres to many best practices for data-intensive applications. The "Local-First" architecture is effectively communicated, and the UI provides excellent feedback during the critical file processing stages. The dark-themed aesthetic is polished and professional.
 
 **Top Strengths:**
 *   **Visual Polish:** Excellent use of Tailwind CSS for a cohesive, modern dark mode design.

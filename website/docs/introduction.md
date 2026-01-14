@@ -1,8 +1,8 @@
-# DataLens Profiler
+# DataCert
 
 ## Project Overview
 
-**DataLens Profiler** is a high-performance, browser-based Progressive Web Application (PWA) for data profiling. It analyzes datasets (starting with CSV) to provide statistical summaries, quality metrics, and visualizations without data ever leaving the user's device.
+**DataCert** is a high-performance, browser-based Progressive Web Application (PWA) for data profiling. It analyzes datasets (starting with CSV) to provide statistical summaries, quality metrics, and visualizations without data ever leaving the user's device.
 
 ### Architecture
 

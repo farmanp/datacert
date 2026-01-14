@@ -169,14 +169,14 @@ export function validateJsonSchema(results: ProfileResult, schema: JsonSchema): 
 }
 
 /**
- * Maps DataLens inferred types to JSON Schema types
+ * Maps DataCert inferred types to JSON Schema types
  */
 function validateType(column: any, schemaType: string | string[]): { status: 'pass' | 'fail', observed?: string, expected?: string, reason?: string } {
     const inferredType = column.base_stats.inferred_type.toLowerCase(); // e.g., 'integer', 'string', 'float'
-    
+
     const allowedTypes = Array.isArray(schemaType) ? schemaType : [schemaType];
-    
-    // DataLens Types: String, Integer, Float, Boolean, Date
+
+    // DataCert Types: String, Integer, Float, Boolean, Date
     // JSON Schema Types: string, number, integer, boolean, object, array, null
     
     let isMatch = false;

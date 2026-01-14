@@ -41,7 +41,7 @@ Veteran data engineers expect tools to integrate with their data warehouses (Sno
 2. Measure bundle size impact (base, with extensions)
 3. Test SQL queries on local Parquet/CSV files
 4. Test httpfs extension for remote file access
-5. Evaluate query result → DataLens profiler pipeline
+5. Evaluate query result → DataCert profiler pipeline
 6. Research postgres_scanner and mysql_scanner limitations in browser
 7. Explore WebSocket proxy architecture for live DB connections
 8. Document recommended architecture
@@ -126,7 +126,7 @@ DuckDB-WASM exceeds performance requirements. Recommended approach:
 2. **Phase 2:** Evaluate replacing internal storage with DuckDB for drill-down (Option C)
 3. **Phase 3:** Consider full migration to DuckDB as primary engine (Option B)
 
-### Key Benefits for DataLens
+### Key Benefits for DataCert
 - Instant filtering/drill-down on millions of rows
 - SQL interface for data engineers
 - Remote Parquet/CSV profiling via URLs

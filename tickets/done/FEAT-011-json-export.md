@@ -11,7 +11,7 @@ A JSON file is downloaded containing all computed metrics in a structured format
 
 ## 2. Context & Constraints (Required)
 **Background:**
-Machine-readable output enables integration with data quality monitoring, CI/CD pipelines, and custom dashboards. JSON export is essential for programmatic use of DataLens results.
+Machine-readable output enables integration with data quality monitoring, CI/CD pipelines, and custom dashboards. JSON export is essential for programmatic use of DataCert results.
 
 **Scope:**
 - **In Scope:**
@@ -55,7 +55,7 @@ And no extra unknown fields exist
 **Scenario: Metadata section**
 Given an exported JSON profile
 When examining the "meta" section
-Then it contains: generatedAt (ISO timestamp), datalensVersion, fileName, fileSize, processingTimeMs
+Then it contains: generatedAt (ISO timestamp), datacertVersion, fileName, fileSize, processingTimeMs
 
 **Scenario: Column statistics**
 Given an exported JSON profile for a numeric column

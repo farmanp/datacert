@@ -13,7 +13,7 @@ User can upload a GX Suite JSON, see which expectations pass/fail against the cu
 ## 2. Context & Constraints (Required)
 
 **Background:**
-Data teams often have existing Great Expectations suites that define their data quality standards. By importing these suites and validating against DataLens profiles, users can quickly assess whether new data meets established quality requirements without running the full GX pipeline.
+Data teams often have existing Great Expectations suites that define their data quality standards. By importing these suites and validating against DataCert profiles, users can quickly assess whether new data meets established quality requirements without running the full GX pipeline.
 
 **Scope:**
 - **In Scope:** GX Suite JSON import, expectation evaluation against ProfileResult, pass/fail UI

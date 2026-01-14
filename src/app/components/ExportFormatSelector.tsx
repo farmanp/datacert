@@ -4,12 +4,13 @@ import {
     generateHTMLReport,
     generateJSONReport,
     generateCSVReport,
-    generateMarkdownReport,
+    generateMarkdownSummary,
     generateGXSuiteJSON,
     generateSodaChecksYAML,
     generateJsonSchemaReport,
     downloadFile,
 } from '../utils/exportReport';
+import { copyToClipboard } from '../utils/clipboard';
 
 export type ExportFormat =
     | 'html'
@@ -53,7 +54,7 @@ const FORMAT_OPTIONS: FormatOption[] = [
     {
         id: 'markdown',
         label: 'Markdown Summary',
-        description: 'Formatted summary suitable for GitHub/GitLab READMEs',
+        description: 'Copy formatted summary to paste in GitHub PRs, Jira, Slack',
         extension: 'md',
         requiresTolerance: false,
         requiresTableName: false,
@@ -117,6 +118,7 @@ export const ExportFormatSelector: Component<ExportFormatSelectorProps> = (props
     const [tolerance, setTolerance] = createSignal(10);
     const [tableName, setTableName] = createSignal('');
     const [isExporting, setIsExporting] = createSignal(false);
+    const [showToast, setShowToast] = createSignal(false);
 
     const getBaseFilename = () => props.fileName.split('.')[0];
 
@@ -156,8 +158,13 @@ export const ExportFormatSelector: Component<ExportFormatSelectorProps> = (props
                     break;
                 }
                 case 'markdown': {
-                    const md = generateMarkdownReport(results, filename);
-                    downloadFile(md, `${baseDir}_summary.md`, 'text/markdown');
+                    const md = generateMarkdownSummary(results, filename);
+                    await copyToClipboard(md);
+                    setShowToast(true);
+                    setTimeout(() => {
+                        setShowToast(false);
+                        props.onClose();
+                    }, 1500);
                     break;
                 }
                 case 'great-expectations': {
@@ -316,7 +323,7 @@ export const ExportFormatSelector: Component<ExportFormatSelectorProps> = (props
                                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                         </svg>
                                     </Show>
-                                    {isExporting() ? 'Extracting...' : `Download .${currentOption().extension}`}
+                                    {isExporting() ? 'Extracting...' : selectedFormat() === 'markdown' ? 'Copy to Clipboard' : `Download .${currentOption().extension}`}
                                 </button>
                                 <p class="text-center text-[10px] text-slate-500 uppercase font-bold tracking-tighter">
                                     Files are generated locally in your browser
@@ -326,6 +333,18 @@ export const ExportFormatSelector: Component<ExportFormatSelectorProps> = (props
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Show when={showToast()}>
+                <div class="fixed bottom-8 right-8 z-[10001] animate-fade-in">
+                    <div class="bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="font-bold text-sm">Copied to clipboard!</span>
+                    </div>
+                </div>
+            </Show>
         </Show>
     );
 };

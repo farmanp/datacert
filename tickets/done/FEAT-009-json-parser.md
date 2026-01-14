@@ -11,7 +11,7 @@ JSON files (single array of objects) and JSONL files (newline-delimited JSON obj
 
 ## 2. Context & Constraints (Required)
 **Background:**
-JSON is increasingly common in data engineering workflows (API responses, event logs, NoSQL exports). JSON Lines format is particularly popular for streaming and log data. Supporting these formats significantly expands DataLens utility.
+JSON is increasingly common in data engineering workflows (API responses, event logs, NoSQL exports). JSON Lines format is particularly popular for streaming and log data. Supporting these formats significantly expands DataCert utility.
 
 **Scope:**
 - **In Scope:**

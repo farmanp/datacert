@@ -14,7 +14,7 @@ Accepted
 
 ## Context
 
-We need a way to record architectural decisions made during the development of the DataLens Profiler. This will help current and future developers understand *why* certain choices were made, providing context and preventing the re-litigation of settled decisions without new information.
+We need a way to record architectural decisions made during the development of DataCert. This will help current and future developers understand *why* certain choices were made, providing context and preventing the re-litigation of settled decisions without new information.
 
 ## Decision
 

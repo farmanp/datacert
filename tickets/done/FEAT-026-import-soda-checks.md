@@ -13,7 +13,7 @@ User can upload a checks.yml file, see which checks pass/fail against the curren
 ## 2. Context & Constraints (Required)
 
 **Background:**
-Teams using Soda Core maintain checks.yml files that define their data quality standards. By importing these checks and validating against DataLens profiles, users can assess data quality without running `soda scan`.
+Teams using Soda Core maintain checks.yml files that define their data quality standards. By importing these checks and validating against DataCert profiles, users can assess data quality without running `soda scan`.
 
 **Scope:**
 - **In Scope:** SodaCL YAML import, check evaluation against ProfileResult, pass/fail UI

@@ -65,7 +65,7 @@ tests/
 **Accuracy Testing Approach:**
 1. Generate baseline statistics using pandas-profiling for fixture files
 2. Save expected values as JSON golden files
-3. Run DataLens on same fixtures
+3. Run DataCert on same fixtures
 4. Compare values within tolerance (e.g., 0.01% for most stats)
 
 **Files to Create:**

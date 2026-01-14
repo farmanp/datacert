@@ -19,7 +19,7 @@ Even with Wasm (ADR 0002), processing millions of rows takes CPU time.
 
 ## Decision
 
-We will execute the DataLens Profiler (Wasm engine) inside a **Web Worker**.
+We will execute the DataCert (Wasm engine) inside a **Web Worker**.
 1.  The main thread handles UI and file selection.
 2.  The main thread sends file chunks to the Worker.
 3.  The Worker processes the chunk and sends back progress updates or intermediate results.

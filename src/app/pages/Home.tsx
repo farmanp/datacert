@@ -14,7 +14,7 @@ import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 /**
  * Home Page Component
  *
- * The main landing page for DataLens Profiler.
+ * The main landing page for DataCert.
  * Shows the Dropzone by default, and switch to ProfileReport when profiling is complete.
  */
 const Home: Component = () => {
@@ -27,7 +27,7 @@ const Home: Component = () => {
     authStore.init();
     try {
       // Import the WASM module
-      const wasmModule = await import('../../wasm/pkg/datalens_wasm');
+      const wasmModule = await import('../../wasm/pkg/datacert_wasm');
       // Initialize the WASM binary (default export loads the .wasm file)
       await wasmModule.default();
       // Call the init function
@@ -56,10 +56,10 @@ const Home: Component = () => {
             {/* Header */}
             <header class="text-center mb-8 sm:mb-12 w-full max-w-4xl">
               <h1 class="text-4xl sm:text-7xl font-extrabold font-heading bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-3 tracking-tighter">
-                DataLens Profiler
+                DataCert
               </h1>
               <p class="text-slate-400 text-lg sm:text-xl font-medium tracking-tight max-w-2xl mx-auto leading-relaxed">
-                Modern, high-performance data profiling for everyone.
+                Your local-first data quality certification toolkit. Profile. Query. Convert.
               </p>
             </header>
 

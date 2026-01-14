@@ -7,7 +7,7 @@ I want to profile Excel files (.xlsx, .xls) directly
 So that I can analyze spreadsheets from stakeholders without manual CSV conversion
 
 **Success Looks Like:**
-Excel files can be dropped into DataLens and profiled with the same quality and speed as CSV files, including multi-sheet support.
+Excel files can be dropped into DataCert and profiled with the same quality and speed as CSV files, including multi-sheet support.
 
 ## 2. Context & Constraints (Required)
 **Background:**
@@ -43,7 +43,7 @@ Excel is the lingua franca of business data. Analysts receive spreadsheets from 
 
 **Scenario: Parse single-sheet Excel file**
 Given an .xlsx file with one sheet containing 1000 rows
-When the file is dropped into DataLens
+When the file is dropped into DataCert
 Then the file is recognized as Excel format
 And all columns and rows are parsed correctly
 And statistics match what would be computed from CSV export
@@ -64,7 +64,7 @@ And a warning indicates "Merged cells detected - headers expanded"
 **Scenario: Type inference from Excel**
 Given an Excel file with columns typed as: Number, Date, Text, Currency
 When profiling completes
-Then DataLens infers types matching Excel's cell formats
+Then DataCert infers types matching Excel's cell formats
 And dates are recognized without format guessing
 
 **Scenario: Large Excel file**

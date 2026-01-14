@@ -8,7 +8,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Starting DataLens Profiler Test Suite...${NC}"
+echo -e "${BLUE}Starting DataCert Test Suite...${NC}"
 
 # 1. Rust Core Tests
 echo -e "\n${BLUE}1. Running Rust unit tests...${NC}"

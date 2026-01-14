@@ -11,7 +11,7 @@ import { batchStore } from '../stores/batchStore';
 /**
  * Batch Page Component
  *
- * Batch processing mode for DataLens Profiler.
+ * Batch processing mode for DataCert.
  * Allows users to:
  * 1. Select a processing mode (Sequential, Merge, Compare)
  * 2. Upload multiple files via drag-and-drop
@@ -40,7 +40,7 @@ const Batch: Component = () => {
   onMount(async () => {
     try {
       // Import the WASM module
-      const wasm = await import('../../wasm/pkg/datalens_wasm');
+      const wasm = await import('../../wasm/pkg/datacert_wasm');
       wasm.init();
       setWasmStatus('WASM Ready');
       setWasmReady(true);

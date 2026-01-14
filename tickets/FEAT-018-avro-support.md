@@ -42,7 +42,7 @@ Apache Avro is the standard serialization format for Kafka and many data lake ar
 
 **Scenario: Parse Avro file with primitive types**
 Given an Avro file with schema {id: long, name: string, active: boolean}
-When the file is dropped into DataLens
+When the file is dropped into DataCert
 Then the file is recognized as Avro format
 And all 3 columns are detected with correct types
 And statistics are computed for each column

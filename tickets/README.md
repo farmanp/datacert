@@ -1,6 +1,6 @@
-# DataLens Profiler - Development Tickets
+# DataCert - Development Tickets
 
-This directory contains the implementation tickets for DataLens Profiler, a browser-based data profiling PWA.
+This directory contains the implementation tickets for DataCert, a local-first, in-browser data toolkit powered by WebAssembly.
 
 ## Ticket Index
 
@@ -115,6 +115,71 @@ This directory contains the implementation tickets for DataLens Profiler, a brow
 | FEAT-025 | Story | Import Great Expectations Suite for Validation | P2 | SPIKE-006 |
 | FEAT-026 | Story | Import Soda Checks for Validation | P2 | SPIKE-007, FEAT-025 |
 | FEAT-027 | Story | Import JSON Schema for Validation | P2 | FEAT-025 |
+
+### Phase 7: Growth & Adoption (Top of Mind)
+
+Strategic features to make DataCert the go-to data profiling tool.
+
+| ID | Type | Title | Priority | Dependencies | Impact |
+|----|------|-------|----------|--------------|--------|
+| FEAT-028 | Story | CLI / Headless Mode | P0 | None | CI/CD integration, automation |
+| FEAT-029 | Story | Profile Diff / Schema Drift Detection | P0 | None | Unique differentiator |
+| FEAT-030 | Story | Shareable Profile Links | P1 | None | Collaboration, virality |
+| FEAT-031 | Story | Remote URL Profiling (S3/GCS/HTTP) | P1 | None | Enterprise use cases |
+| FEAT-032 | Story | dbt Integration | P1 | FEAT-028 | dbt ecosystem adoption |
+| FEAT-033 | Story | Profile History (Local Storage) | P1 | None | User retention |
+| FEAT-034 | Story | Smart Data Quality Suggestions | P0 | None | Key differentiator |
+| FEAT-035 | Story | VS Code Extension | P2 | FEAT-028 | Developer adoption |
+
+### Sprint 8 (Automation & Integration)
+
+**Theme:** Make DataCert work where users already work
+
+29. FEAT-028 - CLI / Headless Mode (foundation for all integrations)
+30. FEAT-031 - Remote URL Profiling (S3/GCS/HTTP)
+31. FEAT-032 - dbt Integration
+
+### Sprint 9 (Differentiation)
+
+**Theme:** Features competitors don't have
+
+32. FEAT-034 - Smart Data Quality Suggestions (actionable insights)
+33. FEAT-029 - Profile Diff / Schema Drift Detection
+34. FEAT-033 - Profile History (local persistence)
+
+### Sprint 10 (Collaboration & Reach)
+
+**Theme:** Enable sharing and broader adoption
+
+35. FEAT-030 - Shareable Profile Links
+36. FEAT-035 - VS Code Extension
+
+## Strategic Priorities
+
+### What Makes Users Choose DataCert?
+
+1. **Privacy-first** - All processing local (existing strength)
+2. **Speed** - Instant results via WASM (existing strength)
+3. **Actionable insights** - Smart suggestions, not just numbers (FEAT-034)
+4. **Integration** - CLI, dbt, CI/CD pipelines (FEAT-028, 032)
+5. **Collaboration** - Share without uploading data (FEAT-030)
+
+### Competitive Positioning
+
+| Competitor | Our Advantage |
+|------------|---------------|
+| pandas-profiling | Browser-based, no Python needed |
+| Great Expectations | Faster feedback loop, visual UI |
+| AWS Glue DataBrew | Local-first, no cloud lock-in |
+| Databricks | Free, instant, privacy-focused |
+
+### Growth Metrics to Track
+
+- CLI downloads (npm stats)
+- VS Code extension installs
+- Shared profile link views
+- GitHub stars
+- dbt integration mentions
 
 ## Priority Legend
 

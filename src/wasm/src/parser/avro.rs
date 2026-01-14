@@ -67,7 +67,9 @@ impl AvroProfiler {
                 // Determine headers from the first record structure (flattened)
                 // This aligns with how we handle JSON
                 self.headers = extract_headers_from_value(&serde_value, "");
-                self.profiler = Some(Profiler::new(self.headers.clone()));
+                let mut profiler = Profiler::new(self.headers.clone());
+                profiler.avro_schema = Some(self.schema_json.clone());
+                self.profiler = Some(profiler);
             }
             
             let row = flatten_avro_value(&serde_value, &self.headers);
@@ -157,5 +159,92 @@ fn flatten_recursive(val: &Value, prefix: &str, output: &mut HashMap<String, Str
         _ => {
             output.insert(prefix.to_string(), val.to_string());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_extract_headers() {
+        let val = json!({
+            "a": 1,
+            "b": {
+                "c": 2,
+                "d": "test"
+            },
+            "e": [1, 2, 3]
+        });
+        let headers = extract_headers_from_value(&val, "");
+        assert_eq!(headers, vec!["a", "b.c", "b.d", "e"]);
+    }
+
+    #[test]
+    fn test_flatten_avro_value() {
+        let val = json!({
+            "a": 1,
+            "b": {
+                "c": 2,
+                "d": "test"
+            }
+        });
+        let headers = vec!["a".to_string(), "b.c".to_string(), "b.d".to_string()];
+        let row = flatten_avro_value(&val, &headers);
+        assert_eq!(row, vec!["1", "2", "test"]);
+    }
+
+    #[test]
+    fn test_avro_profiling_logic() {
+        use apache_avro::types::Record;
+        use apache_avro::{Schema, Writer};
+
+        let raw_schema = r#"
+            {
+                "type": "record",
+                "name": "test",
+                "fields": [
+                    {"name": "id", "type": "long"},
+                    {"name": "name", "type": "string"},
+                    {"name": "nested", "type": {
+                        "type": "record",
+                        "name": "inner",
+                        "fields": [
+                            {"name": "val", "type": "int"}
+                        ]
+                    }}
+                ]
+            }
+        "#;
+        let schema = Schema::parse_str(raw_schema).unwrap();
+        let mut writer = Writer::new(&schema, Vec::new());
+
+        let mut record = Record::new(writer.schema()).unwrap();
+        record.put("id", 1i64);
+        record.put("name", "Alice");
+        let mut inner = Record::new(writer.schema()).unwrap(); // This is wrong in apache-avro, needs to match sub-schema
+        // Actually easier to use from_value or just trust the helper tests above if we can't easily mock full Avro bytes here.
+        // But let's try to do it right.
+        
+        let mut inner_record = Record::new(match &schema {
+            Schema::Record(rf) => &rf.fields[2].schema,
+            _ => unreachable!(),
+        }).unwrap();
+        inner_record.put("val", 100i32);
+        
+        record.put("id", 1i64);
+        record.put("name", "Alice");
+        record.put("nested", inner_record);
+        writer.append(record).unwrap();
+
+        let bytes = writer.into_inner().unwrap();
+        let mut profiler = AvroProfiler::new();
+        
+        // This will call the actual logic
+        let _ = profiler.parse_and_profile(&bytes).unwrap();
+        
+        assert_eq!(profiler.headers, vec!["id", "name", "nested.val"]);
+        assert!(profiler.schema_json.contains("nested"));
     }
 }

@@ -4,7 +4,7 @@
 **User Story:**
 As a data engineer
 I want to export my profiling results as a standalone HTML file
-So that I can share the report with stakeholders who don't have DataLens
+So that I can share the report with stakeholders who don't have DataCert
 
 **Success Looks Like:**
 A single HTML file is downloaded containing the complete profiling report with all visualizations, viewable in any browser without internet access.
@@ -19,7 +19,7 @@ Shareability is key for data profiling tools. Stakeholders (PMs, analysts, QA) n
   - Self-contained HTML file with embedded CSS and JS
   - All statistics and quality metrics included
   - Static histogram images (rendered to canvas, exported as data URLs)
-  - Report metadata: filename, date, DataLens version
+  - Report metadata: filename, date, DataCert version
   - Professional styling suitable for sharing
   - File download via browser
 
@@ -64,7 +64,7 @@ And styling appears correctly
 **Scenario: Report metadata**
 Given an exported HTML report
 When viewing the report
-Then it shows: source filename, profile date/time, DataLens version
+Then it shows: source filename, profile date/time, DataCert version
 And generation timestamp in ISO format
 
 **Scenario: Reasonable file size**

@@ -7,7 +7,7 @@ I want to profile files stored in Google Cloud Storage directly from my browser
 So that I can analyze cloud-hosted datasets without downloading them locally first
 
 **Success Looks Like:**
-Users provide a GCS file URL (gs:// or https://), authenticate (OAuth or signed URL), and DataLens streams and profiles the file with the same statistics and visualizations as local files.
+Users provide a GCS file URL (gs:// or https://), authenticate (OAuth or signed URL), and DataCert streams and profiles the file with the same statistics and visualizations as local files.
 
 ## 2. Context & Constraints (Required)
 **Background:**
@@ -36,7 +36,7 @@ Many data teams store datasets in GCS as part of their data lake or warehouse ar
 
 **Constraints:**
 - Must preserve "data never leaves device" privacy model (data streams to browser, not to backend)
-- OAuth tokens must not be sent to DataLens backend
+- OAuth tokens must not be sent to DataCert backend
 - Performance target: GCS streaming should not add >20% latency vs local files
 - CORS must be user-configurable on their GCS buckets (we can't control their infra)
 - Mobile browser OAuth support required (popup vs redirect)
@@ -46,19 +46,19 @@ Many data teams store datasets in GCS as part of their data lake or warehouse ar
 *Format: Gherkin (Given/When/Then)*
 
 **Scenario: Authenticate with GCS via OAuth**
-Given I am on the DataLens landing page
+Given I am on the DataCert landing page
 When I select "Profile from Google Cloud Storage"
 And I click "Sign in with Google"
 Then I see a Google OAuth consent screen
 And I grant permission for "View read-only access to Cloud Storage"
-And I am redirected back to DataLens
+And I am redirected back to DataCert
 And I see "Authenticated as user@example.com"
 
 **Scenario: Profile GCS file via https:// URL**
 Given I am authenticated with Google OAuth
 When I paste a GCS URL "https://storage.googleapis.com/my-bucket/data.csv"
 And I click "Profile"
-Then DataLens fetches the file via authenticated `fetch()`
+Then DataCert fetches the file via authenticated `fetch()`
 And the file streams to the WASM profiler
 And I see progress indicator showing "Downloading: 45% (23MB / 50MB)"
 And profiling completes with statistics identical to local file analysis
@@ -66,13 +66,13 @@ And profiling completes with statistics identical to local file analysis
 **Scenario: Profile GCS file via gs:// URL**
 Given I am authenticated with Google OAuth
 When I paste a GCS URL "gs://my-bucket/subfolder/data.csv"
-Then DataLens converts `gs://` to `https://storage.googleapis.com/` format
+Then DataCert converts `gs://` to `https://storage.googleapis.com/` format
 And fetches the file as in previous scenario
 
 **Scenario: Handle CORS not configured**
 Given I paste a GCS URL from a bucket without CORS enabled
 When I click "Profile"
-Then DataLens attempts to fetch the file
+Then DataCert attempts to fetch the file
 And receives a CORS error
 And I see an error message: "CORS not enabled on bucket 'my-bucket'"
 And I see a link to CORS setup guide
@@ -80,7 +80,7 @@ And I see a link to CORS setup guide
 **Scenario: Handle expired OAuth token**
 Given I authenticated 1 hour ago (token expired)
 When I attempt to profile a GCS file
-Then DataLens detects 401 Unauthorized response
+Then DataCert detects 401 Unauthorized response
 And automatically triggers token refresh
 And retries the request with new token
 And profiling succeeds
@@ -103,7 +103,7 @@ And I am offered option to re-authenticate
 Given I am profiling a 200MB file from GCS
 And 50% of the file has been processed
 When my network connection drops
-Then DataLens detects the stream interruption
+Then DataCert detects the stream interruption
 And I see "Network error: connection lost"
 And I am offered option to retry
 
@@ -183,7 +183,7 @@ docs(gcs): add GCS CORS configuration guide
 - [ ] 404 and 403 errors display user-friendly messages
 - [ ] Network interruption recovery works
 - [ ] Performance: GCS streaming < 25% slower than local (100MB file test)
-- [ ] No OAuth tokens sent to DataLens backend (verified via network inspector)
+- [ ] No OAuth tokens sent to DataCert backend (verified via network inspector)
 - [ ] Mobile browser testing (Chrome Android, Safari iOS)
 - [ ] Unit tests for GCS URL conversion (gs:// → https://)
 - [ ] Unit tests for token refresh logic
@@ -207,13 +207,13 @@ docs(gcs): add GCS CORS configuration guide
 ## 9. Notes
 **OAuth Client ID Setup:**
 - Create OAuth 2.0 credentials in Google Cloud Console
-- Authorized JavaScript origins: `http://localhost:5173`, `https://datalens.app`
+- Authorized JavaScript origins: `http://localhost:5173`, `https://YOUR_DOMAIN`
 - Scopes: `https://www.googleapis.com/auth/devstorage.read_only`
 - Store Client ID in `.env` (not committed), document in `.env.example`
 
 **Cost Implications:**
 - User pays GCS egress costs from their own bucket (~$0.12/GB)
-- No cost to DataLens infrastructure
+- No cost to DataCert infrastructure
 - Profiling 100MB file ≈ $0.012 in user's GCP bill
 
 **Future Enhancements (Out of Scope):**

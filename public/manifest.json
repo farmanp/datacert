@@ -1,7 +1,7 @@
 {
-  "name": "DataLens Profiler",
-  "short_name": "DataLens",
-  "description": "Browser-based data profiling tool",
+  "name": "DataCert",
+  "short_name": "DataCert",
+  "description": "A local-first, in-browser data quality certification toolkit powered by WebAssembly",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#3b82f6",

@@ -5,7 +5,7 @@
 Configure the application as a Progressive Web App (PWA) with offline capability, installability, and service worker caching.
 
 **Why:**
-PWA capability is a core differentiator for DataLens. Users should be able to install the app to their desktop, use it offline, and have a fast, app-like experience. This is essential for the "zero-install, fully local" value proposition.
+PWA capability is a core differentiator for DataCert. Users should be able to install the app to their desktop, use it offline, and have a fast, app-like experience. This is essential for the "zero-install, fully local" value proposition.
 
 ## 2. Scope (Required)
 **In Scope:**

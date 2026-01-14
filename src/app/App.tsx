@@ -13,7 +13,7 @@ const SqlMode = lazy(() => import('./pages/SqlMode'));
 /**
  * App Component
  *
- * Root component for the DataLens Profiler application.
+ * Root component for the DataCert application.
  * Includes routing for:
  * - Home (single-file profiling)
  * - Compare (dual-file comparison)

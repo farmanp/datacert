@@ -14,9 +14,9 @@ Accepted
 
 ## Context
 
-DataLens Profiler is built on a privacy-first, local-processing architecture (ADR 0003). However, enterprise users increasingly store their datasets in cloud storage services like Google Cloud Storage (GCS). These users need to profile cloud-hosted data without compromising the core privacy guarantee that **data never leaves the user's control**.
+DataCert is built on a privacy-first, local-processing architecture (ADR 0003). However, enterprise users increasingly store their datasets in cloud storage services like Google Cloud Storage (GCS). These users need to profile cloud-hosted data without compromising the core privacy guarantee that **data never leaves the user's control**.
 
-The challenge is to enable cloud storage access while maintaining the architectural principle that no data passes through DataLens servers.
+The challenge is to enable cloud storage access while maintaining the architectural principle that no data passes through DataCert servers.
 
 ## Decision
 
@@ -26,15 +26,15 @@ We will implement a **hybrid authentication and direct-streaming architecture** 
 
 We support two authentication methods to cover different use cases:
 
-*   **OAuth 2.0 with PKCE (Proof Key for Code Exchange):** For interactive users who want to browse and select files from their GCS buckets. The OAuth flow happens entirely in the browser, and access tokens are stored locally (never sent to DataLens servers).
-*   **Signed URLs:** For automated workflows or sharing scenarios where users generate time-limited, pre-authenticated URLs from the GCS Console or `gsutil`. Users paste the signed URL directly into DataLens.
+*   **OAuth 2.0 with PKCE (Proof Key for Code Exchange):** For interactive users who want to browse and select files from their GCS buckets. The OAuth flow happens entirely in the browser, and access tokens are stored locally (never sent to DataCert servers).
+*   **Signed URLs:** For automated workflows or sharing scenarios where users generate time-limited, pre-authenticated URLs from the GCS Console or `gsutil`. Users paste the signed URL directly into DataCert.
 
 ### 2. Direct Browser-to-GCS Streaming
 
 Once authenticated, the browser fetches data directly from GCS:
 
 ```
-User → DataLens UI → GCS API (direct HTTPS)
+User → DataCert UI → GCS API (direct HTTPS)
          ↓
     profiler.worker.ts (processes stream)
          ↓
@@ -43,7 +43,7 @@ User → DataLens UI → GCS API (direct HTTPS)
 
 *   **Mechanism:** We use the browser's `fetch` API with appropriate authentication headers to stream data directly from `storage.googleapis.com`.
 *   **Streaming:** Large files are read using range requests, processed in chunks (consistent with ADR 0004), and never fully buffered in memory.
-*   **Zero Server Involvement:** DataLens servers never see the data, the bucket name, or even that a cloud file is being processed.
+*   **Zero Server Involvement:** DataCert servers never see the data, the bucket name, or even that a cloud file is being processed.
 
 ### 3. CORS Configuration Requirement
 
@@ -52,7 +52,7 @@ For direct browser access to work, users must configure CORS on their GCS bucket
 ```json
 [
   {
-    "origin": ["https://datalens.app"],
+    "origin": ["https://YOUR_DOMAIN"],
     "method": ["GET", "HEAD"],
     "responseHeader": ["Content-Type", "Content-Length", "Content-Range"],
     "maxAgeSeconds": 3600
@@ -66,7 +66,7 @@ We provide documentation and a one-click configuration helper for users who have
 
 ### Positive
 
-*   **Privacy Preserved:** Data flows directly from GCS to the user's browser. DataLens servers never see or handle user data, maintaining the core privacy guarantee.
+*   **Privacy Preserved:** Data flows directly from GCS to the user's browser. DataCert servers never see or handle user data, maintaining the core privacy guarantee.
 *   **Enterprise-Ready:** Organizations can profile datasets stored in their existing cloud infrastructure without data exfiltration concerns.
 *   **Familiar Authentication:** OAuth 2.0 PKCE is a standard flow that enterprise security teams can audit and approve.
 *   **Performance:** Direct streaming avoids the latency and bandwidth costs of proxying through an intermediary server.

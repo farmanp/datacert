@@ -3,10 +3,10 @@
 ## 1. Research Question (Required)
 
 **Question:**
-What is the SodaCL YAML syntax, and which checks can we generate from DataLens ProfileResult data?
+What is the SodaCL YAML syntax, and which checks can we generate from DataCert ProfileResult data?
 
 **Context:**
-DataLens users want to export their profiling results as Soda Checks YAML to integrate with existing Soda Core validation pipelines. We need to understand the SodaCL syntax to generate valid, runnable checks.
+DataCert users want to export their profiling results as Soda Checks YAML to integrate with existing Soda Core validation pipelines. We need to understand the SodaCL syntax to generate valid, runnable checks.
 
 ## 2. Scope & Timebox
 
@@ -15,7 +15,7 @@ DataLens users want to export their profiling results as Soda Checks YAML to int
 **In Scope:**
 - SodaCL YAML syntax and structure
 - Built-in metrics and check types
-- Mapping DataLens metrics to Soda checks
+- Mapping DataCert metrics to Soda checks
 - Example checks.yml generation
 
 **Out of Scope:**
@@ -28,7 +28,7 @@ DataLens users want to export their profiling results as Soda Checks YAML to int
 
 **Deliverables:**
 - [ ] Document SodaCL YAML structure
-- [ ] Create mapping table: DataLens metrics → Soda checks
+- [ ] Create mapping table: DataCert metrics → Soda checks
 - [ ] Identify checks we cannot support and why
 - [ ] Produce example checks.yml file
 - [ ] Document threshold/warn/fail configuration
@@ -42,7 +42,7 @@ DataLens users want to export their profiling results as Soda Checks YAML to int
    - `invalid_count` for type validation
    - `min` / `max` / `avg` for numeric columns
    - `distinct` for cardinality checks
-3. Map DataLens ProfileResult fields to SodaCL checks
+3. Map DataCert ProfileResult fields to SodaCL checks
 4. Draft example YAML output
 5. Document warn vs fail threshold patterns
 
@@ -50,9 +50,9 @@ DataLens users want to export their profiling results as Soda Checks YAML to int
 
 [To be filled after research]
 
-**DataLens → Soda Check Mapping:**
+**DataCert → Soda Check Mapping:**
 
-| DataLens Metric | Soda Check | Notes |
+| DataCert Metric | Soda Check | Notes |
 |-----------------|------------|-------|
 | nullPercentage | `missing_percent < X` | Direct percentage comparison |
 | distinctCount | `duplicate_count = 0` | If distinctCount == totalRows |

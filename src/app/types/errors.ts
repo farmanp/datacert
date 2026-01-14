@@ -1,5 +1,5 @@
 /**
- * Error types for DataLens Profiler
+ * Error types for DataCert
  *
  * Categorizes errors to provide user-friendly messages with recovery suggestions.
  */

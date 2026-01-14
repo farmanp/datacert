@@ -2,7 +2,7 @@
 
 ## 1. Objective (Required)
 **What:**
-Set up the monorepo project structure with Vite, SolidJS frontend, and Rust/WASM toolchain for the DataLens Profiler PWA.
+Set up the monorepo project structure with Vite, SolidJS frontend, and Rust/WASM toolchain for the DataCert PWA.
 
 **Why:**
 This is the foundational infrastructure required before any feature development can begin. The WASM toolchain is critical for achieving the performance targets (10MB CSV < 3s, 100MB < 15s).
@@ -68,7 +68,7 @@ web-sys = "0.3"
 - [ ] `npm run dev` starts Vite dev server with HMR
 - [ ] `npm run build` produces production bundle
 - [ ] `npm run build:wasm` compiles Rust to WASM successfully
-- [ ] SolidJS app renders "DataLens Profiler" placeholder
+- [ ] SolidJS app renders "DataCert" placeholder
 - [ ] WASM module can be imported and called from TypeScript
 - [ ] Tailwind CSS classes work in components
 - [ ] TypeScript compilation has zero errors

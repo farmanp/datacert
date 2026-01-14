@@ -1,6 +1,6 @@
-import init, { DataLensProfiler, ParquetProfiler, JsonProfiler, AvroProfiler, RowExtractor } from '../../wasm/pkg/datalens_wasm';
+import init, { DataCertProfiler, ParquetProfiler, JsonProfiler, AvroProfiler, RowExtractor } from '../../wasm/pkg/datacert_wasm';
 
-let profiler: DataLensProfiler | ParquetProfiler | JsonProfiler | AvroProfiler | null = null;
+let profiler: DataCertProfiler | ParquetProfiler | JsonProfiler | AvroProfiler | null = null;
 let extractor: RowExtractor | null = null;
 let mode: 'csv' | 'parquet' | 'json' | 'avro' = 'csv';
 
@@ -41,7 +41,7 @@ self.onmessage = async (e: MessageEvent) => {
                     profiler = new AvroProfiler();
                 } else {
                     mode = 'csv';
-                    profiler = new DataLensProfiler(delimiter, hasHeaders);
+                    profiler = new DataCertProfiler(delimiter, hasHeaders);
                 }
 
                 self.postMessage({ type: 'started' });
@@ -69,7 +69,7 @@ self.onmessage = async (e: MessageEvent) => {
                     parseResult = (profiler as JsonProfiler).parse_and_profile_chunk(chunk);
                     self.postMessage({ type: 'chunk_processed', result: parseResult });
                 } else {
-                    parseResult = (profiler as DataLensProfiler).parse_and_profile_chunk(chunk);
+                    parseResult = (profiler as DataCertProfiler).parse_and_profile_chunk(chunk);
                     self.postMessage({ type: 'chunk_processed', result: parseResult });
                 }
                 break;
@@ -112,7 +112,7 @@ self.onmessage = async (e: MessageEvent) => {
                 } else if (mode === 'json') {
                     finalStats = (profiler as JsonProfiler).finalize();
                 } else {
-                    finalStats = (profiler as DataLensProfiler).finalize();
+                    finalStats = (profiler as DataCertProfiler).finalize();
                 }
 
                 self.postMessage({ type: 'final_stats', result: finalStats });
@@ -121,7 +121,7 @@ self.onmessage = async (e: MessageEvent) => {
             }
 
             case 'detect_delimiter': {
-                const detectProfiler = new DataLensProfiler(undefined, false);
+                const detectProfiler = new DataCertProfiler(undefined, false);
                 const detectChunk = new Uint8Array(data);
                 const detected = detectProfiler.auto_detect_delimiter(detectChunk);
                 self.postMessage({ type: 'delimiter_detected', delimiter: detected });

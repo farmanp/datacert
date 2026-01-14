@@ -40,7 +40,7 @@ Parquet is the standard format for data engineering workflows (Spark, dbt, data 
 
 **Scenario: Parse Parquet file**
 Given a Parquet file with 5 columns and 1000 rows
-When the file is dropped into DataLens
+When the file is dropped into DataCert
 Then the file format is detected as Parquet
 And all 5 columns and 1000 rows are processed
 And column types are preserved from Parquet schema

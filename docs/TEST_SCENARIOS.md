@@ -1,6 +1,6 @@
-# DataLens Profiler - Test Scenarios
+# DataCert - Test Scenarios
 
-This document outlines the comprehensive test scenarios for validating the DataLens Profiler application. It covers functional, performance, security, and usability testing across all supported workflows.
+This document outlines the comprehensive test scenarios for validating the DataCert application. It covers functional, performance, security, and usability testing across all supported workflows.
 
 ## 1. Core Functionality: File Ingestion & Profiling
 

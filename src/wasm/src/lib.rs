@@ -13,17 +13,17 @@ pub fn init() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
     
-    web_sys::console::log_1(&"DataLens WASM Engine Initialized".into());
+    web_sys::console::log_1(&"DataCert WASM Engine Initialized".into());
 }
 
 #[wasm_bindgen]
-pub struct DataLensProfiler {
+pub struct DataCertProfiler {
     parser: CsvParser,
     profiler: Option<Profiler>,
 }
 
 #[wasm_bindgen]
-impl DataLensProfiler {
+impl DataCertProfiler {
     #[wasm_bindgen(constructor)]
     pub fn new(delimiter: Option<u8>, has_headers: bool) -> Self {
         Self {

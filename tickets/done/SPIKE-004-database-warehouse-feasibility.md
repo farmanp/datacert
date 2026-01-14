@@ -2,7 +2,7 @@
 
 ## 1. Research Question (Required)
 **Question:**
-Is it feasible to integrate cloud data warehouses (BigQuery, Snowflake, Redshift) with DataLens Profiler, and if so, what architectural pattern should we use?
+Is it feasible to integrate cloud data warehouses (BigQuery, Snowflake, Redshift) with DataCert, and if so, what architectural pattern should we use?
 
 **Context:**
 While SPIKE-002 and SPIKE-003 explore file-based cloud storage (GCS, S3), many data teams store their datasets in cloud data warehouses like BigQuery, Snowflake, or Redshift. These systems require different integration patterns (SQL queries vs file streaming) and raise distinct technical challenges around result size limits, browser memory constraints, and partial table profiling.
@@ -55,7 +55,7 @@ User → Warehouse API → Download results to browser → WASM profiler → Res
 
 **Pattern B: Backend Proxy**
 ```
-User → DataLens Backend → Warehouse API → Backend profiling → Results
+User → DataCert Backend → Warehouse API → Backend profiling → Results
 ```
 - **Pros:** No browser memory limits, can profile massive tables
 - **Cons:** Violates "data never leaves device" privacy model, infrastructure cost
@@ -63,7 +63,7 @@ User → DataLens Backend → Warehouse API → Backend profiling → Results
 
 **Pattern C: In-Database Profiling (SQL-based)**
 ```
-User → DataLens UI → Generate profiling SQL → Warehouse → Computed stats → Browser
+User → DataCert UI → Generate profiling SQL → Warehouse → Computed stats → Browser
 ```
 - **Pros:** Minimal data transfer, leverages warehouse compute
 - **Cons:** SQL differs per warehouse, approximate algorithms, limited to SQL-compatible stats
@@ -204,7 +204,7 @@ FROM `project.dataset.table`
 ### Strategic Questions:
 1. **Should we integrate data warehouses at all?**
    - Does it align with "privacy-first, browser-based" positioning?
-   - Or is this a different product tier ("DataLens Cloud")?
+   - Or is this a different product tier ("DataCert Cloud")?
 
 2. **Which pattern is preferred: Download, Proxy, or In-Database?**
    - Can we accept backend proxy if it violates privacy claim?
@@ -236,7 +236,7 @@ FROM `project.dataset.table`
    - BigQuery: $5/TB scanned (expensive for large tables?)
    - Snowflake: Compute credits (~$2/hour warehouse)
    - Redshift: On-demand hourly pricing
-   - Who pays: user or DataLens?
+   - Who pays: user or DataCert?
 
 8. **How do we handle large tables (1B+ rows)?**
    - Sampling: TABLESAMPLE, LIMIT, or custom logic?
@@ -245,7 +245,7 @@ FROM `project.dataset.table`
 ### UX Questions:
 9. **What is the user flow for warehouse integration?**
    - User provides connection details (account, database, table)?
-   - DataLens generates profiling SQL? Or downloads data?
+   - DataCert generates profiling SQL? Or downloads data?
    - Real-time progress during query execution?
 
 10. **How do we communicate limitations?**
@@ -327,7 +327,7 @@ FROM `project.dataset.table`
 | Infrastructure | Requires hosting, adds cost |
 | Positioning | Conflicts with "data never leaves your device" |
 
-**Conclusion:** Reject unless product pivot to "DataLens Cloud" tier is desired.
+**Conclusion:** Reject unless product pivot to "DataCert Cloud" tier is desired.
 
 #### Pattern C: In-Database Profiling (RECOMMENDED)
 **Verdict: RECOMMENDED as primary pattern**
@@ -363,8 +363,8 @@ FROM `project.dataset.table`
 - Google Identity Services (GIS) library works in browsers
 - Scope required: `https://www.googleapis.com/auth/bigquery.readonly`
 - Same OAuth flow as Google Drive/GCS (can share auth)
-- User signs in with Google account, DataLens requests BigQuery access
-- Token stored in browser, never sent to DataLens servers
+- User signs in with Google account, DataCert requests BigQuery access
+- Token stored in browser, never sent to DataCert servers
 
 #### API & CORS
 | Aspect | Status | Notes |
@@ -632,7 +632,7 @@ SELECT * FROM table TABLESAMPLE BLOCK (10);
 
 **Cost Model Recommendation:**
 - User pays warehouse costs (their credentials, their billing)
-- DataLens does not subsidize query costs
+- DataCert does not subsidize query costs
 - Add cost estimates in UI before query execution
 - Provide "dry run" to estimate bytes scanned (BigQuery feature)
 
@@ -653,7 +653,7 @@ SELECT * FROM table TABLESAMPLE BLOCK (10);
 1. **Phase 1 (MVP):** BigQuery in-database profiling only
    - User authenticates via Google OAuth
    - User selects project/dataset/table
-   - DataLens generates profiling SQL
+   - DataCert generates profiling SQL
    - Execute query, return summary statistics
    - Display profile in existing UI
 

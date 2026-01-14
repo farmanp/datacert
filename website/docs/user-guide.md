@@ -1,12 +1,12 @@
-# DataLens Profiler User Guide
+# DataCert User Guide
 
-Welcome to **DataLens Profiler**, a high-performance, local-first data profiling tool designed to give you instant insights into your datasets without ever compromising your privacy.
+Welcome to **DataCert**, a high-performance, local-first data profiling tool designed to give you instant insights into your datasets without ever compromising your privacy.
 
 ## 🚀 Quick Start
 
-1. **Launch the App**: Open DataLens Profiler in your browser.
+1. **Launch the App**: Open DataCert in your browser.
 2. **Upload Data**: Drag and drop a CSV or JSON file onto the upload zone.
-3. **Analyze**: Watch as DataLens processes your data in real-time.
+3. **Analyze**: Watch as DataCert processes your data in real-time.
 4. **Export**: Click the "Export" button to save your results as HTML, JSON, or CSV.
 
 ---
@@ -14,10 +14,10 @@ Welcome to **DataLens Profiler**, a high-performance, local-first data profiling
 ## 🛠 Core Features
 
 ### 1. Streaming Data Processing
-DataLens uses a custom Rust-powered engine compiled to WebAssembly. This allows it to handle large files (hundreds of megabytes) smoothly by processing them in chunks, keeping the UI responsive.
+DataCert uses a custom Rust-powered engine compiled to WebAssembly. This allows it to handle large files (hundreds of megabytes) smoothly by processing them in chunks, keeping the UI responsive.
 
 ### 2. Comprehensive Statistics
-For every column in your dataset, DataLens calculates:
+For every column in your dataset, DataCert calculates:
 - **Base Stats**: Total count, missing values, and uniqueness (distinct count).
 - **Numeric Analysis**: Mean, Median, Min/Max, Standard Deviation, Skewness, and Kurtosis.
 - **Quantiles**: P25, P75, P90, P95, and P99.
@@ -38,7 +38,7 @@ For every column in your dataset, DataLens calculates:
 ## 📂 Supported Formats
 
 ### CSV (Comma Separated Values)
-- **Auto-detection**: DataLens automatically detects the delimiter (comma, semicolon, tab, pipe).
+- **Auto-detection**: DataCert automatically detects the delimiter (comma, semicolon, tab, pipe).
 - **Header Detection**: Automatically identifies if the first row contains column headers.
 
 ### JSON (JavaScript Object Notation)
@@ -63,7 +63,7 @@ You can export your findings in four formats:
 
 **Your data never leaves your device.**
 
-DataLens Profiler is built on a "Local-First" architecture. Unlike other online tools, the files you upload are processed entirely within your browser's memory and local Web Workers. No data is sent to any server, making it safe for sensitive, proprietary, or regulated data.
+DataCert is built on a "Local-First" architecture. Unlike other online tools, the files you upload are processed entirely within your browser's memory and local Web Workers. No data is sent to any server, making it safe for sensitive, proprietary, or regulated data.
 
 ---
 
@@ -71,12 +71,12 @@ DataLens Profiler is built on a "Local-First" architecture. Unlike other online 
 
 - **Sort by Distinct Value**: High uniqueness in a non-numeric column often suggests a primary key or an ID.
 - **Check Skewness**: Use the numeric Skewness metric to identify outliers or data imbalances before feeding data into ML models.
-- **PWA Mode**: Install DataLens as a desktop app (via the browser icon) to use it offline and with a dedicated window.
+- **PWA Mode**: Install DataCert as a desktop app (via the browser icon) to use it offline and with a dedicated window.
 
 ---
 
 ## ❓ Troubleshooting
 
-- **Large File Issues**: While DataLens is high-performance, very large files (e.g., >1GB) may hit browser memory limits. If the app crashes, try processing a smaller sample.
-- **Encoding**: DataLens expects **UTF-8** encoding. If you see strange characters, ensure your source file is saved as UTF-8.
+- **Large File Issues**: While DataCert is high-performance, very large files (e.g., >1GB) may hit browser memory limits. If the app crashes, try processing a smaller sample.
+- **Encoding**: DataCert expects **UTF-8** encoding. If you see strange characters, ensure your source file is saved as UTF-8.
 - **Browser Support**: For the best experience, use a modern browser (Chrome, Edge, Firefox, or Safari) with WebAssembly and Web Worker support enabled.

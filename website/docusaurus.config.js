@@ -3,15 +3,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 (module.exports = {
-  title: 'DataLens Profiler',
-  tagline: 'High-performance, local-first data profiling',
-  url: 'https://datalens-profiler.io',
+  title: 'DataCert',
+  tagline: 'High-performance, local-first data quality certification',
+  url: 'https://YOUR_DOMAIN',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'datalens',
-  projectName: 'datalens-profiler',
+  organizationName: 'datacert',
+  projectName: 'datacert',
 
   presets: [
     [
@@ -34,9 +34,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'DataLens Profiler',
+        title: 'DataCert',
         logo: {
-          alt: 'DataLens Profiler Logo',
+          alt: 'DataCert Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -47,7 +47,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/farman/datalens-profiler',
+            href: 'https://github.com/farmanp/datacert',
             label: 'GitHub',
             position: 'right',
           },
@@ -79,7 +79,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} DataLens Profiler. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} DataCert. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

@@ -2,10 +2,10 @@
 
 ## 1. Research Question (Required)
 **Question:**
-Is it architecturally feasible to integrate cloud storage (GCS, S3, Azure Blob) with DataLens Profiler while preserving the core privacy-first, browser-based value proposition?
+Is it architecturally feasible to integrate cloud storage (GCS, S3, Azure Blob) with DataCert while preserving the core privacy-first, browser-based value proposition?
 
 **Context:**
-DataLens Profiler's current architecture emphasizes that "data never leaves the user's device," positioning privacy as a core differentiator. However, users may want to profile datasets stored in cloud storage without downloading them locally first. This spike evaluates whether cloud storage integration can be implemented without compromising the privacy-first philosophy, or if it represents a fundamental architectural pivot.
+DataCert's current architecture emphasizes that "data never leaves the user's device," positioning privacy as a core differentiator. However, users may want to profile datasets stored in cloud storage without downloading them locally first. This spike evaluates whether cloud storage integration can be implemented without compromising the privacy-first philosophy, or if it represents a fundamental architectural pivot.
 
 ## 2. Scope & Timebox
 **Timebox:** 2 days
@@ -28,7 +28,7 @@ DataLens Profiler's current architecture emphasizes that "data never leaves the 
 
 ## 3. Success Criteria (Required)
 **Deliverables:**
-- [x] Written decision document: "Should DataLens integrate cloud storage?" - See Section 7: Architectural Decision
+- [x] Written decision document: "Should DataCert integrate cloud storage?" - See Section 7: Architectural Decision
 - [x] Architectural trade-off matrix comparing 3+ integration patterns - See Section 7.6: Architectural Pattern Comparison
 - [x] Privacy impact assessment (does it violate "data never leaves device"?) - See Section 7.4: Privacy Impact Assessment
 - [x] Technical feasibility report for GCS, S3, Azure Blob - See Section 7.7: Provider-Specific Feasibility
@@ -86,7 +86,7 @@ DataLens Profiler's current architecture emphasizes that "data never leaves the 
    - Would they accept "download first" workflow?
 
 3. **Should this be a separate product offering or integrated feature?**
-   - "DataLens Local" (current) vs "DataLens Cloud" (new)?
+   - "DataCert Local" (current) vs "DataCert Cloud" (new)?
    - Separate pricing/licensing model?
 
 ### Technical Questions:
@@ -107,7 +107,7 @@ DataLens Profiler's current architecture emphasizes that "data never leaves the 
 7. **What are the cost implications for users?**
    - GCS egress: $0.12/GB - profiling 10GB = $1.20. Acceptable?
    - S3 egress: $0.09/GB - profiling 10GB = $0.90. Acceptable?
-   - Who pays: user's cloud account or DataLens infrastructure?
+   - Who pays: user's cloud account or DataCert infrastructure?
 
 ### Implementation Questions:
 8. **What is the minimal viable integration?**
@@ -152,7 +152,7 @@ DataLens Profiler's current architecture emphasizes that "data never leaves the 
 
 ### Executive Summary
 
-Cloud storage integration is **technically feasible** while preserving DataLens Profiler's privacy-first architecture. The recommended approach uses **signed/presigned URLs with direct browser-to-storage streaming**, which maintains the "data never leaves your device" claim because data flows directly from cloud storage to the user's browser without passing through DataLens servers.
+Cloud storage integration is **technically feasible** while preserving DataCert's privacy-first architecture. The recommended approach uses **signed/presigned URLs with direct browser-to-storage streaming**, which maintains the "data never leaves your device" claim because data flows directly from cloud storage to the user's browser without passing through DataCert servers.
 
 ---
 
@@ -161,10 +161,10 @@ Cloud storage integration is **technically feasible** while preserving DataLens 
 **Decision:** PROCEED with cloud storage integration using Pattern A (Direct Browser-to-Storage)
 
 **Rationale:**
-1. Privacy model is preserved: Data streams directly from user's cloud storage to their browser - DataLens infrastructure never sees the data
+1. Privacy model is preserved: Data streams directly from user's cloud storage to their browser - DataCert infrastructure never sees the data
 2. All three major cloud providers (GCS, S3, Azure) support the required technical primitives (signed URLs + CORS + Range requests)
 3. Browser streaming APIs (ReadableStream + fetch) are mature and well-supported across modern browsers
-4. Cost burden falls on user's existing cloud account (not DataLens infrastructure), aligning with enterprise expectations
+4. Cost burden falls on user's existing cloud account (not DataCert infrastructure), aligning with enterprise expectations
 5. User demand is strong: Enterprise users increasingly store data in cloud storage, and "download first" workflow is friction
 
 **Trade-offs:**
@@ -172,7 +172,7 @@ Cloud storage integration is **technically feasible** while preserving DataLens 
 | Benefit | Cost |
 |---------|------|
 | Preserves privacy-first positioning | Requires users to configure CORS on their buckets |
-| No DataLens infrastructure costs for data transfer | Adds complexity to onboarding flow |
+| No DataCert infrastructure costs for data transfer | Adds complexity to onboarding flow |
 | Scales infinitely (user pays their own egress) | Performance depends on user's network connection |
 | Works with existing WASM architecture | Signed URL generation requires minimal backend service |
 
@@ -188,7 +188,7 @@ Cloud storage integration is **technically feasible** while preserving DataLens 
 | **S3** | Yes (Cognito/IAM Identity Center) | Yes | MEDIUM - More complex setup, enterprise-focused |
 | **Azure** | Yes (Azure AD/Entra ID) | Yes | HIGH - Microsoft Identity Platform well-documented |
 
-**OAuth Flow for DataLens:**
+**OAuth Flow for DataCert:**
 1. User clicks "Connect to [Provider]"
 2. Redirect to provider's OAuth consent screen (PKCE flow, no client secret)
 3. User grants read-only access to specific bucket/container
@@ -213,9 +213,9 @@ Cloud storage integration is **technically feasible** while preserving DataLens 
 **Signed URL Flow:**
 1. User authenticates with their cloud provider (out of band or via OAuth)
 2. User generates signed URL for specific file (via cloud console/CLI)
-3. User pastes signed URL into DataLens
-4. DataLens fetches file directly from cloud storage
-5. No DataLens backend required for data access
+3. User pastes signed URL into DataCert
+4. DataCert fetches file directly from cloud storage
+5. No DataCert backend required for data access
 
 **Advantages:**
 - Simplest implementation (just a URL input field)
@@ -274,7 +274,7 @@ while (true) {
 | **Safari < 15.4** | Partial | Partial | No | NOT SUPPORTED |
 | **iOS Safari 15.4+** | Full | Full | Full | SUPPORTED |
 
-**Minimum Browser Requirements for DataLens Cloud:**
+**Minimum Browser Requirements for DataCert Cloud:**
 - Chrome/Edge 89+ (March 2021)
 - Firefox 102+ (June 2022)
 - Safari 15.4+ (March 2022)
@@ -304,7 +304,7 @@ Range: bytes=0-1048575
 ```json
 [
   {
-    "origin": ["https://datalens-profiler.app"],
+    "origin": ["https://datacert.app"],
     "method": ["GET", "HEAD"],
     "responseHeader": ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges"],
     "maxAgeSeconds": 3600
@@ -325,7 +325,7 @@ gsutil cors set cors.json gs://bucket-name
 {
   "CORSRules": [
     {
-      "AllowedOrigins": ["https://datalens-profiler.app"],
+      "AllowedOrigins": ["https://datacert.app"],
       "AllowedMethods": ["GET", "HEAD"],
       "AllowedHeaders": ["*"],
       "ExposeHeaders": ["Content-Length", "Content-Range", "Accept-Ranges"],
@@ -348,7 +348,7 @@ gsutil cors set cors.json gs://bucket-name
 ```xml
 <Cors>
   <CorsRule>
-    <AllowedOrigins>https://datalens-profiler.app</AllowedOrigins>
+    <AllowedOrigins>https://datacert.app</AllowedOrigins>
     <AllowedMethods>GET,HEAD</AllowedMethods>
     <AllowedHeaders>*</AllowedHeaders>
     <ExposedHeaders>Content-Length,Content-Range,Accept-Ranges</ExposedHeaders>
@@ -368,7 +368,7 @@ gsutil cors set cors.json gs://bucket-name
 
 #### CORS User Experience Implications
 
-**Challenge:** Users must configure CORS on their buckets before DataLens can access them.
+**Challenge:** Users must configure CORS on their buckets before DataCert can access them.
 
 **Mitigation Strategies:**
 1. **Documentation:** Provide copy-paste CORS configurations for each provider
@@ -392,7 +392,7 @@ gsutil cors set cors.json gs://bucket-name
 - User authenticates with their cloud provider
 - Data streams from user's cloud storage directly to user's browser
 - Data is processed entirely in browser (JavaScript/WASM)
-- No data passes through DataLens servers
+- No data passes through DataCert servers
 - Results displayed locally
 
 **Privacy Analysis:**
@@ -400,7 +400,7 @@ gsutil cors set cors.json gs://bucket-name
 | Aspect | Local Files | Cloud Streaming | Assessment |
 |--------|-------------|-----------------|------------|
 | Data path | Disk → Browser | Cloud → Browser | EQUIVALENT (browser is endpoint) |
-| DataLens server involvement | None | None (auth tokens only) | EQUIVALENT |
+| DataCert server involvement | None | None (auth tokens only) | EQUIVALENT |
 | Third-party data access | None | Cloud provider (user's account) | ACCEPTABLE (user already trusts provider) |
 | Network transmission | None | Yes (encrypted HTTPS) | ACCEPTABLE (user's own data in transit) |
 | Data persistence | User's disk | User's cloud + browser memory | EQUIVALENT |
@@ -409,8 +409,8 @@ gsutil cors set cors.json gs://bucket-name
 
 The "data never leaves your device" claim remains valid because:
 1. "Device" can reasonably include cloud storage the user controls
-2. Data flows directly to user's browser, not through DataLens infrastructure
-3. DataLens never sees, stores, or processes the actual data
+2. Data flows directly to user's browser, not through DataCert infrastructure
+3. DataCert never sees, stores, or processes the actual data
 4. User maintains full control over access (signed URLs, OAuth scopes)
 
 **Recommended Messaging Update:**
@@ -466,7 +466,7 @@ The "data never leaves your device" claim remains valid because:
 
 **Cost Verdict: ACCEPTABLE**
 
-1. Costs are borne by user's existing cloud account (not DataLens)
+1. Costs are borne by user's existing cloud account (not DataCert)
 2. Costs are minimal compared to cloud storage costs users already pay
 3. Enterprise users expect to pay for egress when accessing their data
 4. Alternative (download first) incurs same egress costs anyway
@@ -489,7 +489,7 @@ The "data never leaves your device" claim remains valid because:
 ┌─────────────────────────────────────────────────────────────┐
 │                      USER'S BROWSER                         │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐ │
-│  │  DataLens   │───▶│   fetch()   │───▶│  WASM Profiler  │ │
+│  │  DataCert   │───▶│   fetch()   │───▶│  WASM Profiler  │ │
 │  │     UI      │    │  Streaming  │    │                 │ │
 │  └─────────────┘    └──────┬──────┘    └─────────────────┘ │
 └────────────────────────────│────────────────────────────────┘
@@ -502,8 +502,8 @@ The "data never leaves your device" claim remains valid because:
 ```
 
 **Pros:**
-- Full privacy preservation (data never touches DataLens servers)
-- No infrastructure costs for DataLens
+- Full privacy preservation (data never touches DataCert servers)
+- No infrastructure costs for DataCert
 - Scales infinitely
 - Simple architecture
 
@@ -520,7 +520,7 @@ The "data never leaves your device" claim remains valid because:
 
 ```
 ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐
-│   USER'S BROWSER    │───▶│  DATALENS BACKEND   │───▶│  CLOUD STORAGE  │
+│   USER'S BROWSER    │───▶│  DATACERT BACKEND   │───▶│  CLOUD STORAGE  │
 │                     │◀───│     (Proxy)         │◀───│                 │
 └─────────────────────┘    └─────────────────────┘    └─────────────────┘
 ```
@@ -531,7 +531,7 @@ The "data never leaves your device" claim remains valid because:
 - Can add caching layer
 
 **Cons:**
-- **BREAKS PRIVACY MODEL** (data passes through DataLens servers)
+- **BREAKS PRIVACY MODEL** (data passes through DataCert servers)
 - Significant infrastructure costs (egress + compute)
 - Scalability challenges
 - Latency overhead
@@ -546,7 +546,7 @@ The "data never leaves your device" claim remains valid because:
 ┌─────────────────────────────────────────────────────────────┐
 │                      USER'S BROWSER                         │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐ │
-│  │  DataLens   │───▶│   fetch()   │───▶│  WASM Profiler  │ │
+│  │  DataCert   │───▶│   fetch()   │───▶│  WASM Profiler  │ │
 │  │     UI      │    │  (Direct)   │    │                 │ │
 │  └──────┬──────┘    └──────┬──────┘    └─────────────────┘ │
 └─────────│──────────────────│────────────────────────────────┘
@@ -555,14 +555,14 @@ The "data never leaves your device" claim remains valid because:
           │         ┌──────────────────────────────┐
           ▼         │     USER'S CLOUD STORAGE     │
 ┌─────────────────┐ └──────────────────────────────┘
-│ DATALENS AUTH   │
+│ DATACERT AUTH   │
 │ (Token exchange │
 │  + URL signing) │
 └─────────────────┘
 ```
 
 **Pros:**
-- Better UX (OAuth flow managed by DataLens)
+- Better UX (OAuth flow managed by DataCert)
 - Can generate signed URLs for users
 - Privacy preserved for actual data
 

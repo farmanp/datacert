@@ -6,6 +6,7 @@ pub struct ProfilerResult {
     pub column_profiles: Vec<ColumnProfile>,
     pub total_rows: u64,
     pub duplicate_issues: Vec<crate::quality::QualityIssue>,
+    pub avro_schema: Option<String>,
 }
 
 pub struct Profiler {
@@ -13,6 +14,7 @@ pub struct Profiler {
     total_rows: u64,
     headers: Vec<String>,
     duplicate_detector: crate::quality::duplicates::DuplicateDetector,
+    pub avro_schema: Option<String>,
 }
 
 impl Profiler {
@@ -26,6 +28,7 @@ impl Profiler {
             total_rows: 0,
             headers,
             duplicate_detector: crate::quality::duplicates::DuplicateDetector::new(),
+            avro_schema: None,
         }
     }
 
@@ -58,6 +61,7 @@ impl Profiler {
             column_profiles: self.column_profiles.clone(),
             total_rows: self.total_rows,
             duplicate_issues,
+            avro_schema: self.avro_schema.clone(),
         }
     }
 }

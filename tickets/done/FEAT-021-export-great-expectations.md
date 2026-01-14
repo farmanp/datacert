@@ -4,7 +4,7 @@
 
 **User Story:**
 As a data engineer
-I want to export my DataLens profile as a Great Expectations Suite JSON
+I want to export my DataCert profile as a Great Expectations Suite JSON
 So that I can use it in my existing GX validation pipelines
 
 **Success Looks Like:**
@@ -13,7 +13,7 @@ User can download a valid GX Suite JSON file that loads successfully in Great Ex
 ## 2. Context & Constraints (Required)
 
 **Background:**
-Great Expectations is a widely-used data quality framework. Data engineers maintain expectation suites that define data quality rules. By exporting DataLens profiles as GX suites, users can bootstrap their validation rules from actual data characteristics rather than manually defining each expectation.
+Great Expectations is a widely-used data quality framework. Data engineers maintain expectation suites that define data quality rules. By exporting DataCert profiles as GX suites, users can bootstrap their validation rules from actual data characteristics rather than manually defining each expectation.
 
 **Scope:**
 - **In Scope:** GX Suite JSON export, tolerance configuration, column-level expectations
@@ -22,7 +22,7 @@ Great Expectations is a widely-used data quality framework. Data engineers maint
 **Constraints:**
 - Must produce valid GX 1.x JSON format
 - Must allow user-configurable tolerance for numeric thresholds
-- Must handle all DataLens column types (String, Integer, Numeric, Boolean, Date, DateTime, Mixed, Empty)
+- Must handle all DataCert column types (String, Integer, Numeric, Boolean, Date, DateTime, Mixed, Empty)
 
 ## 3. Acceptance Criteria (Required)
 
@@ -105,7 +105,7 @@ If unclear, acceptance criteria override all other sections.
 
 **Expected Expectations per Column Type:**
 
-| DataLens Type | GX Expectations |
+| DataCert Type | GX Expectations |
 |---------------|-----------------|
 | Integer | `to_be_of_type(INTEGER)`, `to_be_between` |
 | Numeric | `to_be_of_type(FLOAT)`, `to_be_between` |
@@ -120,9 +120,9 @@ If unclear, acceptance criteria override all other sections.
 
 ```json
 {
-  "expectation_suite_name": "datalens_generated_suite",
+  "expectation_suite_name": "datacert_generated_suite",
   "meta": {
-    "generated_by": "DataLens Profiler",
+    "generated_by": "DataCert",
     "generated_at": "2024-01-15T10:30:00Z",
     "source_file": "data.csv",
     "tolerance": 0.1

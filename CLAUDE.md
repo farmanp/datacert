@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DataLens Profiler is a browser-based Progressive Web Application for data profiling. It analyzes datasets (CSV/TSV/JSON) and provides statistical summaries, quality metrics, and visualizations - all processing happens locally in the browser via WebAssembly.
+**DataCert** (short for "data pocket") is a local-first, in-browser data toolkit powered by WebAssembly. It analyzes datasets (CSV/TSV/JSON/Parquet/Excel) and provides statistical summaries, quality metrics, SQL querying, and visualizations - all processing happens locally in the browser.
 
 ## Development Commands
 
@@ -39,7 +39,7 @@ User Input → FileDropzone → profileStore.startProfiling()
     ↓
 profiler.worker.ts (Web Worker)
     ↓
-DataLensProfiler (WASM) → CsvParser → Profiler → Stats modules
+Profiler (WASM) → CsvParser → Profiler → Stats modules
     ↓
 64KB streaming chunks processed
     ↓
@@ -114,7 +114,7 @@ src/app/                    # SolidJS frontend
 src/wasm/                   # Rust data engine
 ├── Cargo.toml              # Dependencies: wasm-bindgen, csv, serde, hyperloglogplus
 └── src/
-    ├── lib.rs              # WASM exports: DataLensProfiler, CsvStreamingParser
+    ├── lib.rs              # WASM exports: DataCertProfiler, CsvStreamingParser
     ├── parser/             # CSV streaming parser with auto-delimiter detection
     └── stats/              # Statistics modules
         ├── profiler.rs     # Main profiler orchestration

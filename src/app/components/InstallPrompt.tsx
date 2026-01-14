@@ -59,10 +59,10 @@ export default function InstallPrompt() {
       <div class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-4 z-50">
         <div class="flex items-start gap-3">
           <div class="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-            <span class="text-white font-bold text-lg">DL</span>
+            <span class="text-white font-bold text-lg">dp</span>
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-semibold text-slate-100">Install DataLens Profiler</h3>
+            <h3 class="text-sm font-semibold text-slate-100">Install DataCert</h3>
             <p class="mt-1 text-sm text-slate-400">
               Install this app for quick access and offline use.
             </p>

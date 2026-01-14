@@ -20,7 +20,7 @@ Data practitioners frequently need to compare datasets across different dimensio
 *   **Source Comparison:** How do datasets from different sources differ (e.g., production vs. staging, vendor A vs. vendor B)?
 *   **Quality Validation:** Does a transformed dataset match expectations compared to the source?
 
-Currently, users must profile files individually and manually compare the results, which is error-prone and time-consuming. DataLens Profiler needs a first-class comparison mode that surfaces differences clearly.
+Currently, users must profile files individually and manually compare the results, which is error-prone and time-consuming. DataCert needs a first-class comparison mode that surfaces differences clearly.
 
 ## Decision
 

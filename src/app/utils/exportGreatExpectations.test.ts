@@ -47,8 +47,8 @@ describe('exportGreatExpectations', () => {
       const results = createProfileResult([{}]);
       const suite = generateGXSuite(results, 'test.csv');
 
-      expect(suite.expectation_suite_name).toBe('datalens_generated_suite');
-      expect(suite.meta.generated_by).toBe('DataLens Profiler');
+      expect(suite.expectation_suite_name).toBe('datacert_generated_suite');
+      expect(suite.meta.generated_by).toBe('datacert');
       expect(suite.meta.source_file).toBe('test.csv');
       expect(suite.meta.tolerance).toBe(0.1);
       expect(suite.expectations).toBeInstanceOf(Array);

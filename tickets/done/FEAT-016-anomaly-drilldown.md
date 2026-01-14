@@ -11,7 +11,7 @@ Clicking on any quality metric (e.g., "5% invalid emails") filters/displays the 
 
 ## 2. Context & Constraints (Required)
 **Background:**
-Currently DataLens shows aggregate statistics ("5% null", "3% invalid format") but doesn't let users see which specific rows caused the issues. This is a "black box" trust problem - veteran engineers want to see the evidence, not just the verdict. They need to:
+Currently DataCert shows aggregate statistics ("5% null", "3% invalid format") but doesn't let users see which specific rows caused the issues. This is a "black box" trust problem - veteran engineers want to see the evidence, not just the verdict. They need to:
 1. Verify the detection is correct
 2. Understand the pattern of failures
 3. Write fixes (regex, transformations) based on actual examples

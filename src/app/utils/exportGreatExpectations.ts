@@ -16,7 +16,7 @@ export interface GXSuite {
     generated_at: string;
     source_file: string;
     tolerance: number;
-    datalens_version: string;
+    datacert_version: string;
   };
   expectations: GXExpectation[];
   ge_cloud_id?: null;
@@ -26,7 +26,7 @@ export interface GXSuite {
  * Options for generating the GX Suite
  */
 export interface GXExportOptions {
-  /** Name for the expectation suite (default: datalens_generated_suite) */
+  /** Name for the expectation suite (default: datacert_generated_suite) */
   suiteName?: string;
   /** Tolerance for numeric bounds (0-1, default: 0.1 = 10%) */
   tolerance?: number;
@@ -43,7 +43,7 @@ export interface GXExportOptions {
 }
 
 const DEFAULT_OPTIONS: Required<GXExportOptions> = {
-  suiteName: 'datalens_generated_suite',
+  suiteName: 'datacert_generated_suite',
   tolerance: 0.1,
   includeTypeExpectations: true,
   includeNullExpectations: true,
@@ -53,9 +53,9 @@ const DEFAULT_OPTIONS: Required<GXExportOptions> = {
 };
 
 /**
- * Maps DataLens inferred types to Great Expectations type strings
+ * Maps DataCert inferred types to Great Expectations type strings
  */
-function mapTypeToGX(dataLensType: string): string | null {
+function mapTypeToGX(dataCertType: string): string | null {
   const typeMap: Record<string, string> = {
     'Integer': 'INTEGER',
     'Numeric': 'FLOAT',
@@ -64,7 +64,7 @@ function mapTypeToGX(dataLensType: string): string | null {
     'Date': 'DATE',
     'DateTime': 'DATETIME',
   };
-  return typeMap[dataLensType] ?? null;
+  return typeMap[dataCertType] ?? null;
 }
 
 /**
@@ -233,9 +233,9 @@ function generateColumnExpectations(
 }
 
 /**
- * Generates a Great Expectations Suite JSON from a DataLens ProfileResult.
+ * Generates a Great Expectations Suite JSON from a DataCert ProfileResult.
  *
- * @param results - The ProfileResult from DataLens profiling
+ * @param results - The ProfileResult from DataCert profiling
  * @param filename - Source file name for metadata
  * @param options - Export configuration options
  * @returns GXSuite object ready for JSON serialization
@@ -281,11 +281,11 @@ export function generateGXSuite(
   return {
     expectation_suite_name: opts.suiteName,
     meta: {
-      generated_by: 'DataLens Profiler',
+      generated_by: 'datacert',
       generated_at: new Date().toISOString(),
       source_file: filename,
       tolerance: opts.tolerance,
-      datalens_version: '0.1.0',
+      datacert_version: '0.1.0',
     },
     expectations,
     ge_cloud_id: null,
@@ -295,7 +295,7 @@ export function generateGXSuite(
 /**
  * Generates a Great Expectations Suite JSON string.
  *
- * @param results - The ProfileResult from DataLens profiling
+ * @param results - The ProfileResult from DataCert profiling
  * @param filename - Source file name for metadata
  * @param options - Export configuration options
  * @returns JSON string formatted for Great Expectations

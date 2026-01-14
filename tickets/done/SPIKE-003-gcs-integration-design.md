@@ -2,7 +2,7 @@
 
 ## 1. Research Question (Required)
 **Question:**
-What is the optimal technical approach for integrating Google Cloud Storage (GCS) with DataLens Profiler for read-only file streaming?
+What is the optimal technical approach for integrating Google Cloud Storage (GCS) with DataCert for read-only file streaming?
 
 **Context:**
 Assuming SPIKE-002 determined that cloud storage integration is feasible and desirable, this spike focuses specifically on GCS integration patterns. GCS is prioritized as the first cloud provider due to its strong CORS support, signed URL capabilities, and prevalence in data engineering workflows.
@@ -67,7 +67,7 @@ Assuming SPIKE-002 determined that cloud storage integration is feasible and des
 
 **Decision Criteria:**
 - If user-owned buckets → OAuth 2.0 preferred
-- If DataLens-hosted samples → Signed URLs preferred
+- If DataCert-hosted samples → Signed URLs preferred
 - Service account keys → Never expose in browser
 
 ### Phase 2: CORS Configuration (0.25 days)
@@ -77,7 +77,7 @@ Assuming SPIKE-002 determined that cloud storage integration is feasible and des
 ```json
 [
   {
-    "origin": ["http://localhost:5173", "https://datalens.app"],
+    "origin": ["http://localhost:5173", "https://YOUR_DOMAIN"],
     "method": ["GET", "HEAD"],
     "responseHeader": ["Content-Type", "Content-Length", "Content-Range"],
     "maxAgeSeconds": 3600
@@ -157,7 +157,7 @@ async function streamGCSFile(
 **Privacy Assessment:**
 - Data flows: GCS → Browser → WASM → Browser Memory → Garbage Collected
 - No server-side processing (unless signed URL generation)
-- Verify: no data sent to DataLens backend during profiling
+- Verify: no data sent to DataCert backend during profiling
 - Document: "Data streams to your browser but never to our servers"
 
 ## 5. Key Questions to Answer
@@ -200,7 +200,7 @@ This technical design specifies two authentication approaches for GCS integratio
 1. **Primary: OAuth 2.0 with PKCE** - For users accessing their own GCS buckets
 2. **Secondary: Signed URL Input** - For users with pre-generated URLs (simplest path)
 
-Both approaches maintain the privacy-first architecture where data flows directly from GCS to the user's browser without passing through DataLens servers.
+Both approaches maintain the privacy-first architecture where data flows directly from GCS to the user's browser without passing through DataCert servers.
 
 ---
 
@@ -212,7 +212,7 @@ Both approaches maintain the privacy-first architecture where data flows directl
 **Rationale:**
 - OAuth 2.0 provides the best UX for users who regularly access their own GCS buckets
 - Signed URL input provides a zero-friction entry point for users who already have URLs
-- Both preserve the privacy model (no DataLens backend involvement for data transfer)
+- Both preserve the privacy model (no DataCert backend involvement for data transfer)
 
 ---
 
@@ -227,7 +227,7 @@ Both approaches maintain the privacy-first architecture where data flows directl
 +-----------------------------------------------------------------------------+
 |                                                                              |
 |  +----------+     +--------------+     +-------------+     +-------------+   |
-|  | DataLens |---->|   Google     |---->|   User      |---->|   Google    |   |
+|  | DataCert |---->|   Google     |---->|   User      |---->|   Google    |   |
 |  |    UI    |     |   Consent    |     |   Grants    |     |   Returns   |   |
 |  |          |     |   Screen     |     |   Access    |     |   Token     |   |
 |  +----------+     +--------------+     +-------------+     +------+------+   |
@@ -411,7 +411,7 @@ const ensureValidToken = async (): Promise<string> => {
 
 **Advantages:**
 - Zero OAuth complexity
-- No Google account sign-in required in DataLens
+- No Google account sign-in required in DataCert
 - Works for any GCS object the user has a URL for
 - Immediate usage without setup
 
@@ -742,7 +742,7 @@ const fetchGcsRange = async (
 
 #### 4.1 Required CORS Configuration for GCS Buckets
 
-Users must configure CORS on their GCS bucket to allow DataLens to fetch files.
+Users must configure CORS on their GCS bucket to allow DataCert to fetch files.
 
 **Recommended CORS Configuration (cors.json):**
 
@@ -750,7 +750,7 @@ Users must configure CORS on their GCS bucket to allow DataLens to fetch files.
 [
   {
     "origin": [
-      "https://datalens-profiler.app",
+      "https://datacert.app",
       "http://localhost:5173",
       "http://localhost:3000"
     ],
@@ -796,7 +796,7 @@ gsutil cors get gs://YOUR_BUCKET_NAME
 | Error | Likely Cause | Solution |
 |-------|-------------|----------|
 | `Access-Control-Allow-Origin missing` | No CORS config on bucket | Run `gsutil cors set` command |
-| `Origin not allowed` | Origin not in allowlist | Add DataLens URL to `origin` array |
+| `Origin not allowed` | Origin not in allowlist | Add DataCert URL to `origin` array |
 | `Method not allowed` | GET not in methods list | Add "GET" to `method` array |
 | `Header not allowed` | responseHeader missing entry | Add required headers to `responseHeader` |
 
@@ -913,7 +913,7 @@ const createGcsError = (response: Response): GcsError => {
       baseError.name = 'CorsError';
       baseError.message = 'Request blocked (likely CORS)';
       baseError.userMessage = 'The request was blocked, likely due to missing CORS configuration.';
-      baseError.actionRequired = 'Configure CORS on your GCS bucket to allow requests from DataLens.';
+      baseError.actionRequired = 'Configure CORS on your GCS bucket to allow requests from DataCert.';
       baseError.retryable = false;
       break;
 
@@ -1000,13 +1000,13 @@ const createNetworkError = (error: Error): GcsError => {
 
 ```
 +---------------------------------------------------------------------------------+
-|                     DataLens GCS Integration Architecture                        |
+|                     DataCert GCS Integration Architecture                        |
 +---------------------------------------------------------------------------------+
 |                                                                                  |
 |  +-----------------------------------------------------------------------+      |
 |  |                           USER'S BROWSER                               |      |
 |  |  +----------------------------------------------------------------+   |      |
-|  |  |                        DataLens Application                    |   |      |
+|  |  |                        DataCert Application                    |   |      |
 |  |  |  +-------------+    +-------------+    +----------------------+ |   |      |
 |  |  |  |  GCS Input  |--->| Auth Store  |    | GCS Streaming Service| |   |      |
 |  |  |  |  Component  |    | (Session)   |    |                      | |   |      |
@@ -1046,7 +1046,7 @@ const createNetworkError = (error: Error): GcsError => {
 |                                                                                  |
 |  ================================================================================|
 |  DATA FLOW: GCS -> Browser Memory -> WASM -> Results (displayed locally)         |
-|  PRIVACY:   Data NEVER passes through DataLens servers                           |
+|  PRIVACY:   Data NEVER passes through DataCert servers                           |
 |  ================================================================================|
 |                                                                                  |
 +---------------------------------------------------------------------------------+
@@ -1183,7 +1183,7 @@ GCS Streaming (Chunked):
 
 **Data Flow Analysis:**
 ```
-User Action        -> Data Movement                      -> DataLens Server Involvement
+User Action        -> Data Movement                      -> DataCert Server Involvement
 ------------------------------------------------------------------------------------
 OAuth Sign-in      -> Browser <-> Google (token exchange) -> NONE
 Fetch GCS File     -> GCS -> User's Browser (direct)      -> NONE
@@ -1193,7 +1193,7 @@ Store Token        -> sessionStorage (user's device)      -> NONE
 ```
 
 **Privacy Statement (verified):**
-> "Your data is streamed directly from your Google Cloud Storage to your browser. DataLens servers never see, store, or process your data."
+> "Your data is streamed directly from your Google Cloud Storage to your browser. DataCert servers never see, store, or process your data."
 
 ## 7. Decision
 
@@ -1223,7 +1223,7 @@ Store Token        -> sessionStorage (user's device)      -> NONE
 
 | Criterion | Assessment | Verdict |
 |-----------|------------|---------|
-| Privacy Preserved | Data flows directly GCS -> Browser, no DataLens server involvement | PASS |
+| Privacy Preserved | Data flows directly GCS -> Browser, no DataCert server involvement | PASS |
 | Technical Feasibility | All APIs tested and working (fetch + ReadableStream + CORS) | PASS |
 | Security | sessionStorage tokens, read-only scope, no secrets in browser | PASS |
 | Performance | Acceptable overhead for network transfer; streaming improves memory | PASS |
@@ -1299,7 +1299,7 @@ Store Token        -> sessionStorage (user's device)      -> NONE
 ```json
 [
   {
-    "origin": ["https://datalens-profiler.app", "http://localhost:5173"],
+    "origin": ["https://datacert.app", "http://localhost:5173"],
     "method": ["GET", "HEAD", "OPTIONS"],
     "responseHeader": ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges"],
     "maxAgeSeconds": 3600

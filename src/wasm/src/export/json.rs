@@ -5,14 +5,14 @@ use crate::stats::numeric::NumericStats;
 use crate::stats::categorical::{CategoricalStats, FreqEntry};
 use crate::stats::histogram::Histogram;
 
-const DATALENS_VERSION: &str = "0.1.0";
+const DATACERT_VERSION: &str = "0.1.0";
 
 /// Metadata section of the JSON export
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportMeta {
     pub generated_at: String,
-    pub datalens_version: String,
+    pub datacert_version: String,
     pub file_name: String,
     pub file_size: u64,
     pub processing_time_ms: u64,
@@ -247,7 +247,7 @@ pub fn generate_json_export(
     JsonExport {
         meta: ExportMeta {
             generated_at,
-            datalens_version: DATALENS_VERSION.to_string(),
+            datacert_version: DATACERT_VERSION.to_string(),
             file_name: file_name.to_string(),
             file_size,
             processing_time_ms,

@@ -14,7 +14,7 @@ Accepted
 
 ## Context
 
-DataLens Profiler processes user-provided data files that may contain malformed content, unexpected encodings, or structural issues. Additionally, the hybrid architecture (ADR 0002) introduces failure points at the Wasm boundary, Web Worker communication, and (with ADR 0007) network operations.
+DataCert processes user-provided data files that may contain malformed content, unexpected encodings, or structural issues. Additionally, the hybrid architecture (ADR 0002) introduces failure points at the Wasm boundary, Web Worker communication, and (with ADR 0007) network operations.
 
 The problem is that **raw technical error messages confuse users** and provide no actionable guidance. Messages like "CSV parse error at byte offset 45892" or "Wasm memory allocation failed" are accurate but unhelpful for users who simply want to profile their data.
 
