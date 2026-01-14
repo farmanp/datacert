@@ -10,6 +10,7 @@ import {
   generateHTMLReport,
   generateJSONReport,
   generateCSVReport,
+  generateMarkdownReport,
   downloadFile,
 } from '../utils/exportReport';
 
@@ -139,7 +140,7 @@ const ProfileReport: Component = () => {
   // Handle keyboard navigation for export menu
   createEffect(() => {
     if (showExportMenu()) {
-      const menuItemCount = 4; // HTML, JSON, CSV, Print to PDF
+      const menuItemCount = 5; // HTML, Markdown, JSON, CSV, Print to PDF
 
       // Reset focus index and focus first item when menu opens
       setFocusedMenuIndex(0);
@@ -391,6 +392,20 @@ const ProfileReport: Component = () => {
     }
   };
 
+  const handleMarkdownCopy = async () => {
+    if (!store.results) return;
+    setShowExportMenu(false);
+    try {
+      const filename = fileStore.store.file?.name || 'data_profile.csv';
+      const markdown = generateMarkdownReport(store.results, filename);
+      await navigator.clipboard.writeText(markdown);
+      displayToast('Markdown summary copied to clipboard', 'success');
+    } catch (err) {
+      console.error('Copy failed', err);
+      displayToast('Failed to copy markdown', 'error');
+    }
+  };
+
   const handlePrintPDF = () => {
     setShowExportMenu(false);
     window.print();
@@ -529,6 +544,29 @@ const ProfileReport: Component = () => {
                   ref={(el) => (menuItemRefs[1] = el)}
                   role="menuitem"
                   tabIndex={focusedMenuIndex() === 1 ? 0 : -1}
+                  onClick={handleMarkdownCopy}
+                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
+                >
+                  <svg
+                    class="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Copy as Markdown
+                </button>
+                <button
+                  ref={(el) => (menuItemRefs[2] = el)}
+                  role="menuitem"
+                  tabIndex={focusedMenuIndex() === 2 ? 0 : -1}
                   onClick={handleJSONExport}
                   class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
@@ -549,9 +587,9 @@ const ProfileReport: Component = () => {
                   Data Profile (JSON)
                 </button>
                 <button
-                  ref={(el) => (menuItemRefs[2] = el)}
+                  ref={(el) => (menuItemRefs[3] = el)}
                   role="menuitem"
-                  tabIndex={focusedMenuIndex() === 2 ? 0 : -1}
+                  tabIndex={focusedMenuIndex() === 3 ? 0 : -1}
                   onClick={handleCSVExport}
                   class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
@@ -572,9 +610,9 @@ const ProfileReport: Component = () => {
                   Column Stats (CSV)
                 </button>
                 <button
-                  ref={(el) => (menuItemRefs[3] = el)}
+                  ref={(el) => (menuItemRefs[4] = el)}
                   role="menuitem"
-                  tabIndex={focusedMenuIndex() === 3 ? 0 : -1}
+                  tabIndex={focusedMenuIndex() === 4 ? 0 : -1}
                   onClick={handlePrintPDF}
                   class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
