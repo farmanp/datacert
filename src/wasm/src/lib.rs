@@ -6,6 +6,7 @@ mod quality;
 use wasm_bindgen::prelude::*;
 use parser::{CsvParser, JsonParser, JsonFormat, JsonParserConfig};
 use stats::profiler::Profiler;
+use stats::correlation::{CorrelationMatrix, compute_correlation_matrix};
 
 #[wasm_bindgen]
 pub fn init() {
@@ -226,5 +227,74 @@ impl JsonStreamingParser {
     pub fn get_array_stats(&self) -> Result<JsValue, JsValue> {
         serde_wasm_bindgen::to_value(self.inner.get_array_stats())
             .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+}
+
+/// Correlation Matrix Calculator for computing Pearson correlation coefficients
+/// between numeric columns
+#[wasm_bindgen]
+pub struct CorrelationCalculator {
+    headers: Vec<String>,
+    rows: Vec<Vec<String>>,
+    numeric_column_indices: Vec<usize>,
+}
+
+#[wasm_bindgen]
+impl CorrelationCalculator {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {
+            headers: Vec::new(),
+            rows: Vec::new(),
+            numeric_column_indices: Vec::new(),
+        }
+    }
+
+    /// Set the headers for the data
+    pub fn set_headers(&mut self, headers: JsValue) -> Result<(), JsValue> {
+        let headers: Vec<String> = serde_wasm_bindgen::from_value(headers)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        self.headers = headers;
+        Ok(())
+    }
+
+    /// Set the numeric column indices (0-based)
+    pub fn set_numeric_columns(&mut self, indices: JsValue) -> Result<(), JsValue> {
+        let indices: Vec<usize> = serde_wasm_bindgen::from_value(indices)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        self.numeric_column_indices = indices;
+        Ok(())
+    }
+
+    /// Add a batch of rows to the calculator
+    pub fn add_rows(&mut self, rows: JsValue) -> Result<(), JsValue> {
+        let new_rows: Vec<Vec<String>> = serde_wasm_bindgen::from_value(rows)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        self.rows.extend(new_rows);
+        Ok(())
+    }
+
+    /// Compute and return the correlation matrix
+    pub fn compute(&self) -> Result<JsValue, JsValue> {
+        let result = compute_correlation_matrix(
+            &self.headers,
+            &self.rows,
+            &self.numeric_column_indices,
+        );
+        serde_wasm_bindgen::to_value(&result)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// Clear all stored data
+    pub fn clear(&mut self) {
+        self.headers.clear();
+        self.rows.clear();
+        self.numeric_column_indices.clear();
+    }
+}
+
+impl Default for CorrelationCalculator {
+    fn default() -> Self {
+        Self::new()
     }
 }

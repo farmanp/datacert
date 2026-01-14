@@ -18,6 +18,8 @@ encoding_rs = "0.8"
 hyperloglogplus = "0.4"
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1.10"
+parquet = { version = "50.0", default-features = false, features = ["flate2", "snap", "lz4"] }
+bytes = "1.5"
 
 [profile.release]
 opt-level = "s"

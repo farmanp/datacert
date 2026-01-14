@@ -2,6 +2,8 @@ import { createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { fileStore } from './fileStore';
 import { gcsStreamingService } from '../services/gcs-streaming.service';
+import type { ProfilerError } from '../types/errors';
+import { createProfilerError, createTypedError } from '../types/errors';
 
 export interface HistogramBin {
   start: number;
@@ -65,10 +67,17 @@ export interface ProfileResult {
   total_rows: number;
 }
 
+export interface CorrelationMatrixResult {
+  columns: string[];
+  matrix: number[][];
+}
+
 export interface ProfileStoreState {
   results: ProfileResult | null;
   isProfiling: boolean;
+  isCancelling: boolean;
   error: string | null;
+  profilerError: ProfilerError | null;
   progress: number;
   viewMode: 'table' | 'cards';
 }
@@ -77,7 +86,9 @@ function createProfileStore() {
   const [store, setStore] = createStore<ProfileStoreState>({
     results: null,
     isProfiling: false,
+    isCancelling: false,
     error: null,
+    profilerError: null,
     progress: 0,
     viewMode: 'table',
   });
@@ -90,7 +101,9 @@ function createProfileStore() {
 
     setStore({
       isProfiling: true,
+      isCancelling: false,
       error: null,
+      profilerError: null,
       progress: 0,
       results: null,
     });
@@ -103,15 +116,30 @@ function createProfileStore() {
       const { type, result, error } = e.data;
 
       switch (type) {
-        case 'ready':
+        case 'ready': {
+          const nameLower = fileInfo.name.toLowerCase();
+          const isParquet = nameLower.endsWith('.parquet');
+          const isJson = nameLower.endsWith('.json') || nameLower.endsWith('.jsonl');
+
+          let format = 'csv';
+          if (isParquet) format = 'parquet';
+          else if (isJson) format = 'json';
+
           worker?.postMessage({
             type: 'start_profiling',
-            data: { delimiter: undefined, hasHeaders: true },
+            data: {
+                delimiter: undefined,
+                hasHeaders: true,
+                format: format
+            },
           });
           break;
+        }
 
         case 'started':
-          processFile(fileInfo.file);
+          if (fileInfo.file) {
+            processFile(fileInfo.file);
+          }
           break;
 
         case 'final_stats':
@@ -123,13 +151,16 @@ function createProfileStore() {
           worker?.terminate();
           break;
 
-        case 'error':
+        case 'error': {
+          const profilerError = createProfilerError(error || 'Unknown error');
           setStore({
             error,
+            profilerError,
             isProfiling: false,
           });
           worker?.terminate();
           break;
+        }
       }
     };
 
@@ -152,52 +183,68 @@ function createProfileStore() {
       fileStore.setRemoteFile(name, size, url);
 
       setStore({
-          isProfiling: true,
-          error: null,
-          progress: 0,
-          results: null,
+        isProfiling: true,
+        isCancelling: false,
+        error: null,
+        profilerError: null,
+        progress: 0,
+        results: null,
       });
 
       worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
-          type: 'module',
+        type: 'module',
       });
 
       worker.onmessage = (e) => {
-          const { type, result, error } = e.data;
-          switch (type) {
-              case 'ready':
+        const { type, result, error } = e.data;
+        switch (type) {
+              case 'ready': {
+                  const nameLower = name.toLowerCase();
+                  const isParquet = nameLower.endsWith('.parquet');
+                  const isJson = nameLower.endsWith('.json') || nameLower.endsWith('.jsonl');
+
+                  let format = 'csv';
+                  if (isParquet) format = 'parquet';
+                  else if (isJson) format = 'json';
+
                   worker?.postMessage({
                       type: 'start_profiling',
-                      data: { delimiter: undefined, hasHeaders: true },
+                      data: {
+                          delimiter: undefined,
+                          hasHeaders: true,
+                          format: format
+                      },
                   });
-                  break;
-              case 'started':
-                  processStream(stream, size);
-                  break;
-              case 'final_stats':
-                  setStore({
-                      results: result as ProfileResult,
-                      isProfiling: false,
-                      progress: 100,
-                  });
-                  worker?.terminate();
-                  break;
-              case 'error': {
-                  const errMsg = error || 'Unknown worker error';
-                  setStore({ error: errMsg, isProfiling: false });
-                  fileStore.setError(errMsg);
-                  worker?.terminate();
                   break;
               }
+              case 'started':
+            processStream(stream, size);
+            break;
+          case 'final_stats':
+            setStore({
+              results: result as ProfileResult,
+              isProfiling: false,
+              progress: 100,
+            });
+            worker?.terminate();
+            break;
+          case 'error': {
+            const errMsg = error || 'Unknown worker error';
+            const profilerError = createProfilerError(errMsg);
+            setStore({ error: errMsg, profilerError, isProfiling: false });
+            fileStore.setError(errMsg);
+            worker?.terminate();
+            break;
           }
+        }
       };
-      
-      worker.postMessage({ type: 'init' });
 
-    } catch (err: any) {
-       console.error('GCS Profile Error', err);
-       fileStore.setError(err.message);
-       setStore({ isProfiling: false, error: err.message });
+      worker.postMessage({ type: 'init' });
+    } catch (err: unknown) {
+      const error = err as Error;
+      const profilerError = createTypedError('NETWORK_ERROR', error.message);
+      fileStore.setError(error.message);
+      setStore({ isProfiling: false, error: error.message, profilerError });
     }
   };
 
@@ -236,9 +283,9 @@ function createProfileStore() {
           
           worker.postMessage({ type: 'finalize' });
           
-      } catch (err: any) {
-          console.error('Stream processing error', err);
-          worker.postMessage({ type: 'error', error: err.message });
+      } catch (err: unknown) {
+          const error = err as Error;
+          worker.postMessage({ type: 'error', error: error.message });
       } finally {
           reader.releaseLock();
       }
@@ -280,7 +327,9 @@ function createProfileStore() {
     setStore({
       results: null,
       isProfiling: false,
+      isCancelling: false,
       error: null,
+      profilerError: null,
       progress: 0,
       viewMode: 'table',
     });
@@ -291,12 +340,43 @@ function createProfileStore() {
     fileStore.reset();
   };
 
+  /**
+   * Cancels the current profiling operation.
+   * Terminates the worker and resets state so user can upload a new file.
+   */
+  const cancelProfiling = () => {
+    if (!store.isProfiling) return;
+
+    // Show cancelling state briefly
+    setStore('isCancelling', true);
+
+    // Terminate worker immediately
+    if (worker) {
+      worker.terminate();
+      worker = null;
+    }
+
+    // Brief delay to show "Cancelling..." state, then reset
+    setTimeout(() => {
+      setStore({
+        results: null,
+        isProfiling: false,
+        isCancelling: false,
+        error: null,
+        profilerError: null,
+        progress: 0,
+      });
+      fileStore.reset();
+    }, 300);
+  };
+
   return {
     store,
     startProfiling,
     profileGCSUrl,
     setViewMode,
     reset,
+    cancelProfiling,
   };
 }
 
