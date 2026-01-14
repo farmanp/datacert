@@ -1,10 +1,11 @@
 import { Component, Show, For, createSignal, createMemo, createEffect, onCleanup } from 'solid-js';
-import { profileStore } from '../stores/profileStore';
+import { profileStore, CorrelationMatrixResult } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
 import EmptyState from './EmptyState';
 import Toast from './Toast';
+import CorrelationMatrix from './CorrelationMatrix';
 import {
   generateHTMLReport,
   generateJSONReport,
@@ -23,10 +24,18 @@ const ProfileReport: Component = () => {
   const [toastMessage, setToastMessage] = createSignal('');
   const [toastType, setToastType] = createSignal<'success' | 'error'>('success');
   const [showToast, setShowToast] = createSignal(false);
+
+  // Correlation Matrix state
+  const [showCorrelationMatrix, setShowCorrelationMatrix] = createSignal(false);
+  const [correlationData, setCorrelationData] = createSignal<CorrelationMatrixResult | null>(null);
+  const [isComputingCorrelation, setIsComputingCorrelation] = createSignal(false);
+  const [correlationError, setCorrelationError] = createSignal<string | null>(null);
+
   let cancelButtonRef: HTMLButtonElement | undefined;
   let exportButtonRef: HTMLButtonElement | undefined;
-  let menuItemRefs: HTMLButtonElement[] = [];
+  const menuItemRefs: HTMLButtonElement[] = [];
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  let correlationWorker: Worker | null = null;
 
   const displayToast = (message: string, type: 'success' | 'error') => {
     setToastMessage(message);
@@ -222,6 +231,109 @@ const ProfileReport: Component = () => {
     return { value: roundedScore, color };
   });
 
+  // Get numeric columns for correlation matrix
+  const numericColumns = createMemo(() => {
+    const profiles = store.results?.column_profiles || [];
+    return profiles.filter(
+      (p) =>
+        p.base_stats.inferred_type === 'Integer' || p.base_stats.inferred_type === 'Numeric'
+    );
+  });
+
+  // Check if correlation matrix can be computed (2+ numeric columns)
+  const canComputeCorrelation = createMemo(() => numericColumns().length >= 2);
+
+  // Compute correlation matrix
+  const computeCorrelation = async () => {
+    if (!canComputeCorrelation() || !fileStore.store.file) return;
+
+    setIsComputingCorrelation(true);
+    setCorrelationError(null);
+
+    try {
+      // Create a new worker for correlation computation
+      correlationWorker = new Worker(
+        new URL('../workers/profiler.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+
+      correlationWorker.onmessage = async (e) => {
+        const { type, result, error } = e.data;
+
+        switch (type) {
+          case 'ready': {
+            // Worker is ready, read file and compute correlation
+            const file = fileStore.store.file?.file;
+            if (!file) {
+              setCorrelationError('File not available');
+              setIsComputingCorrelation(false);
+              correlationWorker?.terminate();
+              return;
+            }
+
+            // Read file content
+            const text = await file.text();
+            const lines = text.split('\n').filter((line) => line.trim().length > 0);
+            if (lines.length < 2) {
+              setCorrelationError('Not enough data');
+              setIsComputingCorrelation(false);
+              correlationWorker?.terminate();
+              return;
+            }
+
+            // Parse headers and rows
+            const delimiter = text.includes('\t') ? '\t' : ',';
+            const headers = lines[0].split(delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
+            const rows = lines.slice(1).map((line) =>
+              line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ''))
+            );
+
+            // Get numeric column indices
+            const numericIndices = numericColumns().map((col) => headers.indexOf(col.name));
+
+            // Send correlation computation request
+            correlationWorker?.postMessage({
+              type: 'compute_correlation',
+              data: {
+                headers,
+                rows,
+                numericColumnIndices: numericIndices,
+              },
+            });
+            break;
+          }
+
+          case 'correlation_computed':
+            setCorrelationData(result as CorrelationMatrixResult);
+            setShowCorrelationMatrix(true);
+            setIsComputingCorrelation(false);
+            correlationWorker?.terminate();
+            break;
+
+          case 'error':
+            setCorrelationError(error || 'Failed to compute correlation');
+            setIsComputingCorrelation(false);
+            correlationWorker?.terminate();
+            break;
+        }
+      };
+
+      correlationWorker.postMessage({ type: 'init' });
+    } catch (err) {
+      console.error('Correlation computation failed', err);
+      setCorrelationError(err instanceof Error ? err.message : 'Computation failed');
+      setIsComputingCorrelation(false);
+    }
+  };
+
+  // Cleanup correlation worker on unmount
+  onCleanup(() => {
+    if (correlationWorker) {
+      correlationWorker.terminate();
+      correlationWorker = null;
+    }
+  });
+
   const getBaseFilename = () => {
     const fullFilename = fileStore.store.file?.name || 'data_profile.csv';
     return fullFilename.split('.')[0];
@@ -391,9 +503,11 @@ const ProfileReport: Component = () => {
             <Show when={showExportMenu()}>
               <div role="menu" class="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in duration-150">
                 <button
+                  ref={(el) => (menuItemRefs[0] = el)}
                   role="menuitem"
+                  tabIndex={focusedMenuIndex() === 0 ? 0 : -1}
                   onClick={handleHTMLExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors flex items-center gap-3"
                 >
                   <svg
                     class="w-4 h-4 text-blue-400"
@@ -412,9 +526,11 @@ const ProfileReport: Component = () => {
                   Interactive HTML
                 </button>
                 <button
+                  ref={(el) => (menuItemRefs[1] = el)}
                   role="menuitem"
+                  tabIndex={focusedMenuIndex() === 1 ? 0 : -1}
                   onClick={handleJSONExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 transition-colors border-t border-slate-700 flex items-center gap-3"
+                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
                   <svg
                     class="w-4 h-4 text-purple-400"
@@ -433,9 +549,11 @@ const ProfileReport: Component = () => {
                   Data Profile (JSON)
                 </button>
                 <button
+                  ref={(el) => (menuItemRefs[2] = el)}
                   role="menuitem"
+                  tabIndex={focusedMenuIndex() === 2 ? 0 : -1}
                   onClick={handleCSVExport}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 transition-colors border-t border-slate-700 flex items-center gap-3"
+                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
                   <svg
                     class="w-4 h-4 text-orange-400"
@@ -454,9 +572,11 @@ const ProfileReport: Component = () => {
                   Column Stats (CSV)
                 </button>
                 <button
+                  ref={(el) => (menuItemRefs[3] = el)}
                   role="menuitem"
+                  tabIndex={focusedMenuIndex() === 3 ? 0 : -1}
                   onClick={handlePrintPDF}
-                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 transition-colors border-t border-slate-700 flex items-center gap-3"
+                  class="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none transition-colors border-t border-slate-700 flex items-center gap-3"
                 >
                   <svg
                     class="w-4 h-4 text-emerald-400"
@@ -621,6 +741,100 @@ const ProfileReport: Component = () => {
             <ResultsTable profiles={filteredProfiles()} />
           </div>
         </Show>
+      </Show>
+
+      {/* Correlation Matrix Section */}
+      <Show when={canComputeCorrelation()}>
+        <div class="bg-slate-800/40 rounded-2xl border border-slate-700/50 p-6 print:bg-white print:border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h3 class="text-xl font-bold text-white print:text-black">Correlation Matrix</h3>
+              <p class="text-sm text-slate-400 mt-1">
+                Pearson correlation coefficients between {numericColumns().length} numeric columns
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <Show when={showCorrelationMatrix() && correlationData()}>
+                <button
+                  onClick={() => setShowCorrelationMatrix(false)}
+                  class="px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-semibold hover:bg-slate-600 transition-colors"
+                >
+                  Hide
+                </button>
+              </Show>
+              <Show when={!showCorrelationMatrix() || !correlationData()}>
+                <button
+                  onClick={computeCorrelation}
+                  disabled={isComputingCorrelation()}
+                  class="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-900/20 disabled:opacity-50 flex items-center gap-2"
+                >
+                  <Show when={isComputingCorrelation()}>
+                    <svg
+                      class="w-4 h-4 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      />
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  </Show>
+                  {isComputingCorrelation() ? 'Computing...' : 'Compute Correlation'}
+                </button>
+              </Show>
+            </div>
+          </div>
+
+          {/* Error State */}
+          <Show when={correlationError()}>
+            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400 text-sm">
+              {correlationError()}
+            </div>
+          </Show>
+
+          {/* Correlation Matrix Display */}
+          <Show when={showCorrelationMatrix() && correlationData()}>
+            {(data) => (
+              <div class="overflow-x-auto">
+                <CorrelationMatrix data={data()} />
+              </div>
+            )}
+          </Show>
+
+          {/* Empty State */}
+          <Show when={!showCorrelationMatrix() && !isComputingCorrelation() && !correlationError()}>
+            <div class="text-center py-8 text-slate-500">
+              <svg
+                class="w-12 h-12 mx-auto mb-3 text-slate-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="text-sm">
+                Click "Compute Correlation" to analyze relationships between numeric columns
+              </p>
+            </div>
+          </Show>
+        </div>
       </Show>
 
       {/* Clear Confirmation Dialog */}

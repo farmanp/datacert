@@ -4,6 +4,7 @@ pub mod numeric;
 pub mod profiler;
 pub mod histogram;
 pub mod categorical;
+pub mod correlation;
 
 use hyperloglogplus::{HyperLogLog, HyperLogLogPlus};
 use std::collections::hash_map::RandomState;
