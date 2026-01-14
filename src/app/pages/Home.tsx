@@ -27,8 +27,11 @@ const Home: Component = () => {
     authStore.init();
     try {
       // Import the WASM module
-      const wasm = await import('../../wasm/pkg/datalens_wasm');
-      wasm.init();
+      const wasmModule = await import('../../wasm/pkg/datalens_wasm');
+      // Initialize the WASM binary (default export loads the .wasm file)
+      await wasmModule.default();
+      // Call the init function
+      wasmModule.init();
       setWasmStatus('WASM Ready');
       setWasmReady(true);
     } catch (e) {
@@ -251,6 +254,34 @@ const Home: Component = () => {
                   <p class="text-slate-400 text-sm">
                     Process multiple files at once with sequential profiling, merging, or N-way
                     comparison modes.
+                  </p>
+                </A>
+
+                <A
+                  href="/sql-mode"
+                  class="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-colors group cursor-pointer block"
+                >
+                  <div class="flex items-center space-x-3 mb-3">
+                    <div class="p-2 bg-cyan-500/20 rounded-lg">
+                      <svg
+                        class="w-6 h-6 text-cyan-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                        />
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-bold font-heading tracking-tight">SQL Mode</h3>
+                  </div>
+                  <p class="text-slate-400 text-sm">
+                    Query your data using SQL syntax powered by DuckDB-WASM. Filter, transform, and
+                    profile query results.
                   </p>
                 </A>
               </div>

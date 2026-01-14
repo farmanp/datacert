@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component, lazy } from 'solid-js';
 import { Route } from '@solidjs/router';
 import Home from './pages/Home';
 import Compare from './pages/Compare';
@@ -6,6 +6,9 @@ import Batch from './pages/Batch';
 import DuckDBSpike from './pages/DuckDBSpike';
 import InstallPrompt from './components/InstallPrompt';
 import UpdateNotification from './components/UpdateNotification';
+
+// Lazy-loaded pages for code splitting
+const SqlMode = lazy(() => import('./pages/SqlMode'));
 
 /**
  * App Component
@@ -25,6 +28,7 @@ const App: Component = () => {
       <Route path="/" component={Home} />
       <Route path="/compare" component={Compare} />
       <Route path="/batch" component={Batch} />
+      <Route path="/sql-mode" component={SqlMode} />
       <Route path="/spike/duckdb" component={DuckDBSpike} />
       <InstallPrompt />
       <UpdateNotification />
