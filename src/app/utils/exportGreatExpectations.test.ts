@@ -23,6 +23,12 @@ function createColumnProfile(overrides: Partial<ColumnProfile> = {}): ColumnProf
     min_length: null,
     max_length: null,
     notes: [],
+    quality_metrics: null,
+    integer_count: 0,
+    numeric_count: 0,
+    boolean_count: 0,
+    date_count: 0,
+    total_valid: 100,
     sample_values: [],
     missing_rows: [],
     pii_rows: [],
@@ -38,6 +44,8 @@ function createProfileResult(columns: Partial<ColumnProfile>[] = []): ProfileRes
     column_profiles: columns.map((col, idx) =>
       createColumnProfile({ name: `column_${idx}`, ...col })
     ),
+    duplicate_issues: [],
+    avro_schema: null,
   };
 }
 

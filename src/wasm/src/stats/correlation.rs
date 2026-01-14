@@ -83,6 +83,14 @@ impl CorrelationAccumulator {
             }
         }
 
+        // Compute deltas BEFORE updating means (needed for co-moment calculation)
+        let mut deltas_old: Vec<Option<f64>> = vec![None; n];
+        for i in 0..n {
+            if let Some(val) = parsed_values[i] {
+                deltas_old[i] = Some(val - self.means[i]);
+            }
+        }
+
         // Update individual column statistics using Welford's algorithm
         for i in 0..n {
             if let Some(val) = parsed_values[i] {
@@ -97,77 +105,22 @@ impl CorrelationAccumulator {
             }
         }
 
-        // Update pairwise co-moments
-        // For each valid pair (i, j), update the co-moment
+        // Update pairwise co-moments using the online covariance formula
+        // The correct formula is: C_n = C_{n-1} + (x - mean_x_old) * (y - mean_y_new)
+        // where mean_x_old is before update and mean_y_new is after update
         for i in 0..n {
-            if let Some(val_i) = parsed_values[i] {
+            if let Some(delta_x_old) = deltas_old[i] {
                 for j in 0..n {
                     if let Some(val_j) = parsed_values[j] {
                         let idx = i * n + j;
                         let pair_count = self.pair_counts[idx] + 1;
-
-                        // For co-moment, we use a similar online algorithm
-                        // co_moment_new = co_moment_old + (x - mean_x_old)(y - mean_y_new)
-                        // where mean_y_new is computed after seeing this y value
-
-                        // Compute the contribution to co-moment
-                        // Using the formula: C_n = C_{n-1} + (x_n - mean_x_{n-1})(y_n - mean_y_n)
-                        // where mean_y_n includes the current y value
-
-                        // Since we've already updated means above, we need to be careful
-                        // For the co-moment update, we use:
-                        // delta_x = x - old_mean_x (before update)
-                        // delta_y = y - new_mean_y (after update)
-
-                        // However, since we updated means above, let's use a different approach:
-                        // Track running sums and compute correlation at finalize
-
-                        // Alternative: Use the definition directly
-                        // C = Σ(xi - mean_x)(yi - mean_y)
-                        // At finalize: compute correlation from sums
-
-                        // For simplicity and numerical stability, let's accumulate sums
-                        // and compute the correlation coefficient at the end
-
-                        // Update pair count
                         self.pair_counts[idx] = pair_count;
 
-                        // For the co-moment, use the update formula:
-                        // C_n = C_{n-1} + ((n-1)/n) * (x - mean_x) * (y - mean_y)
-                        // But this requires knowing the pair-specific means
-
-                        // Simpler approach: Store sums and compute at end
-                        // But that's not memory efficient for streaming
-
-                        // Let's use the online covariance formula:
-                        // C_n = C_{n-1} + (x_n - mean_x_{n}) * (y_n - mean_y_{n-1})
-                        // which is equivalent to:
-                        // C_n = C_{n-1} + (x_n - mean_x_{n-1}) * (y_n - mean_y_{n-1}) * (n-1)/n
-
-                        // Use West's algorithm for online covariance
-                        // We need separate means per pair due to missing values
-                        // For now, use a simplified approach: assume column means work
-
-                        // delta_x from before the mean update
-                        // delta_y from before the mean update
-                        let mean_x = self.means[i];
-                        let mean_y = self.means[j];
-
-                        // Update co-moment using the standard formula
-                        // This is approximate when there are missing values
-                        let delta_x = val_i - mean_x;
-                        let delta_y = val_j - mean_y;
-
-                        // West's formula for running covariance
-                        // C_n = C_{n-1} + (n-1)/n * delta_x_old * delta_y_old
-                        // where delta_old is computed before mean update
-                        // But we've already updated means, so we use current deltas
-
-                        // For diagonal (i == j), this should give variance
-                        if pair_count > 1 {
-                            let factor = (pair_count - 1) as f64 / pair_count as f64;
-                            self.co_moments[idx] += factor * delta_x * delta_y;
-                        }
+                        // Online covariance: C_n = C_{n-1} + (x - mean_x_old) * (y - mean_y_new)
+                        // delta_x_old was computed before mean update
+                        // delta_y_new is computed after mean update
+                        let delta_y_new = val_j - self.means[j];
+                        self.co_moments[idx] += delta_x_old * delta_y_new;
                     }
                 }
             }
@@ -203,20 +156,17 @@ impl CorrelationAccumulator {
                     matrix[i][j] = 1.0;
                 } else if count > 1 {
                     // Compute Pearson correlation coefficient
-                    // r = C_xy / sqrt(Var_x * Var_y)
-                    // where C_xy is covariance, Var_x and Var_y are variances
+                    // r = co_moment / sqrt(m2_x * m2_y)
+                    // where co_moment = Σ(xi - mean_x)(yi - mean_y)
+                    // and m2 = Σ(xi - mean)^2
+                    // The (n-1) divisors cancel out in numerator and denominator
 
                     let co_moment = self.co_moments[idx];
-                    let var_x = self.m2s[i] / (self.column_counts[i] as f64 - 1.0);
-                    let var_y = self.m2s[j] / (self.column_counts[j] as f64 - 1.0);
+                    let m2_x = self.m2s[i];
+                    let m2_y = self.m2s[j];
 
-                    if var_x > 0.0 && var_y > 0.0 {
-                        let std_x = var_x.sqrt();
-                        let std_y = var_y.sqrt();
-
-                        // Covariance = co_moment / (n - 1)
-                        let covariance = co_moment / (count as f64 - 1.0);
-                        let r = covariance / (std_x * std_y);
+                    if m2_x > 0.0 && m2_y > 0.0 {
+                        let r = co_moment / (m2_x.sqrt() * m2_y.sqrt());
 
                         // Clamp to [-1, 1] to handle floating point errors
                         matrix[i][j] = r.clamp(-1.0, 1.0);

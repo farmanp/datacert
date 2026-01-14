@@ -5,80 +5,30 @@ import { gcsStreamingService } from '../services/gcs-streaming.service';
 import type { ProfilerError } from '../types/errors';
 import { createProfilerError, createTypedError } from '../types/errors';
 
-export interface HistogramBin {
-  start: number;
-  end: number;
-  count: number;
-}
+// Re-export generated types for backwards compatibility
+// Other files can continue importing from profileStore
+export type {
+  BaseStats,
+  CategoricalStats,
+  ColumnProfile,
+  ColumnQualityMetrics,
+  CorrelationMatrix,
+  CorrelationMatrixResult,
+  DataType,
+  FreqEntry,
+  Histogram,
+  HistogramBin,
+  NumericStats,
+  ProfileResult,
+  ProfilerResult,
+  QualityIssue,
+  Severity,
+} from '../types/generated';
 
-export interface Histogram {
-  bins: HistogramBin[];
-  min: number;
-  max: number;
-  bin_width: number;
-}
-
-export interface FreqEntry {
-  value: string;
-  count: number;
-  percentage: number;
-}
-
-export interface CategoricalStats {
-  top_values: FreqEntry[];
-  unique_count: number;
-}
-
-export interface ColumnProfile {
-  name: string;
-  base_stats: {
-    count: number;
-    missing: number;
-    distinct_estimate: number;
-    inferred_type: string;
-  };
-  numeric_stats: {
-    min: number;
-    max: number;
-    mean: number;
-    sum: number;
-    count: number;
-    std_dev: number;
-    variance: number;
-    skewness: number;
-    kurtosis: number;
-    median: number;
-    p25: number;
-    p75: number;
-    p90: number;
-    p95: number;
-    p99: number;
-  } | null;
-  categorical_stats: CategoricalStats | null;
-  histogram: Histogram | null;
-  min_length: number | null;
-  max_length: number | null;
-  notes: string[];
-  sample_values: string[];
-  missing_rows: number[];
-  pii_rows: number[];
-  outlier_rows: number[];
-}
-
-export interface ProfileResult {
-  column_profiles: ColumnProfile[];
-  total_rows: number;
-  duplicate_issues?: any[];
-  avro_schema?: string;
-}
-
-export interface CorrelationMatrixResult {
-  columns: string[];
-  matrix: number[][];
-}
+import type { ProfilerResult } from '../types/generated';
 
 export interface ProfileStoreState {
-  results: ProfileResult | null;
+  results: ProfilerResult | null;
   isProfiling: boolean;
   isCancelling: boolean;
   error: string | null;
@@ -158,7 +108,7 @@ function createProfileStore() {
 
         case 'final_stats':
           setStore({
-            results: result as ProfileResult,
+            results: result as ProfilerResult,
             isProfiling: false,
             progress: 100,
           });
@@ -237,7 +187,7 @@ function createProfileStore() {
             break;
           case 'final_stats':
             setStore({
-              results: result as ProfileResult,
+              results: result as ProfilerResult,
               isProfiling: false,
               progress: 100,
             });
@@ -372,7 +322,7 @@ function createProfileStore() {
               worker?.postMessage({ type: 'process_chunk', data: bytes }, [bytes.buffer]);
               worker?.postMessage({ type: 'finalize' });
             } else if (wType === 'final_stats') {
-              setStore({ results: result as ProfileResult, isProfiling: false, progress: 100 });
+              setStore({ results: result as ProfilerResult, isProfiling: false, progress: 100 });
               worker?.terminate();
               worker = null;
             } else if (wType === 'error') {
@@ -476,7 +426,7 @@ function createProfileStore() {
 
         case 'final_stats':
           setStore({
-            results: result as ProfileResult,
+            results: result as ProfilerResult,
             isProfiling: false,
             progress: 100,
           });
@@ -603,7 +553,7 @@ function createProfileStore() {
             break;
           case 'final_stats':
             setStore({
-              results: result as ProfileResult,
+              results: result as ProfilerResult,
               isProfiling: false,
               progress: 100,
             });

@@ -19,6 +19,10 @@
     "test:coverage": "vitest run --coverage",
     "test:rust": "cd src/wasm && cargo test",
     "test:all": "./scripts/test.sh",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/app --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
@@ -46,6 +50,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/glob": "^8.1.0",

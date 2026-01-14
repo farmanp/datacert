@@ -42,3 +42,9 @@ temp/
 coverage/
 .nyc_output/
 .vitest-cache/
+
+# Playwright
+e2e/test-results/
+playwright-report/
+blob-report/
+test-results/

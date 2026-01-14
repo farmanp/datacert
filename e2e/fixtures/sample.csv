@@ -1,0 +1,21 @@
+id,name,age,salary,department,hire_date,is_active
+1,Alice Johnson,28,75000.50,Engineering,2021-03-15,true
+2,Bob Smith,35,92000.00,Marketing,2019-07-22,true
+3,Carol Williams,42,110000.75,Engineering,2017-01-10,true
+4,David Brown,31,68000.25,Sales,2020-11-05,false
+5,Eva Martinez,26,55000.00,HR,2022-06-01,true
+6,Frank Lee,39,87500.50,Engineering,2018-04-18,true
+7,Grace Chen,33,95000.00,Marketing,2019-09-30,true
+8,Henry Wilson,45,125000.00,Engineering,2015-02-28,true
+9,Ivy Thompson,29,72000.75,Sales,2021-08-12,false
+10,Jack Davis,37,88000.00,HR,2018-10-20,true
+11,Kate Anderson,24,52000.50,Marketing,2023-01-09,true
+12,Leo Garcia,41,115000.25,Engineering,2016-05-14,true
+13,Mia Robinson,30,78000.00,Sales,2020-03-25,true
+14,Nathan Taylor,36,91000.50,Engineering,2018-12-03,true
+15,Olivia White,27,63000.75,HR,2021-07-19,true
+16,Paul Harris,44,108000.00,Marketing,2016-09-07,false
+17,Quinn Jackson,32,82000.25,Engineering,2019-02-14,true
+18,Rachel Moore,38,97000.50,Sales,2017-11-28,true
+19,Sam Clark,25,48000.00,HR,2022-10-11,true
+20,Tina Lewis,40,105000.75,Engineering,2016-06-22,true

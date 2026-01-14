@@ -108,7 +108,7 @@ function mergeColumnStats(columns: ColumnProfile[]): MergedColumnStats {
     const type = c.base_stats.inferred_type;
     typeCounts.set(type, (typeCounts.get(type) || 0) + c.base_stats.count);
   }
-  let inferredType = columns[0].base_stats.inferred_type;
+  let inferredType: string = columns[0].base_stats.inferred_type;
   let maxTypeCount = 0;
   for (const [type, count] of typeCounts) {
     if (count > maxTypeCount) {
