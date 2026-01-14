@@ -21,6 +21,7 @@ regex = "1.10"
 parquet = { version = "50.0", default-features = false, features = ["flate2", "snap", "lz4"] }
 apache-avro = { version = "0.16", features = ["snappy"] }
 bytes = "1.5"
+ts-rs = "10.0"
 
 [profile.release]
 opt-level = "s"

@@ -1,4 +1,5 @@
-use serde::{Serialize};
+use serde::Serialize;
+use ts_rs::TS;
 pub mod types;
 pub mod numeric;
 pub mod profiler;
@@ -13,7 +14,8 @@ use crate::stats::numeric::NumericStats;
 use crate::stats::histogram::{Histogram, HistogramAccumulator};
 use crate::stats::categorical::{CategoricalStats, CategoricalAccumulator};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, TS)]
+#[ts(export)]
 pub struct ColumnProfile {
     pub name: String,
     pub base_stats: BaseStats,
@@ -24,28 +26,32 @@ pub struct ColumnProfile {
     pub max_length: Option<usize>,
     pub notes: Vec<String>,
     pub quality_metrics: Option<crate::quality::ColumnQualityMetrics>,
-    
+
     #[serde(skip)]
+    #[ts(skip)]
     hll: HyperLogLogPlus<String, RandomState>,
-    
+
     #[serde(skip)]
+    #[ts(skip)]
     hist_acc: Option<HistogramAccumulator>,
-    
+
     #[serde(skip)]
+    #[ts(skip)]
     cat_acc: CategoricalAccumulator,
-    
+
     // Type inference counters
     integer_count: u64,
     numeric_count: u64,
     boolean_count: u64,
     date_count: u64,
     total_valid: u64,
-    
+
     // Sample values for display (up to 5 unique non-null values)
     pub sample_values: Vec<String>,
-    
+
     // Sample values for PII detection (separate to avoid confusion)
     #[serde(skip)]
+    #[ts(skip)]
     pub pii_samples: Vec<String>,
 
     // Anomaly tracking (row indices, 1-based)

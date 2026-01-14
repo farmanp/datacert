@@ -298,3 +298,43 @@ impl Default for CorrelationCalculator {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod ts_export_tests {
+    //! Tests that trigger ts-rs TypeScript type generation.
+    //! Run `cargo test` to generate types into the `bindings/` directory.
+
+    use crate::stats::types::{DataType, BaseStats};
+    use crate::stats::numeric::NumericStats;
+    use crate::stats::categorical::{FreqEntry, CategoricalStats};
+    use crate::stats::histogram::{Histogram, HistogramBin};
+    use crate::stats::ColumnProfile;
+    use crate::stats::profiler::ProfilerResult;
+    use crate::stats::correlation::CorrelationMatrix;
+    use crate::quality::{Severity, QualityIssue, ColumnQualityMetrics};
+
+    #[test]
+    fn export_typescript_types() {
+        // ts-rs exports types when this test runs.
+        // The types are exported to the `bindings/` directory by default.
+        // This test ensures all types are properly configured for export.
+
+        // Import the TS trait to ensure types implement it
+        use ts_rs::TS;
+
+        // Verify all types implement TS (compilation will fail if they don't)
+        let _ = DataType::decl();
+        let _ = BaseStats::decl();
+        let _ = NumericStats::decl();
+        let _ = FreqEntry::decl();
+        let _ = CategoricalStats::decl();
+        let _ = Histogram::decl();
+        let _ = HistogramBin::decl();
+        let _ = ColumnProfile::decl();
+        let _ = ProfilerResult::decl();
+        let _ = CorrelationMatrix::decl();
+        let _ = Severity::decl();
+        let _ = QualityIssue::decl();
+        let _ = ColumnQualityMetrics::decl();
+    }
+}

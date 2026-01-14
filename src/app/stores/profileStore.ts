@@ -434,6 +434,73 @@ function createProfileStore() {
     });
   };
 
+  /**
+   * Profile rows directly from SQL query results.
+   * This bypasses the File I/O path (DuckDB -> CSV File -> chunks) and instead
+   * sends rows directly to the worker for profiling.
+   *
+   * Data flow: DuckDB JS objects -> Worker -> CSV in WASM -> Profile
+   * vs old flow: DuckDB -> JS objects -> CSV string -> File blob -> Uint8Array chunks -> CSV parser
+   *
+   * @param rows - Array of row objects from SQL query results
+   * @param columnNames - Array of column names in order
+   */
+  const profileFromRows = (rows: Record<string, unknown>[], columnNames: string[]) => {
+    if (!rows || rows.length === 0) return;
+
+    setStore({
+      isProfiling: true,
+      isCancelling: false,
+      error: null,
+      profilerError: null,
+      progress: 0,
+      results: null,
+    });
+
+    worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+      type: 'module',
+    });
+
+    worker.onmessage = (e) => {
+      const { type, result, error } = e.data;
+
+      switch (type) {
+        case 'ready':
+          // Worker is initialized, send rows directly
+          setStore('progress', 50);
+          worker?.postMessage({
+            type: 'process_rows',
+            data: { rows, columnNames },
+          });
+          break;
+
+        case 'final_stats':
+          setStore({
+            results: result as ProfileResult,
+            isProfiling: false,
+            progress: 100,
+          });
+          worker?.terminate();
+          worker = null;
+          break;
+
+        case 'error': {
+          const profilerError = createProfilerError(error || 'Unknown error');
+          setStore({
+            error,
+            profilerError,
+            isProfiling: false,
+          });
+          worker?.terminate();
+          worker = null;
+          break;
+        }
+      }
+    };
+
+    worker.postMessage({ type: 'init' });
+  };
+
   const setViewMode = (mode: 'table' | 'cards' | 'validation') => {
     setStore('viewMode', mode);
   };
@@ -565,6 +632,7 @@ function createProfileStore() {
   return {
     store,
     startProfiling,
+    profileFromRows,
     profileGCSUrl,
     profileRemoteUrl,
     processExcel,

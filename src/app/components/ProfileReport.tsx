@@ -1,6 +1,6 @@
 import { Component, Show, For, createSignal, createMemo, createEffect, onCleanup } from 'solid-js';
 import { A } from '@solidjs/router';
-import { profileStore, CorrelationMatrixResult } from '../stores/profileStore';
+import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
@@ -11,6 +11,7 @@ import CorrelationMatrix from './CorrelationMatrix';
 import { ExportFormatSelector } from './ExportFormatSelector';
 import { ValidationRuleImporter } from './ValidationRuleImporter';
 import { ValidationResultsView } from './ValidationResultsView';
+import { useCorrelationMatrix } from '../hooks/useCorrelationMatrix';
 
 const ProfileReport: Component = () => {
   const { store, setViewMode, reset } = profileStore;
@@ -19,17 +20,32 @@ const ProfileReport: Component = () => {
   const [searchQuery, setSearchQuery] = createSignal('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = createSignal('');
 
-
-  // Correlation Matrix state
-  const [showCorrelationMatrix, setShowCorrelationMatrix] = createSignal(false);
-  const [correlationData, setCorrelationData] = createSignal<CorrelationMatrixResult | null>(null);
-  const [isComputingCorrelation, setIsComputingCorrelation] = createSignal(false);
-  const [correlationError, setCorrelationError] = createSignal<string | null>(null);
-
   let cancelButtonRef: HTMLButtonElement | undefined;
   let exportButtonRef: HTMLButtonElement | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-  let correlationWorker: Worker | null = null;
+
+  // Get numeric columns for correlation matrix
+  const numericColumns = createMemo(() => {
+    const profiles = store.results?.column_profiles || [];
+    return profiles.filter(
+      (p) =>
+        p.base_stats.inferred_type === 'Integer' || p.base_stats.inferred_type === 'Numeric'
+    );
+  });
+
+  // Use correlation matrix hook
+  const {
+    showCorrelationMatrix,
+    setShowCorrelationMatrix,
+    correlationData,
+    isComputingCorrelation,
+    correlationError,
+    canComputeCorrelation,
+    computeCorrelation,
+  } = useCorrelationMatrix({
+    file: () => fileStore.store.file ?? undefined,
+    numericColumns,
+  });
 
 
   // Debounce search query updates (150ms)
@@ -151,111 +167,6 @@ const ProfileReport: Component = () => {
 
     return { value: roundedScore, color };
   });
-
-  // Get numeric columns for correlation matrix
-  const numericColumns = createMemo(() => {
-    const profiles = store.results?.column_profiles || [];
-    return profiles.filter(
-      (p) =>
-        p.base_stats.inferred_type === 'Integer' || p.base_stats.inferred_type === 'Numeric'
-    );
-  });
-
-  // Check if correlation matrix can be computed (2+ numeric columns)
-  const canComputeCorrelation = createMemo(() => numericColumns().length >= 2);
-
-  // Compute correlation matrix
-  const computeCorrelation = async () => {
-    if (!canComputeCorrelation() || !fileStore.store.file) return;
-
-    setIsComputingCorrelation(true);
-    setCorrelationError(null);
-
-    try {
-      // Create a new worker for correlation computation
-      correlationWorker = new Worker(
-        new URL('../workers/profiler.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-
-      correlationWorker.onmessage = async (e) => {
-        const { type, result, error } = e.data;
-
-        switch (type) {
-          case 'ready': {
-            // Worker is ready, read file and compute correlation
-            const file = fileStore.store.file?.file;
-            if (!file) {
-              setCorrelationError('File not available');
-              setIsComputingCorrelation(false);
-              correlationWorker?.terminate();
-              return;
-            }
-
-            // Read file content
-            const text = await file.text();
-            const lines = text.split('\n').filter((line) => line.trim().length > 0);
-            if (lines.length < 2) {
-              setCorrelationError('Not enough data');
-              setIsComputingCorrelation(false);
-              correlationWorker?.terminate();
-              return;
-            }
-
-            // Parse headers and rows
-            const delimiter = text.includes('\t') ? '\t' : ',';
-            const headers = lines[0].split(delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
-            const rows = lines.slice(1).map((line) =>
-              line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ''))
-            );
-
-            // Get numeric column indices
-            const numericIndices = numericColumns().map((col) => headers.indexOf(col.name));
-
-            // Send correlation computation request
-            correlationWorker?.postMessage({
-              type: 'compute_correlation',
-              data: {
-                headers,
-                rows,
-                numericColumnIndices: numericIndices,
-              },
-            });
-            break;
-          }
-
-          case 'correlation_computed':
-            setCorrelationData(result as CorrelationMatrixResult);
-            setShowCorrelationMatrix(true);
-            setIsComputingCorrelation(false);
-            correlationWorker?.terminate();
-            break;
-
-          case 'error':
-            setCorrelationError(error || 'Failed to compute correlation');
-            setIsComputingCorrelation(false);
-            correlationWorker?.terminate();
-            break;
-        }
-      };
-
-      correlationWorker.postMessage({ type: 'init' });
-    } catch (err) {
-      console.error('Correlation computation failed', err);
-      setCorrelationError(err instanceof Error ? err.message : 'Computation failed');
-      setIsComputingCorrelation(false);
-    }
-  };
-
-  // Cleanup correlation worker on unmount
-  onCleanup(() => {
-    if (correlationWorker) {
-      correlationWorker.terminate();
-      correlationWorker = null;
-    }
-  });
-
-
 
   return (
     <div class="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 print:p-0">

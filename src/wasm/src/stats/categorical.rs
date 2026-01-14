@@ -1,14 +1,17 @@
-use serde::{Serialize};
+use serde::Serialize;
 use std::collections::HashMap;
+use ts_rs::TS;
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct FreqEntry {
     pub value: String,
     pub count: u64,
     pub percentage: f64,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct CategoricalStats {
     pub top_values: Vec<FreqEntry>,
     pub unique_count: u64,

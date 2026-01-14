@@ -1,4 +1,4 @@
-import init, { DataCertProfiler, ParquetProfiler, JsonProfiler, AvroProfiler, RowExtractor } from '../../wasm/pkg/datacert_wasm';
+import init, { DataCertProfiler, ParquetProfiler, JsonProfiler, AvroProfiler, RowExtractor, CorrelationCalculator } from '../../wasm/pkg/datacert_wasm';
 
 let profiler: DataCertProfiler | ParquetProfiler | JsonProfiler | AvroProfiler | null = null;
 let extractor: RowExtractor | null = null;
@@ -6,15 +6,15 @@ let mode: 'csv' | 'parquet' | 'json' | 'avro' = 'csv';
 
 // Worker globals for buffering
 interface ProfilerWorkerGlobals {
-  parquetBuffer: Uint8Array[] | null;
-  avroBuffer: Uint8Array[] | null;
-  extractedRows: [number, string[]][] | null;
+    parquetBuffer: Uint8Array[] | null;
+    avroBuffer: Uint8Array[] | null;
+    extractedRows: [number, string[]][] | null;
 }
 
 const workerGlobals: ProfilerWorkerGlobals = {
-  parquetBuffer: null,
-  avroBuffer: null,
-  extractedRows: null
+    parquetBuffer: null,
+    avroBuffer: null,
+    extractedRows: null
 };
 
 self.onmessage = async (e: MessageEvent) => {
@@ -153,6 +153,59 @@ self.onmessage = async (e: MessageEvent) => {
                 self.postMessage({ type: 'extraction_complete', result: workerGlobals.extractedRows });
                 workerGlobals.extractedRows = null;
                 extractor = null;
+                break;
+            }
+
+            case 'compute_correlation': {
+                const { headers, rows, numericColumnIndices } = data;
+                const calculator = new CorrelationCalculator();
+                calculator.set_headers(headers);
+                calculator.set_numeric_columns(numericColumnIndices);
+                calculator.add_rows(rows);
+                const result = calculator.compute();
+                self.postMessage({ type: 'correlation_computed', result });
+                break;
+            }
+
+            case 'process_rows': {
+                // Direct row profiling - bypasses File I/O for SQL query results
+                const { rows, columnNames } = data as {
+                    rows: Record<string, unknown>[];
+                    columnNames: string[];
+                };
+
+                // Convert rows to CSV string
+                const csvContent = [
+                    columnNames.join(','),
+                    ...rows.map((row) =>
+                        columnNames
+                            .map((col) => {
+                                const val = row[col];
+                                if (val === null || val === undefined) return '';
+                                const str = String(val);
+                                // Escape quotes and wrap in quotes if contains comma/newline/quote
+                                if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+                                    return `"${str.replace(/"/g, '""')}"`;
+                                }
+                                return str;
+                            })
+                            .join(',')
+                    ),
+                ].join('\n');
+
+                // Initialize CSV profiler with comma delimiter and headers
+                mode = 'csv';
+                profiler = new DataCertProfiler(44, true); // 44 = comma ASCII
+
+                // Process the CSV content
+                const encoder = new TextEncoder();
+                const bytes = encoder.encode(csvContent);
+                (profiler as DataCertProfiler).parse_and_profile_chunk(bytes);
+
+                // Finalize and return results
+                const finalStats = (profiler as DataCertProfiler).finalize();
+                self.postMessage({ type: 'final_stats', result: finalStats });
+                profiler = null;
                 break;
             }
 

@@ -1,6 +1,8 @@
-use serde::{Serialize};
+use serde::Serialize;
+use ts_rs::TS;
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct Histogram {
     pub bins: Vec<HistogramBin>,
     pub min: f64,
@@ -8,7 +10,8 @@ pub struct Histogram {
     pub bin_width: f64,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct HistogramBin {
     pub start: f64,
     pub end: f64,

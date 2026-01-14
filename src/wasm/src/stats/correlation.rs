@@ -1,8 +1,10 @@
 use serde::Serialize;
 use std::collections::HashMap;
+use ts_rs::TS;
 
 /// Result of correlation matrix computation
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct CorrelationMatrix {
     /// Names of numeric columns included in the correlation matrix
     pub columns: Vec<String>,

@@ -1,7 +1,9 @@
-use serde::{Serialize};
+use serde::Serialize;
+use ts_rs::TS;
 use crate::stats::ColumnProfile;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, TS)]
+#[ts(export)]
 pub struct ProfilerResult {
     pub column_profiles: Vec<ColumnProfile>,
     pub total_rows: u64,

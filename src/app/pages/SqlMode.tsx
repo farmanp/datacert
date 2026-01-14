@@ -170,44 +170,20 @@ const SqlMode: Component = () => {
 
   /**
    * Profile the current query results
-   * Converts results to CSV and sends to profileStore
+   * Uses direct row profiling to bypass File I/O overhead.
+   *
+   * New flow: DuckDB JS objects -> Worker -> CSV in WASM -> Profile
+   * Old flow: DuckDB -> JS objects -> CSV string -> File blob -> Uint8Array chunks -> CSV parser
    */
   const handleProfileResults = async () => {
     const currentResults = results();
     if (!currentResults || currentResults.length === 0) return;
 
     try {
-      // Convert results to CSV
-      const headers = Object.keys(currentResults[0]);
-      const csvRows = [
-        headers.join(','),
-        ...currentResults.map((row) =>
-          headers
-            .map((header) => {
-              const value = row[header];
-              if (value === null || value === undefined) return '';
-              const str = String(value);
-              // Escape quotes and wrap in quotes if contains comma/newline/quote
-              if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-                return `"${str.replace(/"/g, '""')}"`;
-              }
-              return str;
-            })
-            .join(',')
-        ),
-      ];
-      const csvContent = csvRows.join('\n');
+      const columnNames = Object.keys(currentResults[0]);
 
-      // Create a File from the CSV content
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const file = new File([blob], 'query-results.csv', { type: 'text/csv' });
-
-      // Reset stores and set the new file
-      profileStore.reset();
-      fileStore.selectFile(file);
-
-      // Start profiling
-      profileStore.startProfiling();
+      // Use direct row profiling - bypasses File I/O
+      profileStore.profileFromRows(currentResults, columnNames);
 
       // Navigate to home to see results
       navigate('/');

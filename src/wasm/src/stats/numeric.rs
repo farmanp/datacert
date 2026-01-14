@@ -1,6 +1,8 @@
-use serde::{Serialize};
+use serde::Serialize;
+use ts_rs::TS;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, TS)]
+#[ts(export)]
 pub struct NumericStats {
     pub min: f64,
     pub max: f64,
@@ -17,11 +19,17 @@ pub struct NumericStats {
     pub p90: f64,
     pub p95: f64,
     pub p99: f64,
-    
+
     // Welford's variables
-    #[serde(skip)] m2: f64,
-    #[serde(skip)] m3: f64,
-    #[serde(skip)] m4: f64,
+    #[serde(skip)]
+    #[ts(skip)]
+    m2: f64,
+    #[serde(skip)]
+    #[ts(skip)]
+    m3: f64,
+    #[serde(skip)]
+    #[ts(skip)]
+    m4: f64,
 }
 
 impl NumericStats {

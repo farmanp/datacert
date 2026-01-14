@@ -1,6 +1,8 @@
 use serde::{Serialize, Deserialize};
+use ts_rs::TS;
 
-#[derive(Serialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Debug, Clone, PartialEq, TS)]
+#[ts(export)]
 pub enum DataType {
     Integer,
     Numeric,
@@ -10,7 +12,8 @@ pub enum DataType {
     Null,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, TS)]
+#[ts(export)]
 pub struct BaseStats {
     pub count: u64,
     pub missing: u64,
