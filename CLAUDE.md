@@ -106,6 +106,39 @@ Messages from worker: `ready`, `started`, `chunk_processed`, `final_stats`, `err
 - Serialization via `serde` + `serde-wasm-bindgen` for JS interop
 - Key crates: `csv`, `encoding_rs`, `hyperloglogplus` (distinct estimation), `chrono`
 
+## Streaming Architecture (SPIKE-001 Findings)
+
+### Data Flow
+```
+File → ReadableStream (64KB chunks) → Transferable ArrayBuffer → Worker → WASM → Online Stats → JSON Result
+```
+
+### Online Algorithms
+
+| Statistic | Algorithm | Space | Notes |
+|-----------|-----------|-------|-------|
+| Mean/Sum | Running accumulator | O(1) | Exact |
+| Variance/StdDev | Welford's | O(1) | Numerically stable |
+| Median/Quantiles | t-digest | ~2KB | <0.01% error for P1/P99 |
+| Distinct Count | HyperLogLog | ~1.5KB | 2% error, uses `hyperloglogplus` crate |
+| Top-N Values | Count-Min Sketch + Heap | ~1KB | For top-10 tracking |
+| Histogram | Dynamic binning | O(bins) | Derived from quantiles |
+
+### Performance Targets
+
+| File Size | Time | Memory |
+|-----------|------|--------|
+| 10MB | < 3s | < 50MB |
+| 100MB | < 15s | < 200MB |
+| 500MB | < 60s | < 1GB |
+
+### Browser Compatibility
+
+- **ReadableStream**: 97%+ (Chrome 43+, Firefox 65+, Safari 10.1+)
+- **SharedArrayBuffer**: 95% (requires COOP/COEP headers - optional enhancement)
+- **WASM in Workers**: Universal modern browser support
+- **Transferable ArrayBuffer**: Universal support
+
 ## Key Entry Points
 
 | Task                   | File                                 |
@@ -125,3 +158,22 @@ Messages from worker: `ready`, `started`, `chunk_processed`, `final_stats`, `err
 - Setup: `src/app/setupTests.ts`
 - Test files: `*.test.tsx` pattern
 - Run single test: `npx vitest run path/to/test.test.tsx`
+
+## Development Roadmap
+
+See `tickets/README.md` for the full backlog. Key phases:
+
+1. **Foundation**: Project scaffold, CSV parser, basic stats, core UI, PWA
+2. **Core Features**: Advanced stats (t-digest, HLL), quality metrics, visualizations, exports
+3. **Polish**: Parquet support, comparison mode, correlation matrix, test suite
+4. **Phase 4**: Cloud storage integration research (GCS), database warehouse feasibility
+
+### Active Tickets Location
+- `tickets/` - All development tickets in AI-ready format
+- `tickets/README.md` - Implementation order and dependency graph
+
+### Spike Research
+- `SPIKE-001` - Streaming architecture (completed) - findings in this file
+- `SPIKE-002` - Cloud storage feasibility (planned)
+- `SPIKE-003` - GCS integration design (planned)
+- `SPIKE-004` - Database warehouse feasibility (planned)
