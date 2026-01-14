@@ -1,162 +1,84 @@
-# DataCert
+# <img src="public/icons/icon-512x512.svg" align="left" width="48" height="48" /> DataCert
 
-**DataCert** is a local-first, in-browser data quality certification toolkit powered by WebAssembly. Profile, query, and validate your data without leaving your browser - all processing happens locally on your device.
+**Certify your data quality instantly. No cloud. No upload. 100% Local.**
 
-## What is DataCert?
+[![WASM Powered](https://img.shields.io/badge/Engine-Rust%2FWASM-orange?style=flat-square)](https://webassembly.org/)
+[![SolidJS](https://img.shields.io/badge/Frontend-SolidJS-blue?style=flat-square)](https://www.solidjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-DataCert is the tool you reach for when you need to quickly understand and certify your data quality without spinning up infrastructure. It's your data certification toolkit - always ready.
+---
 
-**Core Capabilities:**
-- **Profile** - Comprehensive statistical profiling with quality metrics
-- **Query** - SQL Mode powered by DuckDB-WASM for ad-hoc analysis
-- **Validate** - Import/export Great Expectations, Soda Checks, JSON Schema
-- **Compare** - Side-by-side dataset comparison and schema drift detection
-- **Export** - HTML reports, JSON, CSV, Markdown, and more
+![DataCert Hero](docs/assets/datacert_hero.png)
 
-## Why DataCert?
+**DataCert** is a high-performance, browser-based profiling suite designed for data engineers who value privacy and speed. By leveraging **Rust** compiled to **WebAssembly**, DataCert processes millions of rows directly on your device - your data never leaves your machine.
 
-| Problem | DataCert Solution |
-|---------|-------------------|
-| "I need to quickly check this CSV" | Drop it in, instant profile |
-| "pandas-profiling requires Python setup" | Browser-based, no install |
-| "I can't upload sensitive data to cloud tools" | 100% local processing |
-| "I need to run a quick SQL query" | DuckDB-WASM built-in |
-| "I want to compare two versions of a dataset" | Compare Mode |
+### ⚡ See it in Action
+![DataCert Demo](docs/assets/datacert_demo.webp)
 
-## Features
+---
 
-- **Multi-format support:** CSV, TSV, JSON, JSONL, Parquet, Excel (.xlsx)
-- **Comprehensive statistics:** Mean, median, std dev, percentiles, min/max
-- **Data quality metrics:** Missing values, uniqueness, type detection, PII detection
-- **Histogram visualizations:** Auto-binned distributions for numeric columns
-- **Correlation matrix:** Visualize relationships between numeric columns
-- **SQL Mode:** Query your data with DuckDB-WASM, profile results
-- **Comparison mode:** Detect schema drift and statistical changes
-- **Validation exports:** Great Expectations, Soda Checks, JSON Schema
-- **Cloud integration:** Google Cloud Storage (GCS) support
-- **PWA:** Install as a native-like app with offline support
-- **Privacy-first:** No data leaves your device
+## 🚀 Why DataCert?
 
-## Quick Start
+| 🛡️ Privacy First | 🏎️ Near-Native Speed | 🛠️ Zero dependencies |
+| :--- | :--- | :--- |
+| Processing happens entirely in your browser's memory. Safe for PII and sensitive internal data. | Rust/WASM streaming engine handles massive CSVs faster than Python-based alternatives. | No Python setup, no Docker, no Cloud console. Just drop your file and go. |
 
-Run locally:
+---
+
+## ✨ Features
+
+- **Comprehensive Profiling:** Instant health scores, data type detection, and statistical distribution charts.
+- **SQL Mode:** Query local files using SQL syntax via **DuckDB-WASM**.
+- **CLI for CI/CD:** Add quality gates to your pipelines with `npx datacert profile`.
+- **Compare & Batch:** Detect schema drift between versions or profile entire directories at once.
+- **Visual Insights:** Beautifully rendered histograms, correlation matrices, and PII alerts.
+
+![Profiling Report](docs/assets/datacert_report.png)
+
+---
+
+## 📈 Growth Strategy: "The Data Quality Swiss Army Knife"
+
+Our mission is to make data profiling as ubiquitous as `ls` or `grep`.
+
+### 1. The Hooks
+- **"Private by Design":** We don't want your data. In an era of data leaks, DataCert is the only tool your compliance officer will approve instantly.
+- **Instant Gratification:** From CSV to Profile in < 2 seconds. No login required.
+
+### 2. Community Engagement
+- **Show HN & Reddit:** Targetting `r/dataengineering` with the Rust-technical edge.
+- **PLG Viral Loop:** Exportable HTML reports allow teams to share quality audits without sharing raw data access.
+
+---
+
+## 🛠️ Getting Started
+
+### Web UI
+1. Visit the hosted version (PWA supported).
+2. Drag and drop any `.csv`, `.json`, `.parquet`, or `.xlsx` file.
+3. Review your data health instantly.
+
+### CLI Usage
+For automated quality gates in CI/CD:
 
 ```bash
-# Clone and install
-git clone https://github.com/farmanp/datacert.git
-cd datacert
-npm install
-
-# Build WASM and start dev server
-npm run build:wasm
-npm run dev
-```
-
-## CLI Usage
-
-DataCert includes a powerful CLI for automation and CI/CD pipelines. For detailed instructions, see the [CLI Guide](docs/guides/cli.md).
-
-```bash
-# Profile a single file to JSON (stdout)
-npx datacert profile data.csv
-
-# Profile multiple files and save to a directory
-npx datacert profile "*.csv" --output reports/ --format html
-
-# CI/CD Quality Gate: fail if more than 5% missing values
 npx datacert profile data.csv --fail-on-missing 5
 ```
+*See the [CLI Guide](docs/guides/cli.md) for more.*
 
-**Options:**
-- `-o, --output <path>`: Output file or directory
-- `-f, --format <type>`: Output format: `json`|`html`|`markdown` (default: `json`)
-- `-q, --quiet`: Suppress progress output
-- `--fail-on-missing <pct>`: Exit 1 if any column > pct% missing
-- `--fail-on-duplicates`: Exit 1 if any column has duplicates
-- `--help`: Show usage information
+---
 
-## Architecture
+## 🏗️ Technical Stack
 
-```
-datacert
-├── Frontend: SolidJS + TypeScript + Tailwind CSS
-├── Core Engine: Rust → WebAssembly (wasm-bindgen)
-├── SQL Mode: DuckDB-WASM (lazy-loaded)
-└── Build: Vite + wasm-pack
-```
+- **Engine:** Rust (Edition 2021) + `wasm-bindgen`
+- **UI:** SolidJS + Tailwind CSS
+- **Query Engine:** DuckDB-WASM
+- **Bundler:** Vite
 
-**Key Design Principles:**
-- All data processing in Rust/WASM for performance
-- Streaming architecture processes files in 64KB chunks
-- Web Workers offload computation from main thread
-- No data leaves the user's device
+---
 
-## Development
+## 🤝 Contributing & License
 
-### Prerequisites
+We welcome contributions! Check the `tickets/` directory for our current roadmap.
 
-- Node.js (LTS)
-- Rust + Cargo
-- wasm-pack (`cargo install wasm-pack`)
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Full production build (WASM + Frontend) |
-| `npm run build:wasm` | Compile Rust to WebAssembly |
-| `npm run test` | Run test suite |
-| `npm run typecheck` | TypeScript type checking |
-| `npm run lint` | ESLint checks |
-| `npm run check` | All checks (typecheck + lint + format) |
-
-### Directory Structure
-
-```
-src/
-├── app/          # SolidJS frontend
-│   ├── components/
-│   ├── pages/
-│   ├── stores/
-│   └── workers/
-└── wasm/         # Rust core engine
-    └── src/
-        ├── parser/
-        └── stats/
-
-docs/             # Documentation
-tickets/          # Development tickets
-```
-
-## Supported Formats
-
-| Format | Extensions | Notes |
-|--------|------------|-------|
-| CSV | .csv | Auto-detects delimiter |
-| TSV | .tsv | Tab-separated |
-| JSON | .json | Array of objects |
-| JSONL | .jsonl | JSON Lines format |
-| Parquet | .parquet | Apache Parquet |
-| Excel | .xlsx | Multi-sheet support |
-
-## Roadmap
-
-See [tickets/README.md](tickets/README.md) for the full backlog. Highlights:
-
-- **CLI / Headless Mode** - CI/CD integration
-- **Profile Diff** - Schema drift detection
-- **Shareable Links** - Collaboration without uploading data
-- **VS Code Extension** - Profile files in your editor
-
-## Documentation
-
-- [SQL Mode Guide](docs/guides/sql-mode.md)
-- [Export Formats](docs/guides/exports.md)
-- [Validation Guide](docs/guides/validation.md)
-- [Statistics Reference](docs/reference/statistics.md)
-- [GCS Setup](docs/user-guides/gcs-setup.md)
-
-## License
-
-MIT
+**License:** [MIT](LICENSE)
