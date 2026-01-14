@@ -1,3 +1,9 @@
+---
+id: architecture-decisions
+title: Architecture Decision Records
+sidebar_label: ADRs
+---
+
 # Architecture Decision Records (ADRs)
 
 This directory contains records of significant architectural decisions made during the development of DataLens Profiler.
@@ -23,3 +29,7 @@ ADRs should follow a consistent format, typically including:
 *   [0003-local-first-processing.md](0003-local-first-processing.md)
 *   [0004-streaming-processing.md](0004-streaming-processing.md)
 *   [0005-web-worker-offloading.md](0005-web-worker-offloading.md)
+*   [0006-performance-strategy.md](0006-performance-strategy.md)
+*   [0007-gcs-cloud-integration.md](0007-gcs-cloud-integration.md)
+*   [0008-error-handling-strategy.md](0008-error-handling-strategy.md)
+*   [0009-comparison-mode.md](0009-comparison-mode.md)

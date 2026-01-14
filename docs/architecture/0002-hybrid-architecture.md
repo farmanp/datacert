@@ -1,3 +1,9 @@
+---
+id: hybrid-architecture
+title: 2. Hybrid Architecture
+sidebar_label: 2. Hybrid Architecture
+---
+
 # 2. Hybrid Architecture: SolidJS Frontend with Rust/Wasm Core
 
 Date: 2026-01-13

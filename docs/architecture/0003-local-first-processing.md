@@ -1,3 +1,9 @@
+---
+id: local-first-processing
+title: 3. Local-First Processing
+sidebar_label: 3. Local-First
+---
+
 # 3. Local-First Data Processing
 
 Date: 2026-01-13

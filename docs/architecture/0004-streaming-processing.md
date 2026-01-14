@@ -1,3 +1,9 @@
+---
+id: streaming-processing
+title: 4. Streaming Processing
+sidebar_label: 4. Streaming
+---
+
 # 4. Streaming Data Processing
 
 Date: 2026-01-13

@@ -1,3 +1,9 @@
+---
+id: record-architecture-decisions
+title: 1. Record Architecture Decisions
+sidebar_label: 1. Record Decisions
+---
+
 # 1. Record Architecture Decisions
 
 Date: 2026-01-13

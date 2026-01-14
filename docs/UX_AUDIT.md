@@ -1,3 +1,9 @@
+---
+id: ux-audit
+title: UX Audit Assessment
+sidebar_label: UX Audit
+---
+
 # UX Audit Assessment - DataLens Profiler
 
 **Date:** January 13, 2026

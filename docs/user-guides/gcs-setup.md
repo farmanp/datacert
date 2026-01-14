@@ -1,3 +1,9 @@
+---
+id: gcs-setup
+title: Google Cloud Storage Setup
+sidebar_label: GCS Setup
+---
+
 # Google Cloud Storage (GCS) Setup Guide
 
 To profile files directly from your GCS buckets, you need to configure Cross-Origin Resource Sharing (CORS) on your bucket. This allows the DataLens application (running in your browser) to fetch data from Google's servers.

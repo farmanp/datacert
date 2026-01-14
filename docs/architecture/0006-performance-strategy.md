@@ -1,3 +1,9 @@
+---
+id: performance-strategy
+title: 6. Performance Strategy
+sidebar_label: 6. Performance
+---
+
 # 6. Performance Strategy & Optimization
 
 Date: 2026-01-13

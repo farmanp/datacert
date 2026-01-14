@@ -1,3 +1,9 @@
+---
+id: web-worker-offloading
+title: 5. Web Worker Offloading
+sidebar_label: 5. Web Workers
+---
+
 # 5. Web Worker Offloading
 
 Date: 2026-01-13

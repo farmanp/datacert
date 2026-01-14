@@ -1,3 +1,9 @@
+---
+id: value-proposition
+title: Value Proposition
+sidebar_label: Value Proposition
+---
+
 # DataLens Value Proposition
 
 ## The "Ad-Hoc" Gap
