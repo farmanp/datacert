@@ -1,8 +1,7 @@
 use wasm_bindgen::prelude::*;
 use apache_avro::Reader;
 use std::io::Cursor;
-use crate::stats::profiler::Profiler;
-use crate::parser::json::{JsonParserConfig}; // Reusing config for flattening logic if needed
+use crate::stats::profiler::{Profiler, ProfilerResult};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -29,39 +28,29 @@ impl AvroProfiler {
     }
 
     pub fn parse_and_profile(&mut self, file_bytes: &[u8]) -> Result<JsValue, JsValue> {
+        match self.parse_and_profile_internal(file_bytes) {
+            Ok(stats) => serde_wasm_bindgen::to_value(&stats).map_err(|e| JsValue::from_str(&e.to_string())),
+            Err(e) => Err(JsValue::from_str(&e)),
+        }
+    }
+
+    fn parse_and_profile_internal(&mut self, file_bytes: &[u8]) -> Result<ProfilerResult, String> {
         let cursor = Cursor::new(file_bytes);
-        let reader = Reader::new(cursor).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let reader = Reader::new(cursor).map_err(|e| e.to_string())?;
         
         // Extract schema
         let schema = reader.writer_schema();
         self.schema_json = serde_json::to_string_pretty(&schema).unwrap_or_default();
         
-        // We need to determine headers by iterating schema or by inspecting first record?
-        // Avro schema is explicit.
-        // We can flatten the schema to get headers.
-        // For simplicity in this streaming impl, let's process records and infer headers if complex,
-        // OR better: use the known schema to build headers.
-        // Let's rely on flattening the first record(s) similar to JSON parser to robustly handle nesting.
-        // But Avro schema gives us headers upfront.
-        // Let's skip header pre-computation and do it on first row for now to reuse JSON flattening logic?
-        // Or implement explicit schema flattening.
-        
         // Let's use the reader iterator.
         let mut batch: Vec<Vec<String>> = Vec::with_capacity(1000);
         let batch_size = 1000;
         
-        // Re-use logic for flattening
-        // We can convert Avro Value to Serde Value?
-        // apache_avro::types::Value is what we get.
-        
         for record_result in reader {
-            let record = record_result.map_err(|e| JsValue::from_str(&e.to_string()))?;
-            // Convert to serde_json::Value to reuse flattening logic logic or implement custom flattening
-            // apache_avro Value implements specific types.
-            // Let's implement a custom flattener for Avro Value to Vec<String>
+            let record = record_result.map_err(|e| e.to_string())?;
             
             // First time initialization of headers if needed
-            let serde_value: Value =  apache_avro::from_value(&record).map_err(|e| JsValue::from_str(&e.to_string()))?;
+            let serde_value: Value =  apache_avro::from_value(&record).map_err(|e| e.to_string())?;
             
             if self.headers.is_empty() {
                 // Determine headers from the first record structure (flattened)
@@ -92,10 +81,9 @@ impl AvroProfiler {
 
         // Finalize
         if let Some(ref mut p) = self.profiler {
-            let stats = p.finalize();
-            serde_wasm_bindgen::to_value(&stats).map_err(|e| JsValue::from_str(&e.to_string()))
+            Ok(p.finalize())
         } else {
-            Err(JsValue::from_str("Profiler not initialized"))
+            Err("Profiler not initialized".to_string())
         }
     }
 }
@@ -242,7 +230,7 @@ mod tests {
         let mut profiler = AvroProfiler::new();
         
         // This will call the actual logic
-        let _ = profiler.parse_and_profile(&bytes).unwrap();
+        let _ = profiler.parse_and_profile_internal(&bytes).unwrap();
         
         assert_eq!(profiler.headers, vec!["id", "name", "nested.val"]);
         assert!(profiler.schema_json.contains("nested"));
