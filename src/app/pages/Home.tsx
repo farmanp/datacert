@@ -7,6 +7,7 @@ import Navigation from '../components/Navigation';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import { authStore } from '../stores/auth.store';
+import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 import RemoteSourcesModal from '../components/RemoteSourcesModal';
 import TourModal from '../components/TourModal';
@@ -70,7 +71,9 @@ const Home: Component = () => {
                 </svg>
                 Take a Tour
               </button>
-              <GCSAuthButton />
+              <Show when={isFeatureEnabled(FEATURE_FLAGS.GCS_AUTH)}>
+                <GCSAuthButton />
+              </Show>
             </div>
 
             {/* Header */}

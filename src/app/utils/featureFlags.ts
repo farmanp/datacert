@@ -21,6 +21,7 @@ export const FEATURE_FLAGS = {
   BATCH_MODE: 'batch-mode',
   COMPARE_MODE: 'compare-mode',
   QUALITY_MODE: 'quality-mode',
+  GCS_AUTH: 'gcs-auth',
 } as const;
 
 export type FeatureFlagName = (typeof FEATURE_FLAGS)[keyof typeof FEATURE_FLAGS];
@@ -34,6 +35,7 @@ const DEFAULT_FLAGS: Record<FeatureFlagName, boolean> = {
   [FEATURE_FLAGS.BATCH_MODE]: true,
   [FEATURE_FLAGS.COMPARE_MODE]: true,
   [FEATURE_FLAGS.QUALITY_MODE]: false, // Hidden until better defined
+  [FEATURE_FLAGS.GCS_AUTH]: false, // Hidden until GCS auth is set up
 };
 
 /**
