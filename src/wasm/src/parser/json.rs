@@ -796,6 +796,7 @@ impl PathTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::stats::tree::{NodeType, ProfilingMode, StructureConfig};
 
     #[test]
     fn test_auto_detect_json_array() {
@@ -836,5 +837,198 @@ mod tests {
         // Let's verify headers.
         assert!(result.headers.contains(&"id".to_string()));
         assert!(result.headers.contains(&"value".to_string()));
+    }
+
+    // ============================================================================
+    // Structure Analysis Tests
+    // ============================================================================
+
+    #[test]
+    fn test_analyze_shallow_json() {
+        let data = r#"[
+            {"id": 1, "name": "Alice"},
+            {"id": 2, "name": "Bob"}
+        ]"#;
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        assert_eq!(analysis.max_depth, 1);  // $.id, $.name at depth 1
+        assert_eq!(analysis.rows_sampled, 2);
+        assert!(analysis.total_paths >= 2);  // At least $.id and $.name
+        assert_eq!(analysis.recommended_mode, ProfilingMode::Tabular);
+    }
+
+    #[test]
+    fn test_analyze_deeply_nested_json() {
+        let data = r#"[
+            {
+                "level1": {
+                    "level2": {
+                        "level3": {
+                            "level4": {
+                                "level5": {
+                                    "value": "deep"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]"#;
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        assert_eq!(analysis.max_depth, 6);  // level1 through level to value
+        assert!(analysis.total_paths >= 6);
+        assert_eq!(analysis.recommended_mode, ProfilingMode::Tree);  // depth > 5
+    }
+
+    #[test]
+    fn test_analyze_wide_json() {
+        // Create JSON with many fields
+        let mut fields = Vec::new();
+        for i in 0..100 {
+            fields.push(format!("\"field{}\": {}", i, i));
+        }
+        let data = format!("[{{{}}}]", fields.join(","));
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        assert_eq!(analysis.total_paths, 101);  // 100 fields + root $
+        assert_eq!(analysis.max_depth, 1);
+    }
+
+    #[test]
+    fn test_analyze_population_tracking() {
+        let data = r#"[
+            {"id": 1, "email": "alice@example.com"},
+            {"id": 2, "email": "bob@example.com"},
+            {"id": 3},
+            {"id": 4}
+        ]"#;
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        
+        // Find the email path in tree
+        let mut email_node = None;
+        for child in &analysis.tree.children {
+            if child.path == "$.email" {
+                email_node = Some(child);
+                break;
+            }
+        }
+        
+        assert!(email_node.is_some());
+        let email = email_node.unwrap();
+        
+        // Email exists in 2 out of 4 rows = 50%
+        assert!((email.population - 50.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn test_analyze_mixed_types() {
+        let data = r#"[
+            {"value": "string"},
+            {"value": 123},
+            {"value": true}
+        ]"#;
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        
+        // Find the value path
+        let mut value_node = None;
+        for child in &analysis.tree.children {
+            if child.path == "$.value" {
+                value_node = Some(child);
+                break;
+            }
+        }
+        
+        assert!(value_node.is_some());
+        let value = value_node.unwrap();
+        
+        // Should detect mixed type
+        assert_eq!(value.data_type, NodeType::Mixed);
+    }
+
+    #[test]
+    fn test_analyze_jsonl_format() {
+        let data = r#"{"id": 1, "name": "Alice"}
+{"id": 2, "name": "Bob"}
+{"id": 3, "name": "Charlie"}"#;
+
+        let result = analyze_json_structure(data.as_bytes(), None);
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        assert_eq!(analysis.rows_sampled, 3);
+        assert!(analysis.total_paths >= 2);  // id and name
+    }
+
+    #[test]
+    fn test_analyze_with_sampling() {
+        // Create 2000 rows but only sample 100
+        let rows: Vec<String> = (0..2000)
+            .map(|i| format!(r#"{{"id": {}, "value": "row{}" }}"#, i, i))
+            .collect();
+        let data = format!("[{}]", rows.join(","));
+
+        let config = StructureConfig {
+            max_sample_rows: 100,
+            collect_examples: true,
+        };
+
+        let result = analyze_json_structure(data.as_bytes(), Some(config));
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        assert_eq!(analysis.rows_sampled, 100);  // Only sampled 100, not all 2000
+    }
+
+    #[test]
+    fn test_analyze_example_collection() {
+        let data = r#"[
+            {"name": "Alice"},
+            {"name": "Bob"},
+            {"name": "Charlie"}
+        ]"#;
+
+        let config = StructureConfig {
+            max_sample_rows: 1000,
+            collect_examples: true,
+        };
+
+        let result = analyze_json_structure(data.as_bytes(), Some(config));
+        assert!(result.is_ok());
+
+        let analysis = result.unwrap();
+        
+        // Find name node
+        let mut name_node = None;
+        for child in &analysis.tree.children {
+            if child.path == "$.name" {
+                name_node = Some(child);
+                break;
+            }
+        }
+        
+        assert!(name_node.is_some());
+        let name = name_node.unwrap();
+        
+        // Should have collected examples (up to 3)
+        assert!(!name.examples.is_empty());
+        assert!(name.examples.len() <= 3);
     }
 }
