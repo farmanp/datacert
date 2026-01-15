@@ -7,6 +7,7 @@ import NWayComparisonView from '../components/NWayComparisonView';
 import SchemaValidationDialog from '../components/SchemaValidationDialog';
 import MergedResultsView from '../components/MergedResultsView';
 import { batchStore } from '../stores/batchStore';
+import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 
 /**
  * Batch Page Component
@@ -414,10 +415,12 @@ const Batch: Component = () => {
             <a href="/" class="text-amber-400 hover:text-amber-300 transition-colors">
               Back to single-file profiling
             </a>
-            {' | '}
-            <a href="/compare" class="text-purple-400 hover:text-purple-300 transition-colors">
-              Compare two files
-            </a>
+            <Show when={isFeatureEnabled(FEATURE_FLAGS.COMPARE_MODE)}>
+              {' | '}
+              <a href="/compare" class="text-purple-400 hover:text-purple-300 transition-colors">
+                Compare two files
+              </a>
+            </Show>
           </p>
         </footer>
       </div>

@@ -9,6 +9,7 @@ import { authStore } from '../stores/auth.store';
 import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 import RemoteSourcesModal from '../components/RemoteSourcesModal';
 import TourModal from '../components/TourModal';
+import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 
 /**
  * Home Page Component
@@ -266,17 +267,19 @@ const Home: Component = () => {
                   </p>
                 </div>
 
-                <A href="/compare" class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 hover:border-purple-500/30 transition-all group block">
-                  <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6">
-                    <svg class="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                  </div>
-                  <h3 class="text-xl font-bold text-slate-100 mb-3">Compare Mode</h3>
-                  <p class="text-slate-400 text-sm leading-relaxed">
-                    Compare two datasets side-by-side to detect schema drift and statistical changes.
-                  </p>
-                </A>
+                <Show when={isFeatureEnabled(FEATURE_FLAGS.COMPARE_MODE)}>
+                  <A href="/compare" class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 hover:border-purple-500/30 transition-all group block">
+                    <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6">
+                      <svg class="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-100 mb-3">Compare Mode</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                      Compare two datasets side-by-side to detect schema drift and statistical changes.
+                    </p>
+                  </A>
+                </Show>
 
                 <A href="/sql-mode" class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/30 transition-all group block">
                   <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center mb-6">

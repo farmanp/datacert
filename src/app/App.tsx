@@ -1,10 +1,11 @@
-import { Component, lazy } from 'solid-js';
+import { Component, lazy, Show } from 'solid-js';
 import { Route } from '@solidjs/router';
 import Home from './pages/Home';
 import Compare from './pages/Compare';
 import Batch from './pages/Batch';
 import InstallPrompt from './components/InstallPrompt';
 import UpdateNotification from './components/UpdateNotification';
+import { isFeatureEnabled, FEATURE_FLAGS } from './utils/featureFlags';
 
 // Lazy-loaded pages for code splitting (prevents DuckDB from loading on startup)
 const SqlMode = lazy(() => import('./pages/SqlMode'));
@@ -27,10 +28,16 @@ const App: Component = () => {
   return (
     <>
       <Route path="/" component={Home} />
-      <Route path="/compare" component={Compare} />
-      <Route path="/batch" component={Batch} />
+      <Show when={isFeatureEnabled(FEATURE_FLAGS.COMPARE_MODE)}>
+        <Route path="/compare" component={Compare} />
+      </Show>
+      <Show when={isFeatureEnabled(FEATURE_FLAGS.BATCH_MODE)}>
+        <Route path="/batch" component={Batch} />
+      </Show>
       <Route path="/sql-mode" component={SqlMode} />
-      <Route path="/tree-mode" component={TreeMode} />
+      <Show when={isFeatureEnabled(FEATURE_FLAGS.TREE_MODE)}>
+        <Route path="/tree-mode" component={TreeMode} />
+      </Show>
       <Route path="/spike/duckdb" component={DuckDBSpike} />
       <InstallPrompt />
       <UpdateNotification />
