@@ -1,6 +1,6 @@
 {
   "name": "datacert",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Local-first data profiling toolkit powered by WebAssembly",
   "type": "module",
   "bin": {
