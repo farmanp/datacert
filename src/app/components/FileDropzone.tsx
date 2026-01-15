@@ -1,4 +1,5 @@
 import { Component, Show, Switch, Match, createMemo } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import { fileStore, FILE_ACCEPT, SUPPORTED_EXTENSIONS } from '../stores/fileStore';
 import { profileStore } from '../stores/profileStore';
 import ErrorDisplay from './ErrorDisplay';
@@ -19,6 +20,7 @@ const LARGE_FILE_THRESHOLD = 50 * 1024 * 1024; // 50MB
  */
 const FileDropzone: Component = () => {
   let fileInputRef: HTMLInputElement | undefined;
+  const navigate = useNavigate();
 
   const { store, selectFile, setHover, reset, formatFileSize } = fileStore;
 
@@ -66,8 +68,8 @@ const FileDropzone: Component = () => {
           );
 
           if (useTreeMode) {
-            // Navigate to tree mode
-            window.location.href = '/tree-mode';
+            // Navigate to tree mode using Solid router to preserve memory state
+            navigate('/tree-mode');
             return;
           }
         }
@@ -89,7 +91,8 @@ const FileDropzone: Component = () => {
           );
 
           if (useTreeMode) {
-            window.location.href = '/tree-mode';
+            // Navigate to tree mode using Solid router to preserve memory state
+            navigate('/tree-mode');
             return;
           }
         }
