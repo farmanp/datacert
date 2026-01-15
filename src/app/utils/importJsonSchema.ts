@@ -1,5 +1,4 @@
-import { ProfileResult } from '../stores/profileStore';
-import { ValidationResult } from '../stores/validationStore';
+import { ProfileResult, ValidationResult } from '../stores/profileStore';
 
 /**
  * Minimal interface for JSON Schema (Draft 7/2020-12 subset)

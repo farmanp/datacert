@@ -31,7 +31,59 @@ export type {
   Severity,
 } from '../types/generated';
 
-import type { ProfilerResult } from '../types/generated';
+import type { ProfilerResult, ColumnProfile } from '../types/generated';
+
+// ============================================================================
+// DRILLDOWN TYPES (merged from drilldownStore)
+// ============================================================================
+
+export type DrilldownType = 'missing' | 'pii' | 'outlier' | 'format';
+
+export interface DrilldownState {
+  isOpen: boolean;
+  columnName: string;
+  anomalyType: DrilldownType;
+  rowIndices: number[]; // 1-based indices
+  totalAffected: number;
+
+  // Data view
+  currentPage: number;
+  pageSize: number;
+  currentRows: Array<{ index: number; row: string[] }>;
+  headers: string[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+// ============================================================================
+// VALIDATION TYPES (merged from validationStore)
+// ============================================================================
+
+export interface ValidationResult {
+  expectationType: string;
+  column?: string;
+  status: 'pass' | 'fail' | 'skipped';
+  observed?: string;
+  expected?: string;
+  reason?: string;
+  raw?: string;
+}
+
+export interface ValidationSummary {
+  fileName: string;
+  format: 'gx' | 'soda' | 'json-schema';
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  results: ValidationResult[];
+}
+
+export interface ValidationState {
+  summaries: ValidationSummary[];
+  isEvaluating: boolean;
+  error: string | null;
+}
 
 export interface ProfileStoreState {
   results: ProfilerResult | null;
@@ -45,6 +97,12 @@ export interface ProfileStoreState {
   largeFileMode: boolean;
   /** Memory warning message if memory pressure detected */
   memoryWarning: string | null;
+
+  // Drilldown sub-state (merged from drilldownStore)
+  drilldown: DrilldownState;
+
+  // Validation sub-state (merged from validationStore)
+  validation: ValidationState;
 }
 
 function createProfileStore() {
@@ -58,9 +116,33 @@ function createProfileStore() {
     viewMode: 'table',
     largeFileMode: false,
     memoryWarning: null,
+
+    // Drilldown sub-state initial values
+    drilldown: {
+      isOpen: false,
+      columnName: '',
+      anomalyType: 'missing',
+      rowIndices: [],
+      totalAffected: 0,
+      currentPage: 1,
+      pageSize: 50,
+      currentRows: [],
+      headers: [],
+      isLoading: false,
+      error: null,
+    },
+
+    // Validation sub-state initial values
+    validation: {
+      summaries: [],
+      isEvaluating: false,
+      error: null,
+    },
   });
 
   let worker: Worker | null = null;
+  let drilldownWorker: Worker | null = null;
+  const DRILLDOWN_CHUNK_SIZE = 1024 * 1024; // 1MB chunks for drilldown
 
   const startProfiling = () => {
     const fileInfo = fileStore.store.file;
@@ -817,10 +899,32 @@ function createProfileStore() {
       viewMode: 'table',
       largeFileMode: false,
       memoryWarning: null,
+      drilldown: {
+        isOpen: false,
+        columnName: '',
+        anomalyType: 'missing',
+        rowIndices: [],
+        totalAffected: 0,
+        currentPage: 1,
+        pageSize: 50,
+        currentRows: [],
+        headers: [],
+        isLoading: false,
+        error: null,
+      },
+      validation: {
+        summaries: [],
+        isEvaluating: false,
+        error: null,
+      },
     });
     if (worker) {
       worker.terminate();
       worker = null;
+    }
+    if (drilldownWorker) {
+      drilldownWorker.terminate();
+      drilldownWorker = null;
     }
     fileStore.reset();
   };
@@ -934,6 +1038,170 @@ function createProfileStore() {
     }
   };
 
+  // ============================================================================
+  // DRILLDOWN ACTIONS (merged from drilldownStore)
+  // ============================================================================
+
+  const processDrilldownFile = async (file: File) => {
+    if (!drilldownWorker) return;
+
+    let offset = 0;
+    const totalSize = file.size;
+
+    while (offset < totalSize) {
+      const chunk = file.slice(offset, offset + DRILLDOWN_CHUNK_SIZE);
+      const buffer = await chunk.arrayBuffer();
+      // Send chunk to worker
+      drilldownWorker.postMessage({ type: 'extract_chunk', data: buffer }, [buffer]);
+      offset += DRILLDOWN_CHUNK_SIZE;
+    }
+
+    drilldownWorker.postMessage({ type: 'finalize_extraction' });
+  };
+
+  const setupDrilldownWorkerAndLoad = async (pageIndices: number[], forExport = false) => {
+    if (drilldownWorker) drilldownWorker.terminate();
+    drilldownWorker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+      type: 'module',
+    });
+
+    const fileId = fileStore.store.file?.file;
+    if (!fileId) return;
+
+    drilldownWorker.onmessage = (e) => {
+      const { type, result } = e.data;
+      if (type === 'ready') {
+        drilldownWorker?.postMessage({
+          type: 'init_extractor',
+          data: {
+            indices: pageIndices,
+            delimiter: undefined, // Auto-detect in parser
+            hasHeaders: true, // Assumption: file has headers if we are profiling it
+          },
+        });
+      } else if (type === 'extractor_ready') {
+        processDrilldownFile(fileId);
+      } else if (type === 'extraction_complete') {
+        if (forExport) {
+          const rows = result.map((r: [number, string[]]) => [r[0], ...r[1]]);
+          const csvContent = [
+            ['Row #', ...store.drilldown.headers].join(','),
+            ...rows.map((row: (number | string)[]) =>
+              row
+                .map((val) => {
+                  const str = String(val);
+                  return str.includes(',') || str.includes('\n') || str.includes('"')
+                    ? `"${str.replace(/"/g, '""')}"`
+                    : str;
+                })
+                .join(',')
+            ),
+          ].join('\n');
+
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${store.drilldown.columnName}_${store.drilldown.anomalyType}_anomalies.csv`;
+          link.click();
+          URL.revokeObjectURL(url);
+          setStore('drilldown', 'isLoading', false);
+        } else {
+          const rows = result.map((r: [number, string[]]) => ({ index: r[0], row: r[1] }));
+          setStore('drilldown', 'currentRows', rows);
+          setStore('drilldown', 'isLoading', false);
+        }
+        drilldownWorker?.terminate();
+        drilldownWorker = null;
+      } else if (type === 'error') {
+        setStore('drilldown', 'error', e.data.error);
+        setStore('drilldown', 'isLoading', false);
+      }
+    };
+
+    drilldownWorker.postMessage({ type: 'init' });
+  };
+
+  const exportFilteredRows = () => {
+    if (store.drilldown.rowIndices.length === 0) return;
+    setStore('drilldown', 'isLoading', true);
+    setupDrilldownWorkerAndLoad(store.drilldown.rowIndices, true);
+  };
+
+  const loadDrilldownPage = (page: number) => {
+    if (store.drilldown.rowIndices.length === 0) return;
+
+    const startIdx = (page - 1) * store.drilldown.pageSize;
+    const endIdx = startIdx + store.drilldown.pageSize;
+    const pageIndices = store.drilldown.rowIndices.slice(startIdx, endIdx);
+
+    setStore('drilldown', 'currentPage', page);
+    setStore('drilldown', 'isLoading', true);
+    setStore('drilldown', 'error', null);
+
+    setupDrilldownWorkerAndLoad(pageIndices);
+  };
+
+  const openDrilldown = (
+    column: ColumnProfile,
+    type: DrilldownType,
+    indices: number[],
+    headers: string[]
+  ) => {
+    setStore('drilldown', {
+      isOpen: true,
+      columnName: column.name,
+      anomalyType: type,
+      rowIndices: indices,
+      totalAffected: indices.length,
+      currentPage: 1,
+      currentRows: [],
+      headers: headers,
+      isLoading: false,
+      error: null,
+    });
+
+    loadDrilldownPage(1);
+  };
+
+  const closeDrilldown = () => {
+    setStore('drilldown', 'isOpen', false);
+    setStore('drilldown', 'currentRows', []);
+    if (drilldownWorker) {
+      drilldownWorker.terminate();
+      drilldownWorker = null;
+    }
+  };
+
+  const setDrilldownPageSize = (size: number) => {
+    setStore('drilldown', 'pageSize', size);
+    loadDrilldownPage(1);
+  };
+
+  // ============================================================================
+  // VALIDATION ACTIONS (merged from validationStore)
+  // ============================================================================
+
+  const addValidationSummary = (summary: ValidationSummary) => {
+    setStore('validation', 'summaries', (prev) => [summary, ...prev]);
+  };
+
+  const clearValidationSummaries = () => {
+    setStore('validation', 'summaries', []);
+  };
+
+  const setValidationError = (error: string | null) => {
+    setStore('validation', 'error', error);
+  };
+
+  const setValidationEvaluating = (isEvaluating: boolean) => {
+    setStore('validation', 'isEvaluating', isEvaluating);
+  };
+
+  const removeValidationSummary = (index: number) => {
+    setStore('validation', 'summaries', (prev) => prev.filter((_, i) => i !== index));
+  };
+
   return {
     store,
     startProfiling,
@@ -945,6 +1213,20 @@ function createProfileStore() {
     setViewMode,
     reset,
     cancelProfiling,
+
+    // Drilldown actions
+    openDrilldown,
+    closeDrilldown,
+    loadDrilldownPage,
+    exportFilteredRows,
+    setDrilldownPageSize,
+
+    // Validation actions
+    addValidationSummary,
+    clearValidationSummaries,
+    setValidationError,
+    setValidationEvaluating,
+    removeValidationSummary,
   };
 }
 

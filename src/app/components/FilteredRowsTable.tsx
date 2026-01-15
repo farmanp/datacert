@@ -1,10 +1,10 @@
 import { Component, For, Show } from 'solid-js';
-import { drilldownStore } from '../stores/drilldownStore';
+import { profileStore } from '../stores/profileStore';
 
 export const FilteredRowsTable: Component = () => {
-    const { store } = drilldownStore;
+    const { store } = profileStore;
 
-    const highlightIndex = () => store.headers.indexOf(store.columnName);
+    const highlightIndex = () => store.drilldown.headers.indexOf(store.drilldown.columnName);
 
     return (
         <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
@@ -14,10 +14,10 @@ export const FilteredRowsTable: Component = () => {
                         <th class="px-3 py-2 border-b border-r dark:border-slate-700 text-right w-16 sticky left-0 bg-slate-50 dark:bg-slate-800">
                             #
                         </th>
-                        <For each={store.headers}>
+                        <For each={store.drilldown.headers}>
                             {(header) => (
                                 <th
-                                    class={`px-3 py-2 border-b dark:border-slate-700 whitespace-nowrap ${header === store.columnName ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : ''
+                                    class={`px-3 py-2 border-b dark:border-slate-700 whitespace-nowrap ${header === store.drilldown.columnName ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : ''
                                         }`}
                                 >
                                     {header}
@@ -27,7 +27,7 @@ export const FilteredRowsTable: Component = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <For each={store.currentRows}>
+                    <For each={store.drilldown.currentRows}>
                         {(item) => (
                             <tr class="bg-white border-b dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td class="px-3 py-2 border-r dark:border-slate-700 font-mono text-xs text-right sticky left-0 bg-white dark:bg-slate-900">
@@ -37,7 +37,7 @@ export const FilteredRowsTable: Component = () => {
                                     {(cell, i) => (
                                         <td
                                             class={`px-3 py-2 whitespace-nowrap max-w-[300px] overflow-hidden text-ellipsis ${i() === highlightIndex()
-                                                ? store.anomalyType === 'outlier'
+                                                ? store.drilldown.anomalyType === 'outlier'
                                                     ? 'bg-rose-500/10 dark:bg-rose-900/20 font-medium text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-rose-500/20'
                                                     : 'bg-amber-50/50 dark:bg-amber-900/10 font-medium text-slate-900 dark:text-slate-200'
                                                 : ''
@@ -48,7 +48,7 @@ export const FilteredRowsTable: Component = () => {
                                                 <span class="text-slate-400 italic font-light">null</span>
                                             ) : (
                                                 <Show
-                                                    when={store.anomalyType === 'pii' && i() === highlightIndex()}
+                                                    when={store.drilldown.anomalyType === 'pii' && i() === highlightIndex()}
                                                     fallback={cell}
                                                 >
                                                     {/* Simple PII highlighting for common patterns */}
@@ -61,9 +61,9 @@ export const FilteredRowsTable: Component = () => {
                             </tr>
                         )}
                     </For>
-                    {store.currentRows.length === 0 && !store.isLoading && (
+                    {store.drilldown.currentRows.length === 0 && !store.drilldown.isLoading && (
                         <tr>
-                            <td colspan={store.headers.length + 1} class="px-6 py-8 text-center text-slate-500">
+                            <td colspan={store.drilldown.headers.length + 1} class="px-6 py-8 text-center text-slate-500">
                                 No rows to display
                             </td>
                         </tr>

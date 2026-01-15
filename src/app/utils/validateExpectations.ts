@@ -1,5 +1,4 @@
-import { ProfileResult, ColumnProfile } from '../stores/profileStore';
-import { ValidationResult } from '../stores/validationStore';
+import { ProfileResult, ColumnProfile, ValidationResult } from '../stores/profileStore';
 import { SodaCheck } from './importSodaChecks';
 import { GXExpectation } from './exportGreatExpectations';
 import { isExpectationSupported } from './importGreatExpectations';

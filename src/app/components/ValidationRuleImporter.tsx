@@ -1,5 +1,4 @@
 import { Component, createSignal, Show } from 'solid-js';
-import { validationStore } from '../stores/validationStore';
 import { profileStore } from '../stores/profileStore';
 import { parseJsonSchema, validateJsonSchema } from '../utils/importJsonSchema';
 import { parseSodaYaml } from '../utils/importSodaChecks';
@@ -12,12 +11,12 @@ export const ValidationRuleImporter: Component = () => {
     const handleFile = async (file: File) => {
         const results = profileStore.store.results;
         if (!results) {
-            validationStore.setError('Please profile some data first');
+            profileStore.setValidationError('Please profile some data first');
             return;
         }
 
-        validationStore.setEvaluating(true);
-        validationStore.setError(null);
+        profileStore.setValidationEvaluating(true);
+        profileStore.setValidationError(null);
 
         try {
             const content = await file.text();
@@ -28,7 +27,7 @@ export const ValidationRuleImporter: Component = () => {
                 const checks = parseSodaYaml(content);
                 const validationResults = validateSodaChecks(results, checks);
 
-                validationStore.addSummary({
+                profileStore.addValidationSummary({
                     fileName,
                     format: 'soda',
                     total: validationResults.length,
@@ -48,7 +47,7 @@ export const ValidationRuleImporter: Component = () => {
                                 results,
                                 parseResult.suite.expectations
                             );
-                            validationStore.addSummary({
+                            profileStore.addValidationSummary({
                                 fileName,
                                 format: 'gx',
                                 total: validationResults.length,
@@ -58,14 +57,14 @@ export const ValidationRuleImporter: Component = () => {
                                 results: validationResults,
                             });
                         } else {
-                            validationStore.setError(parseResult.error.message);
+                            profileStore.setValidationError(parseResult.error.message);
                         }
                     } else if (json.$schema || json.type || json.properties) {
                          // JSON Schema (FEAT-027)
                          const schema = parseJsonSchema(content);
                          const validationResults = validateJsonSchema(results, schema);
-                         
-                         validationStore.addSummary({
+
+                         profileStore.addValidationSummary({
                             fileName,
                             format: 'json-schema',
                             total: validationResults.length,
@@ -75,19 +74,19 @@ export const ValidationRuleImporter: Component = () => {
                             results: validationResults
                          });
                     } else {
-                        validationStore.setError('Unknown JSON format. Expected JSON Schema or Great Expectations Suite.');
+                        profileStore.setValidationError('Unknown JSON format. Expected JSON Schema or Great Expectations Suite.');
                     }
                 } catch (e) {
-                    validationStore.setError('Invalid JSON file');
+                    profileStore.setValidationError('Invalid JSON file');
                 }
             } else {
-                validationStore.setError('Unsupported file format. Please use .yml, .yaml, or .json');
+                profileStore.setValidationError('Unsupported file format. Please use .yml, .yaml, or .json');
             }
         } catch (err) {
             console.error('Validation failed', err);
-            validationStore.setError(err instanceof Error ? err.message : 'Validation failed');
+            profileStore.setValidationError(err instanceof Error ? err.message : 'Validation failed');
         } finally {
-            validationStore.setEvaluating(false);
+            profileStore.setValidationEvaluating(false);
         }
     };
 
@@ -155,12 +154,12 @@ export const ValidationRuleImporter: Component = () => {
         `} />
             </div>
 
-            <Show when={validationStore.store.error}>
+            <Show when={profileStore.store.validation.error}>
                 <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-3 animate-in fade-in zoom-in duration-200">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    {validationStore.store.error}
+                    {profileStore.store.validation.error}
                 </div>
             </Show>
         </div>

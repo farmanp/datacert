@@ -1,10 +1,10 @@
 import { Component, For, Show } from 'solid-js';
-import { validationStore, ValidationResult } from '../stores/validationStore';
+import { profileStore, ValidationResult } from '../stores/profileStore';
 
 export const ValidationResultsView: Component = () => {
     return (
         <div class="space-y-6">
-            <For each={validationStore.store.summaries}>
+            <For each={profileStore.store.validation.summaries}>
                 {(summary, index) => (
                     <div class="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
                         {/* Header */}
@@ -21,7 +21,7 @@ export const ValidationResultsView: Component = () => {
                                 </h4>
                             </div>
                             <button
-                                onClick={() => validationStore.removeSummary(index())}
+                                onClick={() => profileStore.removeValidationSummary(index())}
                                 class="text-slate-500 hover:text-white transition-colors"
                                 aria-label="Remove validation"
                             >

@@ -1,6 +1,5 @@
 import { Component, Show, For, createSignal } from 'solid-js';
 import { ColumnProfile, profileStore } from '../stores/profileStore';
-import { drilldownStore } from '../stores/drilldownStore';
 import QualityBadge from './QualityBadge';
 import MiniHistogram from './MiniHistogram';
 import Histogram from './Histogram';
@@ -53,7 +52,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
           onClick={() => {
             if (props.profile.missing_rows && props.profile.missing_rows.length > 0) {
               const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-              drilldownStore.openDrilldown(props.profile, 'missing', props.profile.missing_rows, headers);
+              profileStore.openDrilldown(props.profile, 'missing', props.profile.missing_rows, headers);
             }
           }}
         />
@@ -210,7 +209,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
                 <button
                   onClick={() => {
                     const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-                    drilldownStore.openDrilldown(props.profile, 'pii', props.profile.pii_rows, headers);
+                    profileStore.openDrilldown(props.profile, 'pii', props.profile.pii_rows, headers);
                   }}
                   class="mt-2 text-[10px] font-bold text-amber-600 hover:underline cursor-pointer block"
                 >
@@ -221,7 +220,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
                 <button
                   onClick={() => {
                     const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-                    drilldownStore.openDrilldown(props.profile, 'outlier', props.profile.outlier_rows, headers);
+                    profileStore.openDrilldown(props.profile, 'outlier', props.profile.outlier_rows, headers);
                   }}
                   class="mt-2 text-[10px] font-bold text-rose-500 hover:underline cursor-pointer block"
                 >
