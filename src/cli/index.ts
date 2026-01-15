@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { profileCommand } from './commands/profile.js';
+import { serveCommand } from './commands/serve.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,8 +16,21 @@ const program = new Command();
 
 program
     .name('datacert')
-    .description('High-performance browser-based data profiling CLI')
+    .description('High-performance local-first data profiling toolkit')
     .version(packageJson.version);
+
+// Default command: open UI in browser
+program
+    .command('serve', { isDefault: true })
+    .description('Start DataCert UI in browser')
+    .option('-p, --port <number>', 'Port to serve on', '3000')
+    .option('--no-open', 'Do not open browser automatically')
+    .action(async (options) => {
+        await serveCommand({
+            port: parseInt(options.port),
+            open: options.open
+        });
+    });
 
 program
     .command('profile')
