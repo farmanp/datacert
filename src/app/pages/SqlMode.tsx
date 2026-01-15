@@ -104,7 +104,8 @@ const SqlMode: Component = () => {
     const logger = new duckdb.ConsoleLogger();
     db = new duckdb.AsyncDuckDB(logger, worker);
 
-    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+    // Don't pass pthreadWorker - DuckDB-WASM is single-threaded
+    await db.instantiate(bundle.mainModule, undefined);
 
     // Configure DuckDB for browser environment
     // Note: DuckDB-WASM cannot spill to disk like native DuckDB
@@ -113,8 +114,7 @@ const SqlMode: Component = () => {
     try {
       // Limit memory to 1GB to leave headroom for browser/OS
       await conn.query(`SET memory_limit='1GB'`);
-      // Reduce threads to lower peak memory usage
-      await conn.query(`SET threads=2`);
+      // Note: DuckDB-WASM is single-threaded, don't set threads
       // Disable insertion order preservation for better memory efficiency
       await conn.query(`SET preserve_insertion_order=false`);
     } finally {
