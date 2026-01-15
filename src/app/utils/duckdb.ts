@@ -96,6 +96,22 @@ export async function initDuckDB(): Promise<AsyncDuckDB> {
             const db = new duckdb.AsyncDuckDB(logger, worker);
             await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
+            // Configure DuckDB for browser environment
+            // Note: DuckDB-WASM cannot spill to disk like native DuckDB
+            // We must work within available memory constraints
+            const conn = await db.connect();
+            try {
+                // Limit memory to 1GB to leave headroom for browser/OS
+                // This is conservative but prevents OOM crashes
+                await conn.query(`SET memory_limit='1GB'`);
+                // Reduce threads to lower peak memory usage
+                await conn.query(`SET threads=2`);
+                // Disable insertion order preservation for better memory efficiency
+                await conn.query(`SET preserve_insertion_order=false`);
+            } finally {
+                await conn.close();
+            }
+
             dbInstance = db;
             return db;
         } catch (error) {
@@ -208,10 +224,20 @@ export async function executeQuery<T = Record<string, unknown>>(
             throw error;
         }
 
-        throw new DuckDBError(
-            `Query execution failed: ${error instanceof Error ? error.message : String(error)}`,
-            'QUERY_ERROR',
-        );
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        // Check for out-of-memory errors and provide helpful guidance
+        if (errorMessage.includes('Out of Memory') || errorMessage.includes('could not allocate')) {
+            throw new DuckDBError(
+                `Out of memory: The dataset is too large for browser processing. Try:\n` +
+                    `• Add LIMIT to your query (e.g., SELECT * FROM data LIMIT 10000)\n` +
+                    `• Filter data with WHERE clause\n` +
+                    `• Use the CLI for larger files: npx datacert profile yourfile.csv`,
+                'OUT_OF_MEMORY',
+            );
+        }
+
+        throw new DuckDBError(`Query execution failed: ${errorMessage}`, 'QUERY_ERROR');
     } finally {
         // Always close the connection
         if (conn) {
