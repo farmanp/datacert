@@ -8,9 +8,30 @@ This guide explains how DataCert is distributed and how to release new versions.
 
 | Method | Use Case | Install Command |
 |--------|----------|-----------------|
-| **npm/npx** | CLI for CI/CD pipelines, local profiling | `npx datacert profile data.csv` |
+| **npm/npx** | Local UI + CLI profiling | `npx datacert` |
 | **Docker** | Self-hosted web UI, air-gapped environments | `docker run -p 8080:80 datacert/datacert` |
 | **Vercel** | Public hosted web app | Visit https://datacert.app |
+
+---
+
+## Quick Start (npm)
+
+```bash
+# Open local UI in browser
+npx datacert
+
+# Or headless profiling
+npx datacert profile data.csv
+```
+
+**Commands:**
+```bash
+datacert                    # Opens UI at http://localhost:3000
+datacert -p 8080            # Custom port
+datacert --no-open          # Start server without opening browser
+datacert profile data.csv   # Headless profiling (no UI)
+datacert profile *.csv -f markdown  # Multiple files, markdown output
+```
 
 ---
 
@@ -18,7 +39,7 @@ This guide explains how DataCert is distributed and how to release new versions.
 
 ### What Gets Published
 
-Only the CLI is published to npm. The `files` field in `package.json` controls this:
+The CLI and bundled web UI are published to npm. The `files` field in `package.json` controls this:
 
 ```json
 {
@@ -33,13 +54,18 @@ datacert/
 │   ├── cli/
 │   │   ├── index.js          # Entry point (shebang: #!/usr/bin/env node)
 │   │   ├── commands/
-│   │   │   └── profile.js    # Profile command implementation
+│   │   │   ├── profile.js    # Profile command implementation
+│   │   │   └── serve.js      # Local server command
 │   │   └── utils/
 │   │       └── wasm-loader.js # Loads WASM binary
-│   └── wasm/
-│       └── pkg/
-│           ├── datacert_wasm_bg.wasm  # Rust/WASM binary (~2.2MB)
-│           └── datacert_wasm.js       # JS bindings
+│   ├── wasm/
+│   │   └── pkg/
+│   │       ├── datacert_wasm_bg.wasm  # Rust/WASM binary (~2.2MB)
+│   │       └── datacert_wasm.js       # JS bindings
+│   └── web/                  # Bundled web UI (~3.5MB)
+│       ├── index.html
+│       ├── assets/
+│       └── ...
 ├── package.json
 ├── README.md
 └── LICENSE
@@ -47,12 +73,18 @@ datacert/
 
 ### How It Works
 
+**UI Mode (`datacert`):**
+1. **User runs:** `npx datacert`
+2. **npm downloads** the package (~5.7MB total)
+3. **Local server starts** on port 3000 with COOP/COEP headers
+4. **Browser opens** to http://localhost:3000
+5. **Web UI runs locally** - all processing stays on user's machine
+
+**Headless Mode (`datacert profile`):**
 1. **User runs:** `npx datacert profile data.csv`
-2. **npm downloads** the package to a temp cache
-3. **Node executes** `dist/cli/cli/index.js` (specified in `bin` field)
-4. **CLI loads WASM** via `wasm-loader.js` which reads the `.wasm` file from disk
-5. **Profiling runs** using the Rust/WASM engine
-6. **Results output** to stdout (JSON, markdown, or YAML)
+2. **CLI loads WASM** via `wasm-loader.js`
+3. **Profiling runs** using the Rust/WASM engine
+4. **Results output** to stdout (JSON, markdown, or YAML)
 
 ### Building the CLI
 
