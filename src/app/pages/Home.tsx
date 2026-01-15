@@ -89,9 +89,63 @@ const Home: Component = () => {
             </header>
 
             {/* Main Content */}
-            <main class="w-full max-w-6xl">
-              {/* Getting Started Grid */}
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <main class="w-full max-w-6xl relative">
+              {/* Premium Loading Overlay */}
+              <Show when={fileStore.store.state === 'processing' || profileStore.store.isProfiling}>
+                <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xl animate-in fade-in duration-500">
+                  <div class="relative">
+                    {/* Pulsing ring animation */}
+                    <div class="absolute inset-0 rounded-full bg-blue-500/20 animate-ping duration-[3000ms]"></div>
+                    <div class="relative w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center border border-blue-500/30 shadow-2xl shadow-blue-500/20">
+                      <svg class="w-12 h-12 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="mt-12 text-center">
+                    <h2 class="text-3xl font-black text-white mb-4 tracking-tighter">
+                      {profileStore.store.isProfiling ? 'Computing Statistics...' : 'Analyzing Structure...'}
+                    </h2>
+                    <p class="text-slate-400 font-medium mb-8 max-w-md mx-auto">
+                      {fileStore.store.file?.name} • {fileStore.formatFileSize(fileStore.store.file?.size || 0)}
+                    </p>
+
+                    {/* Progress Bar Container */}
+                    <div class="w-64 sm:w-80 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50 p-0.5">
+                      <div
+                        class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                        style={{ width: `${fileStore.store.progress || profileStore.store.progress}%` }}
+                      ></div>
+                    </div>
+                    <div class="mt-4 flex flex-col items-center gap-2">
+                      <span class="text-xs font-black text-blue-400 uppercase tracking-[0.2em] animate-pulse">
+                        {Math.round(fileStore.store.progress || profileStore.store.progress)}% Complete
+                      </span>
+                      <Show when={profileStore.store.isProfiling && fileStore.store.file?.size && fileStore.store.file.size > 200 * 1024 * 1024}>
+                        <span class="text-[10px] text-amber-500/60 font-black uppercase tracking-widest mt-2">
+                          Large file detected • Optimizing compute
+                        </span>
+                      </Show>
+                    </div>
+                  </div>
+
+                  {/* Cancel Action */}
+                  <button
+                    onClick={() => {
+                      profileStore.cancelProfiling();
+                      fileStore.reset();
+                    }}
+                    class="mt-16 px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-[0.2em]"
+                  >
+                    Cancel Analysis
+                  </button>
+                </div>
+              </Show>
+
+              {/* Getting Started Grid (Hidden during loading) */}
+              <div class={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 transition-all duration-500 ${fileStore.store.state === 'processing' || profileStore.store.isProfiling ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}>
                 {/* Card 1: Import Files */}
                 <div
                   onClick={() => {
@@ -156,7 +210,7 @@ const Home: Component = () => {
               </div>
 
               {/* Sample Data Integration */}
-              <div class="flex flex-col items-center gap-6 mt-12 py-8 border-t border-slate-800/50">
+              <div class={`flex flex-col items-center gap-6 mt-12 py-8 border-t border-slate-800/50 transition-all duration-500 ${fileStore.store.state === 'processing' || profileStore.store.isProfiling ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
                 <div class="flex items-center gap-4">
                   <div
                     class={`h-2.5 w-2.5 rounded-full animate-pulse ${wasmReady() ? 'bg-emerald-500' : 'bg-amber-500'}`}
@@ -187,7 +241,7 @@ const Home: Component = () => {
               </div>
 
               {/* Feature Cards */}
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-24">
+              <div class={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-24 transition-all duration-700 delay-100 ${fileStore.store.state === 'processing' || profileStore.store.isProfiling ? 'opacity-0 translate-y-8 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                 <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 hover:border-blue-500/30 transition-all group">
                   <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6">
                     <svg class="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
