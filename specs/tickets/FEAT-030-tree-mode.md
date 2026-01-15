@@ -33,15 +33,42 @@ Result: OOM error when opened in SQL Mode.
 
 ---
 
-## Proposed Solution: Tree Mode Profiling
+## Proposed Solution: Tree Mode as Column Selection
 
-Add a **second profiling paradigm** optimized for tree-structured data instead of forcing everything into tabular format.
+**Tree Mode is NOT a separate profiling output** - it's a **column selection workflow** that enables users to choose which paths to profile before running full profiling/SQL Mode.
 
 ### Key Insight
 
 There's a natural transition point:
-- **Tabular territory**: Depth ≤ 5, columns < 1000 → flatten to CSV
-- **Tree territory**: Depth > 5, columns > 1000 → analyze as tree
+- **Tabular territory**: Depth ≤ 5, columns < 1000 → flatten to CSV immediately
+- **Tree territory**: Depth > 5, columns > 1000 → **let user select columns first**, then profile selected subset
+
+### Workflow
+
+```
+1. Upload JSON
+   ↓
+2. Quick structural scan (1-2 sec)
+   - Count paths: 2,345
+   - Max depth: 50
+   - Decision: Tree Mode recommended
+   ↓
+3. Show Tree UI (column picker)
+   - User explores tree structure
+   - Selects columns to profile (max 500)
+   - Example: Select $.user.id, $.user.name
+   ↓
+4. Profile ONLY selected columns
+   - Runs traditional flattening profiler
+   - Only on selected paths
+   - Fast & memory-efficient
+   ↓
+5. Show standard profiling results
+   - Tabular view for selected columns
+   - [Optional] Enable SQL Mode on selected columns
+```
+
+**This prevents OOM** by never attempting to profile all 2,345 columns - only the ones user cares about.
 
 ---
 
@@ -150,32 +177,58 @@ Add mode selector:
 └─────────────────────────────────────┘
 ```
 
-#### Tree View UI
+#### Tree View UI (Column Picker)
 
-**Expandable tree visualization:**
+**Expandable tree with selection checkboxes:**
 
 ```
-📊 Structure Profile: user_data.json
+📊 Select Columns to Profile: user_data.json
 
-Search: [_______________] 🔍
+Search: [_______________] 🔍        Selected: 2 / 500 max
+
+☐ Select All (2,345 paths)         [Clear Selection]
 
 📂 $ (root)                              1,000 rows
 ├─ 📦 user (object)                      100% populated
-│  ├─ 📝 id (integer)                    100% | min: 1, max: 1000
-│  ├─ 📝 name (string)                   95% | avg len: 12
-│  └─ 📂 preferences (object)            80% | 234 nested fields
-│     ├─ 📂 notifications (object)       75% | 45 nested fields
-│     │  ├─ 📝 email_frequency (string)  50% | 3 distinct
-│     │  └─ 📂 channels (object)         40% | [+] Expand (200 more)
+│  ├─ ☑ id (integer)                    100% | min: 1, max: 1000  ✓ SELECTED
+│  ├─ ☑ name (string)                   95% | avg len: 12        ✓ SELECTED
+│  └─ ☐ preferences (object)            80% | 234 nested fields
+│     ├─ ☐ notifications (object)       75% | 45 nested fields
+│     │  ├─ ☐ email_frequency (string)  50% | 3 distinct
+│     │  └─ ☐ channels (object)         40% | [+] Expand (200 more)
 │     └─ [+] Expand (189 more fields)
 │
-└─ 📂 metadata (object)                  100% populated
+└─ ☐ metadata (object)                  100% populated
    └─ [+] Expand (500 nested levels)
 
-💡 Tip: Click any node to see detailed stats
+[Profile Selected Columns] ← Enabled when 1-500 columns selected
+[Enable SQL Mode After] ☐
+
+💡 Tip: Click a node to see detailed stats without selecting
 ```
 
-**Detail panel (on click):**
+**After profiling selected columns:**
+
+```
+✅ Profiling Complete!
+
+Results for 2 selected columns:
+────────────────────────────────
+user.id (integer)
+  • 100% populated
+  • Range: 1 - 1,000
+  • No duplicates
+  
+user.name (string)
+  • 95% populated  
+  • Avg length: 12 chars
+  • 950 distinct values
+────────────────────────────────
+
+[View Full Report]  [Export CSV]  [Go to SQL Mode →]
+```
+
+**Detail panel (on click without selecting):**
 
 ```
 ┌──────────────────────────────────────────┐
@@ -191,8 +244,8 @@ Search: [_______________] 🔍
 │  • push_enabled (45% populated)           │
 │  • channels (40% populated, object)       │
 │                                           │
-│ [Export This Subtree as CSV]              │
-│ [Profile This Subtree Only]               │
+│ ☐ [Select This Path]                     │
+│ ☐ [Select All Children (45 fields)]      │
 └──────────────────────────────────────────┘
 ```
 
