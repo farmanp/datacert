@@ -154,6 +154,40 @@ Strategic features to make DataCert the go-to data profiling tool.
 35. FEAT-030 - Shareable Profile Links
 36. FEAT-035 - VS Code Extension
 
+---
+
+### Phase 8: Architecture Simplification Epic
+
+**Theme:** Reduce complexity, focus on core value proposition (Profile + SQL Mode)
+
+| ID | Type | Title | Priority | Dependencies |
+|----|------|-------|----------|--------------|
+| SPIKE-008 | Spike | Store Usage Audit | P1 | None |
+| SPIKE-009 | Spike | DuckDB Universal Parser Feasibility | P1 | None |
+| INFRA-005 | Infra | Feature Flags Infrastructure | P1 | None |
+| INFRA-006 | Infra | Store Consolidation | P1 | SPIKE-008 |
+| FEAT-036 | Story | "More Tools" Navigation Pattern | P1 | INFRA-005 |
+
+**Goals:**
+- Reduce store count from 8 to 5 (or fewer)
+- Simplify navigation to highlight core features
+- Add feature flags for gradual rollout control
+- Evaluate unifying parsing paths through DuckDB
+
+**Background:** [Simplification Notes](../docs/SIMPLIFICATION_NOTES.md)
+
+### Sprint 11 (Simplification)
+
+**Theme:** Make the codebase easier to maintain and the UX more focused
+
+37. SPIKE-008 - Store Usage Audit (understand dependencies)
+38. SPIKE-009 - DuckDB Universal Parser Feasibility (explore unification)
+39. INFRA-005 - Feature Flags Infrastructure (enable gradual rollout)
+40. INFRA-006 - Store Consolidation (merge drilldown + validation into profile)
+41. FEAT-036 - "More Tools" Navigation (simplify primary nav)
+
+---
+
 ## Strategic Priorities
 
 ### What Makes Users Choose DataCert?
