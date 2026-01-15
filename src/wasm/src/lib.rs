@@ -293,10 +293,31 @@ impl CorrelationCalculator {
     }
 }
 
-impl Default for CorrelationCalculator {
-    fn default() -> Self {
-        Self::new()
-    }
+// ============================================================================
+// JSON Structure Analyzer (for Tree Mode)
+// ============================================================================
+
+use parser::json::analyze_json_structure;
+use stats::tree::StructureConfig;
+
+/// Analyze JSON structure without full profiling (for Tree Mode)
+/// Returns tree structure with paths, depths, types, and population %
+#[wasm_bindgen]
+pub fn analyze_json_structure_wasm(
+    data: &[u8],
+    max_sample_rows: Option<usize>,
+    collect_examples: Option<bool>,
+) -> Result<JsValue, JsValue> {
+    let config = StructureConfig {
+        max_sample_rows: max_sample_rows.unwrap_or(1000),
+        collect_examples: collect_examples.unwrap_or(true),
+    };
+    
+    let analysis = analyze_json_structure(data, Some(config))
+        .map_err(|e| JsValue::from_str(&e))?;
+    
+    serde_wasm_bindgen::to_value(&analysis)
+        .map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 #[cfg(test)]

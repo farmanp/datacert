@@ -567,6 +567,232 @@ impl JsonParser {
     }
 }
 
+// ============================================================================
+// Structural Analysis (for Tree Mode)
+// ============================================================================
+
+use crate::stats::tree::{TreeNode, StructureAnalysis, StructureConfig, NodeType};
+
+/// Analyze JSON structure without full profiling
+/// This is a lightweight scan that discovers paths, types, and population
+pub fn analyze_json_structure(
+    data: &[u8],
+    config: Option<StructureConfig>
+) -> Result<StructureAnalysis, String> {
+    let config = config.unwrap_or_default();
+    let data_str = String::from_utf8_lossy(data);
+    
+    // Detect format
+    let format = JsonParser::auto_detect_format(&data_str);
+    
+    let mut analysis = StructureAnalysis::new();
+    let mut path_tracker = PathTracker::new(config.collect_examples);
+    let mut rows_processed = 0;
+    
+    // Parse JSON and track paths
+    match format {
+        JsonFormat::JsonArray => {
+            // Parse as array
+            match serde_json::from_str::<Value>(&data_str) {
+                Ok(Value::Array(items)) => {
+                    for (idx, item) in items.iter().enumerate() {
+                        if rows_processed >= config.max_sample_rows {
+                            break;
+                        }
+                        path_tracker.track_value("$", item, 0);
+                        rows_processed += 1;
+                    }
+                }
+                _ => return Err("Invalid JSON array format".to_string()),
+            }
+        }
+        JsonFormat::JsonLines => {
+            // Parse line by line
+            for line in data_str.lines() {
+                if rows_processed >= config.max_sample_rows {
+                    break;
+                }
+                let trimmed = line.trim();
+                if trimmed.is_empty() {
+                    continue;
+                }
+                match serde_json::from_str::<Value>(trimmed) {
+                    Ok(value) => {
+                        path_tracker.track_value("$", &value, 0);
+                        rows_processed += 1;
+                    }
+                    Err(_) => continue,
+                }
+            }
+        }
+        JsonFormat::Unknown => {
+            return Err("Unable to detect JSON format".to_string());
+        }
+    }
+    
+    // Convert tracked paths to tree structure
+    analysis.tree = path_tracker.build_tree(rows_processed);
+    analysis.total_paths = path_tracker.paths.len();
+    analysis.max_depth = path_tracker.max_depth;
+    analysis.rows_sampled = rows_processed;
+    analysis.determine_mode();
+    
+    Ok(analysis)
+}
+
+/// Helper struct to track paths during scanning
+struct PathTracker {
+    paths: HashMap<String, PathInfo>,
+    max_depth: usize,
+    collect_examples: bool,
+}
+
+struct PathInfo {
+    count: usize,
+    types_seen: std::collections::HashSet<String>,
+    examples: Vec<String>,
+    depth: usize,
+}
+
+impl PathTracker {
+    fn new(collect_examples: bool) -> Self {
+        Self {
+            paths: HashMap::new(),
+            max_depth: 0,
+            collect_examples,
+        }
+    }
+    
+    fn track_value(&mut self, path: &str, value: &Value, depth: usize) {
+        self.max_depth = self.max_depth.max(depth);
+        
+        // Record this path
+        let info = self.paths.entry(path.to_string()).or_insert(PathInfo {
+            count: 0,
+            types_seen: std::collections::HashSet::new(),
+            examples: Vec::new(),
+            depth,
+        });
+        info.count += 1;
+        
+        // Determine type
+        let type_str = match value {
+            Value::Object(_) => "object",
+            Value::Array(_) => "array",
+            Value::String(_) => "string",
+            Value::Number(_) => "number",
+            Value::Bool(_) => "boolean",
+            Value::Null => "null",
+        };
+        info.types_seen.insert(type_str.to_string());
+        
+        // Collect example
+        if self.collect_examples && info.examples.len() < 3 {
+            let example = match value {
+                Value::String(s) => s.clone(),
+                Value::Number(n) => n.to_string(),
+                Value::Bool(b) => b.to_string(),
+                _ => String::new(),
+            };
+            if !example.is_empty() {
+                info.examples.push(example);
+            }
+        }
+        
+        // Recursively track children
+        match value {
+            Value::Object(map) => {
+                for (key, child_value) in map {
+                    let child_path = if path == "$" {
+                        format!("$.{}", key)
+                    } else {
+                        format!("{}.{}", path, key)
+                    };
+                    self.track_value(&child_path, child_value, depth + 1);
+                }
+            }
+            Value::Array(arr) => {
+                // For arrays, track the array itself but don't expand indices
+                // Just note that it's an array type
+            }
+            _ => {}
+        }
+    }
+    
+    fn build_tree(&self, total_rows: usize) -> TreeNode {
+        let mut root = TreeNode::new("$".to_string(), 0, NodeType::Object);
+        
+        // Group paths by their parent
+        let mut children_map: HashMap<String, Vec<String>> = HashMap::new();
+        for path in self.paths.keys() {
+            if path == "$" {
+                continue;
+            }
+            let parent = self.get_parent_path(path);
+            children_map.entry(parent).or_insert_with(Vec::new).push(path.clone());
+        }
+        
+        // Build tree recursively
+        self.build_node(&mut root, &children_map, total_rows);
+        
+        root
+    }
+    
+    fn build_node(
+        &self,
+        node: &mut TreeNode,
+        children_map: &HashMap<String, Vec<String>>,
+        total_rows: usize,
+    ) {
+        // Get info for this node
+        if let Some(info) = self.paths.get(&node.path) {
+            node.population = (info.count as f64 / total_rows as f64) * 100.0;
+            node.data_type = self.determine_node_type(&info.types_seen);
+            node.examples = info.examples.clone();
+        }
+        
+        // Add children
+        if let Some(child_paths) = children_map.get(&node.path) {
+            for child_path in child_paths {
+                if let Some(child_info) = self.paths.get(child_path) {
+                    let mut child_node = TreeNode::new(
+                        child_path.clone(),
+                        child_info.depth,
+                        self.determine_node_type(&child_info.types_seen),
+                    );
+                    self.build_node(&mut child_node, children_map, total_rows);
+                    node.add_child(child_node);
+                }
+            }
+        }
+    }
+    
+    fn get_parent_path(&self, path: &str) -> String {
+        if path == "$" {
+            return "$".to_string();
+        }
+        match path.rfind('.') {
+            Some(pos) => path[..pos].to_string(),
+            None => "$".to_string(),
+        }
+    }
+    
+    fn determine_node_type(&self, types_seen: &std::collections::HashSet<String>) -> NodeType {
+        if types_seen.len() > 1 {
+            return NodeType::Mixed;
+        }
+        match types_seen.iter().next().map(|s| s.as_str()) {
+            Some("object") => NodeType::Object,
+            Some("array") => NodeType::Array,
+            Some("string") => NodeType::String,
+            Some("number") => NodeType::Number,
+            Some("boolean") => NodeType::Boolean,
+            Some("null") => NodeType::Null,
+            _ => NodeType::Mixed,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
