@@ -12,8 +12,11 @@
 
 **DataCert** is a high-performance, browser-based profiling suite designed for data engineers who value privacy and speed. By leveraging **Rust** compiled to **WebAssembly**, DataCert processes millions of rows directly on your device - your data never leaves your machine.
 
-### ⚡ See it in Action
-![DataCert Demo](docs/assets/datacert_demo.webp)
+### ⚡ Quick Start
+Jump in immediately from your terminal:
+```bash
+npx datacert
+```
 
 ---
 
@@ -38,29 +41,26 @@
 
 ---
 
-## 📈 Growth Strategy: "The Data Quality Swiss Army Knife"
+## 🎯 The Mission
+Our goal is to make data profiling as ubiquitous as `ls` or `grep`. DataCert was built to be the "Data Quality Swiss Army Knife"—a tool that is always ready, requires zero setup, and treats your data with the privacy it deserves.
 
-Our mission is to make data profiling as ubiquitous as `ls` or `grep`.
-
-### 1. The Hooks
-- **"Private by Design":** We don't want your data. In an era of data leaks, DataCert is the only tool your compliance officer will approve instantly.
-- **Instant Gratification:** From CSV to Profile in < 2 seconds. No login required.
-
-### 2. Community Engagement
-- **Show HN & Reddit:** Targetting `r/dataengineering` with the Rust-technical edge.
-- **PLG Viral Loop:** Exportable HTML reports allow teams to share quality audits without sharing raw data access.
+- **Private by Design:** We don't want your data. In an era of data leaks, DataCert ensures your PII and sensitive internal data never leave your browser's memory.
+- **Instant Gratification:** From raw file to comprehensive profile in seconds. No login, no cloud configuration, no waiting.
+- **Collaborative Audits:** High-fidelity reporting allows teams to share quality insights without ever needing to move the underlying datasets.
 
 ---
 
 ## 🛠️ Getting Started
 
-### Web UI
-1. Visit the hosted version (PWA supported).
-2. Drag and drop any `.csv`, `.json`, `.parquet`, or `.xlsx` file.
-3. Review your data health instantly.
+### CLI & Local UI (Recommended)
+The fastest way to use DataCert is via `npx`. This launches the profiler directly in your browser using your local machine for analysis:
 
-### CLI Usage
-For automated quality gates in CI/CD:
+```bash
+npx datacert
+```
+
+### Automated Profiling (CI/CD)
+Run headless profiling with pass/fail quality gates for your data pipelines:
 
 ```bash
 npx datacert profile data.csv --fail-on-missing 5
