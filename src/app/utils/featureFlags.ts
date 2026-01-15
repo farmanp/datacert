@@ -20,6 +20,7 @@ export const FEATURE_FLAGS = {
   TREE_MODE: 'tree-mode',
   BATCH_MODE: 'batch-mode',
   COMPARE_MODE: 'compare-mode',
+  QUALITY_MODE: 'quality-mode',
 } as const;
 
 export type FeatureFlagName = (typeof FEATURE_FLAGS)[keyof typeof FEATURE_FLAGS];
@@ -32,6 +33,7 @@ const DEFAULT_FLAGS: Record<FeatureFlagName, boolean> = {
   [FEATURE_FLAGS.TREE_MODE]: true,
   [FEATURE_FLAGS.BATCH_MODE]: true,
   [FEATURE_FLAGS.COMPARE_MODE]: true,
+  [FEATURE_FLAGS.QUALITY_MODE]: false, // Hidden until better defined
 };
 
 /**

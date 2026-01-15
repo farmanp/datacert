@@ -2,6 +2,7 @@ import { Component, Show, For, createSignal, createMemo, createEffect, onCleanup
 import { A } from '@solidjs/router';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
+import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
 import EmptyState from './EmptyState';
@@ -249,15 +250,17 @@ const ProfileReport: Component = () => {
             >
               Card View
             </button>
-            <button
-              onClick={() => setViewMode('validation')}
-              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'validation'
-                ? 'bg-slate-700 text-white shadow-lg'
-                : 'text-slate-400 hover:text-slate-200'
-                }`}
-            >
-              Quality
-            </button>
+            <Show when={isFeatureEnabled(FEATURE_FLAGS.QUALITY_MODE)}>
+              <button
+                onClick={() => setViewMode('validation')}
+                class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'validation'
+                  ? 'bg-slate-700 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-slate-200'
+                  }`}
+              >
+                Quality
+              </button>
+            </Show>
           </div>
 
           <div class="h-8 w-[1px] bg-slate-700 hidden sm:block" />
