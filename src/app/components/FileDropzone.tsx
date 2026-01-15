@@ -43,6 +43,7 @@ const FileDropzone: Component = () => {
 
     // Check if this is a JSON file that needs tree mode detection
     const isJSON = file.name.toLowerCase().endsWith('.json') || file.name.toLowerCase().endsWith('.jsonl');
+    const isParquet = file.name.toLowerCase().endsWith('.parquet');
 
     if (isJSON) {
       // Quick structure scan to determine if tree mode is recommended
@@ -72,6 +73,28 @@ const FileDropzone: Component = () => {
         }
       } catch (error) {
         console.warn('Failed to analyze JSON structure, falling back to normal profiling:', error);
+      }
+    } else if (isParquet) {
+      // Check for wide Parquet files
+      try {
+        const { readParquetSchema } = await import('../utils/parquet-schema');
+        const { totalColumns, maxDepth } = await readParquetSchema(file);
+
+        // If wide (>500 cols) or deep (>3 levels), recommend tree mode
+        if (totalColumns > 500 || maxDepth > 3) {
+          const useTreeMode = window.confirm(
+            `This Parquet has ${totalColumns} columns at ${maxDepth} levels deep.\n\n` +
+            `Tree Mode is recommended for selecting specifically which columns to profile.\n\n` +
+            `Click OK to use Tree Mode, or Cancel to profile all columns.`
+          );
+
+          if (useTreeMode) {
+            window.location.href = '/tree-mode';
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to analyze Parquet schema, falling back to normal profiling:', error);
       }
     }
 

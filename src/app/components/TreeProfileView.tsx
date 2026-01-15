@@ -22,15 +22,35 @@ export const TreeProfileView: Component = () => {
             return;
         }
 
+        const nameLower = file.name.toLowerCase();
+        const isJSON = nameLower.endsWith('.json') || nameLower.endsWith('.jsonl');
+        const isParquet = nameLower.endsWith('.parquet');
+
         try {
             treeStore.setAnalyzing(true);
-            const data = new Uint8Array(await file.arrayBuffer());
-            const analysis = await analyzeJsonStructure(data, {
-                maxSampleRows: 1000,
-                collectExamples: true,
-            });
 
-            treeStore.setAnalysis(analysis);
+            if (isJSON) {
+                const data = new Uint8Array(await file.arrayBuffer());
+                const analysis = await analyzeJsonStructure(data, {
+                    maxSampleRows: 1000,
+                    collectExamples: true,
+                });
+                treeStore.setAnalysis(analysis);
+            } else if (isParquet) {
+                const { readParquetSchema } = await import('../utils/parquet-schema');
+                const { tree, totalColumns, maxDepth } = await readParquetSchema(file);
+
+                // Construct a StructureAnalysis-like object for Parquet
+                treeStore.setAnalysis({
+                    tree,
+                    total_paths: totalColumns,
+                    max_depth: maxDepth,
+                    rows_sampled: 0, // Metadata scan doesn't sample rows
+                    recommended_mode: (totalColumns > 500 || maxDepth > 3) ? 'tree' : 'tabular'
+                });
+            } else {
+                navigate('/');
+            }
         } catch (error) {
             treeStore.setError(`Failed to analyze structure: ${error}`);
         } finally {
@@ -82,52 +102,73 @@ export const TreeProfileView: Component = () => {
                 throw new Error('No file loaded');
             }
 
-            // Read the JSON file
-            const data = new Uint8Array(await file.arrayBuffer());
-            const jsonText = new TextDecoder().decode(data);
+            const nameLower = file.name.toLowerCase();
+            const isParquet = nameLower.endsWith('.parquet');
 
-            // Parse JSON (handle both array and lines format)
-            let jsonData: any[];
-            const trimmed = jsonText.trim();
+            if (isParquet) {
+                const { initDuckDB, executeQuery, registerParquet } = await import('../utils/duckdb');
+                const { profileStore: profileStoreImport } = await import('../stores/profileStore');
 
-            if (trimmed.startsWith('[')) {
-                // JSON array format
-                jsonData = JSON.parse(jsonText);
+                await initDuckDB();
+                await registerParquet('data.parquet', file);
+
+                // Build SELECT query with only selected columns
+                const headers = selectedPaths.map(path => path.replace(/^\$\./, ''));
+                const quotedCols = headers.map(h => `"${h}"`).join(', ');
+                const query = `SELECT ${quotedCols} FROM read_parquet('data.parquet')`;
+
+                const result = await executeQuery(query);
+
+                // Profile the results directly
+                profileStoreImport.profileFromRows(result.rows, headers);
             } else {
-                // JSON Lines format
-                jsonData = trimmed.split('\n')
-                    .filter(line => line.trim())
-                    .map(line => JSON.parse(line));
-            }
+                // Read the JSON file
+                const data = new Uint8Array(await file.arrayBuffer());
+                const jsonText = new TextDecoder().decode(data);
 
-            // Extract only selected paths from each row
-            const extractValue = (obj: any, path: string): any => {
-                // Remove leading $. and split by .
-                const parts = path.replace(/^\$\./, '').split('.');
-                let value = obj;
+                // Parse JSON (handle both array and lines format)
+                let jsonData: any[];
+                const trimmed = jsonText.trim();
 
-                for (const part of parts) {
-                    if (value == null) return null;
-                    value = value[part];
+                if (trimmed.startsWith('[')) {
+                    // JSON array format
+                    jsonData = JSON.parse(jsonText);
+                } else {
+                    // JSON Lines format
+                    jsonData = trimmed.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => JSON.parse(line));
                 }
 
-                return value;
-            };
+                // Extract only selected paths from each row
+                const extractValue = (obj: any, path: string): any => {
+                    // Remove leading $. and split by .
+                    const parts = path.replace(/^\$\./, '').split('.');
+                    let value = obj;
 
-            // Build rows with only selected columns
-            const headers = selectedPaths.map(path => path.replace(/^\$\./, ''));
-            const rows: Record<string, unknown>[] = jsonData.map(row => {
-                const newRow: Record<string, unknown> = {};
-                selectedPaths.forEach((path, idx) => {
-                    const value = extractValue(row, path);
-                    newRow[headers[idx]] = value;
+                    for (const part of parts) {
+                        if (value == null) return null;
+                        value = value[part];
+                    }
+
+                    return value;
+                };
+
+                // Build rows with only selected columns
+                const headers = selectedPaths.map(path => path.replace(/^\$\./, ''));
+                const rows: Record<string, unknown>[] = jsonData.map(row => {
+                    const newRow: Record<string, unknown> = {};
+                    selectedPaths.forEach((path, idx) => {
+                        const value = extractValue(row, path);
+                        newRow[headers[idx]] = value;
+                    });
+                    return newRow;
                 });
-                return newRow;
-            });
 
-            // Use profileStore's profileFromRows to profile the selected columns
-            const { profileStore: profileStoreImport } = await import('../stores/profileStore');
-            profileStoreImport.profileFromRows(rows, headers);
+                // Use profileStore's profileFromRows to profile the selected columns
+                const { profileStore: profileStoreImport } = await import('../stores/profileStore');
+                profileStoreImport.profileFromRows(rows, headers);
+            }
 
             // Navigate to results
             setTimeout(() => {
