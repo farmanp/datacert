@@ -100,8 +100,8 @@ function createSqlStore() {
       const logger = new duckdb.ConsoleLogger();
       db = new duckdb.AsyncDuckDB(logger, worker);
 
-      // Instantiate the database
-      await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+      // Instantiate the database (single-threaded - no pthreadWorker)
+      await db.instantiate(bundle.mainModule, undefined);
 
       // Create a persistent connection
       connection = await db.connect();

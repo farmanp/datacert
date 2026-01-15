@@ -28,8 +28,8 @@ const DuckDBSpike: Component = () => {
             const logger = new duckdb.ConsoleLogger();
             db = new duckdb.AsyncDuckDB(logger, worker);
 
-            addLog('Instantiating DB...');
-            await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+            addLog('Instantiating DB (single-threaded)...');
+            await db.instantiate(bundle.mainModule, undefined);
 
             setStatus('Ready');
             addLog('DuckDB-Wasm Ready');
