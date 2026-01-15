@@ -104,8 +104,7 @@ export async function initDuckDB(): Promise<AsyncDuckDB> {
                 // Limit memory to 1GB to leave headroom for browser/OS
                 // This is conservative but prevents OOM crashes
                 await conn.query(`SET memory_limit='1GB'`);
-                // Reduce threads to lower peak memory usage
-                await conn.query(`SET threads=2`);
+                // Note: DuckDB-WASM is compiled single-threaded, don't set threads
                 // Disable insertion order preservation for better memory efficiency
                 await conn.query(`SET preserve_insertion_order=false`);
             } finally {
