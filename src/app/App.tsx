@@ -3,12 +3,12 @@ import { Route } from '@solidjs/router';
 import Home from './pages/Home';
 import Compare from './pages/Compare';
 import Batch from './pages/Batch';
-import DuckDBSpike from './pages/DuckDBSpike';
 import InstallPrompt from './components/InstallPrompt';
 import UpdateNotification from './components/UpdateNotification';
 
-// Lazy-loaded pages for code splitting
+// Lazy-loaded pages for code splitting (prevents DuckDB from loading on startup)
 const SqlMode = lazy(() => import('./pages/SqlMode'));
+const DuckDBSpike = lazy(() => import('./pages/DuckDBSpike'));
 
 /**
  * App Component
