@@ -8,7 +8,7 @@
 
 ---
 
-![DataCert Hero](docs/assets/datacert_hero.png)
+![DataCert Home](docs/assets/home_page.png)
 
 **DataCert** is a high-performance, browser-based profiling suite designed for data engineers who value privacy and speed. By leveraging **Rust** compiled to **WebAssembly**, DataCert processes millions of rows directly on your device - your data never leaves your machine.
 
@@ -27,13 +27,14 @@
 
 ## ✨ Features
 
-- **Comprehensive Profiling:** Instant health scores, data type detection, and statistical distribution charts.
-- **SQL Mode:** Query local files using SQL syntax via **DuckDB-WASM**.
-- **CLI for CI/CD:** Add quality gates to your pipelines with `npx datacert profile`.
-- **Compare & Batch:** Detect schema drift between versions or profile entire directories at once.
-- **Visual Insights:** Beautifully rendered histograms, correlation matrices, and PII alerts.
+### 📂 Intelligent Column Selection (Tree Mode)
+![Tree Mode](docs/assets/tree_mode.png)
 
-![Profiling Report](docs/assets/datacert_report.png)
+### 📊 Professional Data Profiling
+![Profiling Report](docs/assets/profile_results.png)
+
+### 🦆 In-Browser SQL Engine
+![SQL Mode](docs/assets/sql_mode.png)
 
 ---
 
