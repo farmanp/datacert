@@ -1,5 +1,6 @@
 import { Component, createSignal, onMount, onCleanup, Show, Suspense } from 'solid-js';
 import { A, useNavigate } from '@solidjs/router';
+import Navigation from '../components/Navigation';
 import { fileStore } from '../stores/fileStore';
 import { profileStore } from '../stores/profileStore';
 // These will be created separately as per requirements
@@ -211,32 +212,7 @@ const SqlMode: Component = () => {
   return (
     <div class="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <header class="bg-slate-800/50 border-b border-slate-700 px-4 py-4 sm:px-8">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <A
-              href="/"
-              class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
-            >
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span class="text-sm font-medium">Back to Home</span>
-            </A>
-          </div>
-
-          <h1 class="text-xl sm:text-2xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-            SQL Mode
-          </h1>
-
-          <div class="w-24" /> {/* Spacer for centering */}
-        </div>
-      </header>
+      <Navigation minimal title="SQL Mode" />
 
       {/* Memory Warning */}
       <Show when={showMemoryWarning()}>

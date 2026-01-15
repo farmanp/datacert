@@ -1,5 +1,6 @@
 import { Component, Show, createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import Navigation from './Navigation';
 import { TreeNode } from './TreeNode';
 import { TreeNodeDetail } from './TreeNodeDetail';
 import { treeStore } from '../stores/treeStore';
@@ -188,17 +189,19 @@ export const TreeProfileView: Component = () => {
     const isAnalyzing = () => treeStore.state.isAnalyzing;
 
     return (
-        <div class="tree-profile-view min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
-            <div class="max-w-7xl mx-auto">
-                {/* Header */}
-                <div class="mb-6">
-                    <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                        Select Columns to Profile
-                    </h1>
-                    <p class="text-slate-600 dark:text-slate-400">
-                        Choose up to {maxColumns()} columns from your JSON structure
-                    </p>
-                </div>
+        <div class="tree-profile-view min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+            <Navigation minimal title="Tree Mode" />
+            <div class="p-6 flex-1">
+                <div class="max-w-7xl mx-auto">
+                    {/* Header */}
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                            Select Columns to Profile
+                        </h1>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            Choose up to {maxColumns()} columns from your JSON structure
+                        </p>
+                    </div>
 
                 {/* Loading State */}
                 <Show when={isAnalyzing()}>
@@ -338,6 +341,7 @@ export const TreeProfileView: Component = () => {
                         </div>
                     </div>
                 </Show>
+                </div>
             </div>
         </div>
     );

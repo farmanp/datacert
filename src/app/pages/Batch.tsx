@@ -1,4 +1,5 @@
 import { Component, Show, createSignal, onMount, createMemo } from 'solid-js';
+import Navigation from '../components/Navigation';
 import BatchDropzone from '../components/BatchDropzone';
 import BatchModeSelector from '../components/BatchModeSelector';
 import BatchFileList from '../components/BatchFileList';
@@ -7,7 +8,6 @@ import NWayComparisonView from '../components/NWayComparisonView';
 import SchemaValidationDialog from '../components/SchemaValidationDialog';
 import MergedResultsView from '../components/MergedResultsView';
 import { batchStore } from '../stores/batchStore';
-import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 
 /**
  * Batch Page Component
@@ -66,29 +66,11 @@ const Batch: Component = () => {
   };
 
   return (
-    <div class="min-h-screen bg-slate-900 text-white flex flex-col items-center">
+    <div class="min-h-screen bg-slate-900 text-white flex flex-col">
+      <Navigation minimal title="Batch Processing" />
       <div class="w-full flex flex-col items-center p-4 sm:p-8 animate-in fade-in duration-500">
         {/* Header */}
         <header class="text-center mb-8 sm:mb-12 w-full max-w-5xl">
-          <div class="flex items-center justify-center gap-3 mb-3">
-            <a
-              href="/"
-              class="text-slate-400 hover:text-slate-200 transition-colors"
-              title="Back to Home"
-            >
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-            </a>
-            <h1 class="text-3xl sm:text-5xl font-extrabold font-heading bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-400 tracking-tighter">
-              Batch Processing
-            </h1>
-          </div>
           <p class="text-slate-400 text-base sm:text-lg font-medium tracking-tight max-w-2xl mx-auto leading-relaxed">
             Process multiple files at once with sequential profiling, merging, or comparison modes.
           </p>
@@ -410,18 +392,8 @@ const Batch: Component = () => {
         </main>
 
         {/* Footer */}
-        <footer class="mt-12 sm:mt-16 text-slate-400 text-sm text-center">
-          <p>
-            <a href="/" class="text-amber-400 hover:text-amber-300 transition-colors">
-              Back to single-file profiling
-            </a>
-            <Show when={isFeatureEnabled(FEATURE_FLAGS.COMPARE_MODE)}>
-              {' | '}
-              <a href="/compare" class="text-purple-400 hover:text-purple-300 transition-colors">
-                Compare two files
-              </a>
-            </Show>
-          </p>
+        <footer class="mt-12 sm:mt-16 text-slate-600 text-[10px] uppercase font-black tracking-[0.3em] text-center">
+          DataCert Batch Mode
         </footer>
       </div>
     </div>
