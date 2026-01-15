@@ -1,6 +1,7 @@
 import { Component, Show, createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { TreeNode } from './TreeNode';
+import { TreeNodeDetail } from './TreeNodeDetail';
 import { treeStore } from '../stores/treeStore';
 import { analyzeJsonStructure, extractAllPaths } from '../utils/structure-scanner';
 import { fileStore } from '../stores/fileStore';
@@ -230,10 +231,20 @@ export const TreeProfileView: Component = () => {
                     </div>
                 </Show>
 
-                {/* Tree View */}
+                {/* Tree View with Detail Panel */}
                 <Show when={analysis() && !isAnalyzing()}>
-                    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4">
-                        <TreeNode node={analysis()!.tree} searchQuery={searchQuery()} />
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Tree (2/3 width on large screens) */}
+                        <div class="lg:col-span-2">
+                            <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4">
+                                <TreeNode node={analysis()!.tree} searchQuery={searchQuery()} />
+                            </div>
+                        </div>
+
+                        {/* Detail Panel (1/3 width on large screens) */}
+                        <div class="lg:col-span-1">
+                            <TreeNodeDetail />
+                        </div>
                     </div>
                 </Show>
             </div>

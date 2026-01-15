@@ -9,6 +9,7 @@ import UpdateNotification from './components/UpdateNotification';
 // Lazy-loaded pages for code splitting (prevents DuckDB from loading on startup)
 const SqlMode = lazy(() => import('./pages/SqlMode'));
 const DuckDBSpike = lazy(() => import('./pages/DuckDBSpike'));
+const TreeMode = lazy(() => import('./pages/TreeMode'));
 
 /**
  * App Component
@@ -29,6 +30,7 @@ const App: Component = () => {
       <Route path="/compare" component={Compare} />
       <Route path="/batch" component={Batch} />
       <Route path="/sql-mode" component={SqlMode} />
+      <Route path="/tree-mode" component={TreeMode} />
       <Route path="/spike/duckdb" component={DuckDBSpike} />
       <InstallPrompt />
       <UpdateNotification />

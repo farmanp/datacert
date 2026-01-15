@@ -1,4 +1,4 @@
-import init, { analyze_json_structure_wasm } from '../../../wasm/pkg/datacert_wasm';
+import init, { analyze_json_structure_wasm } from '../../wasm/pkg/datacert_wasm';
 
 /**
  * Tree node representing a path in JSON structure
