@@ -272,6 +272,19 @@ const ProfileReport: Component = () => {
             Clear
           </button>
 
+          <div class="relative">
+            <button
+              ref={exportButtonRef}
+              onClick={() => setShowExportModal(true)}
+              class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export
+            </button>
+          </div>
+
           <A
             href="/sql-mode"
             class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
@@ -286,19 +299,6 @@ const ProfileReport: Component = () => {
             </svg>
             SQL Mode
           </A>
-
-          <div class="relative">
-            <button
-              ref={exportButtonRef}
-              onClick={() => setShowExportModal(true)}
-              class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export Profile
-            </button>
-          </div>
         </div>
       </header>
 
