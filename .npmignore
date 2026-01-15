@@ -1,0 +1,14 @@
+# Ignore everything by default
+*
+
+# Include CLI distribution
+!dist/cli/**
+
+# Include package metadata
+!package.json
+!README.md
+!LICENSE
+
+# Exclude dev/build artifacts that might slip through
+dist/cli/**/*.map
+dist/cli/**/*.d.ts

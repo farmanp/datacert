@@ -1,10 +1,35 @@
 {
   "name": "datacert",
-  "private": true,
   "version": "0.1.0",
+  "description": "Local-first data profiling toolkit powered by WebAssembly",
   "type": "module",
   "bin": {
     "datacert": "./dist/cli/cli/index.js"
+  },
+  "files": [
+    "dist/cli/**/*"
+  ],
+  "keywords": [
+    "data-profiling",
+    "data-quality",
+    "csv",
+    "parquet",
+    "wasm",
+    "cli",
+    "data-analysis",
+    "statistics"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/farmanp/datacert.git"
+  },
+  "homepage": "https://datacert.app",
+  "bugs": {
+    "url": "https://github.com/farmanp/datacert/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "vite",

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+
+# Build outputs (will be regenerated)
+dist
+
+# Git
+.git
+.gitignore
+
+# Documentation
+docs
+website
+*.md
+!README.md
+
+# Development files
+tickets
+tests
+.env*
+.vscode
+.idea
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+
+# CI/CD (not needed in container)
+.github
