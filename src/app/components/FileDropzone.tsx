@@ -38,10 +38,45 @@ const FileDropzone: Component = () => {
     }
   });
 
-  const onFileSelected = (file: File) => {
-    if (selectFile(file)) {
-      profileStore.startProfiling();
+  const onFileSelected = async (file: File) => {
+    if (!selectFile(file)) return;
+
+    // Check if this is a JSON file that needs tree mode detection
+    const isJSON = file.name.toLowerCase().endsWith('.json') || file.name.toLowerCase().endsWith('.jsonl');
+
+    if (isJSON) {
+      // Quick structure scan to determine if tree mode is recommended
+      try {
+        const { analyzeJsonStructure } = await import('../utils/structure-scanner');
+        const data = new Uint8Array(await file.arrayBuffer());
+
+        // Quick scan with small sample
+        const analysis = await analyzeJsonStructure(data, {
+          maxSampleRows: 100,
+          collectExamples: false,
+        });
+
+        // If tree mode is recommended, show modal
+        if (analysis.recommended_mode === 'tree') {
+          const useTreeMode = window.confirm(
+            `This JSON has ${analysis.total_paths} paths at ${analysis.max_depth} levels deep.\n\n` +
+            `Tree Mode is recommended for column selection.\n\n` +
+            `Click OK to use Tree Mode, or Cancel to profile all columns (may cause OOM).`
+          );
+
+          if (useTreeMode) {
+            // Navigate to tree mode
+            window.location.href = '/tree-mode';
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to analyze JSON structure, falling back to normal profiling:', error);
+      }
     }
+
+    // Normal profiling flow
+    profileStore.startProfiling();
   };
 
   // Handle file input change
@@ -263,9 +298,8 @@ const FileDropzone: Component = () => {
               {/* Progress bar */}
               <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  class={`h-full rounded-full transition-all duration-200 ${
-                    profileStore.store.isCancelling ? 'bg-red-500' : 'bg-amber-500'
-                  }`}
+                  class={`h-full rounded-full transition-all duration-200 ${profileStore.store.isCancelling ? 'bg-red-500' : 'bg-amber-500'
+                    }`}
                   style={{ width: `${store.progress}%` }}
                 />
               </div>
