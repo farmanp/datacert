@@ -16,6 +16,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,wasm,ico,png,svg}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB for WASM files
+        // Inline the workbox runtime to avoid CORS and path issues
+        inlineWorkboxRuntime: true,
+        // Use the root-relative path for service worker
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

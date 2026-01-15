@@ -1,6 +1,6 @@
 {
   "name": "datacert",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Local-first data profiling toolkit powered by WebAssembly",
   "type": "module",
   "bin": {
@@ -35,7 +35,7 @@
     "dev": "vite",
     "build": "npm run build:wasm && vite build",
     "build:wasm": "cd src/wasm && wasm-pack build --target web --out-dir pkg",
-    "build:cli": "tsc -p tsconfig.cli.json && mkdir -p dist/cli/wasm/pkg dist/cli/web && cp src/wasm/pkg/datacert_wasm_bg.wasm src/wasm/pkg/datacert_wasm.js dist/cli/wasm/pkg/ && cp -r dist/assets dist/index.html dist/manifest.json dist/sw.js dist/workbox-*.js dist/icons dist/cli/web/ 2>/dev/null || echo 'Note: Run npm run build first to include web UI' && chmod +x dist/cli/cli/index.js",
+    "build:cli": "tsc -p tsconfig.cli.json && mkdir -p dist/cli/wasm/pkg dist/cli/web && cp src/wasm/pkg/datacert_wasm_bg.wasm src/wasm/pkg/datacert_wasm.js dist/cli/wasm/pkg/ && cp -r dist/assets dist/index.html dist/manifest.json dist/sw.js dist/icons dist/cli/web/ 2>/dev/null || echo 'Note: Run npm run build first to include web UI' && chmod +x dist/cli/cli/index.js",
     "test": "./scripts/test.sh",
     "test:ts": "vitest run",
     "test:unit": "vitest run tests/unit",

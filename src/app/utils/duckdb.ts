@@ -94,7 +94,9 @@ export async function initDuckDB(): Promise<AsyncDuckDB> {
 
             // Create and instantiate the database
             const db = new duckdb.AsyncDuckDB(logger, worker);
-            await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+            // Note: Don't pass pthreadWorker as DuckDB-WASM is typically compiled without threading
+            // Passing it when threads aren't supported causes "total_threads != external_threads" error
+            await db.instantiate(bundle.mainModule, undefined);
 
             // Configure DuckDB for browser environment
             // Note: DuckDB-WASM cannot spill to disk like native DuckDB
@@ -229,9 +231,9 @@ export async function executeQuery<T = Record<string, unknown>>(
         if (errorMessage.includes('Out of Memory') || errorMessage.includes('could not allocate')) {
             throw new DuckDBError(
                 `Out of memory: The dataset is too large for browser processing. Try:\n` +
-                    `• Add LIMIT to your query (e.g., SELECT * FROM data LIMIT 10000)\n` +
-                    `• Filter data with WHERE clause\n` +
-                    `• Use the CLI for larger files: npx datacert profile yourfile.csv`,
+                `• Add LIMIT to your query (e.g., SELECT * FROM data LIMIT 10000)\n` +
+                `• Filter data with WHERE clause\n` +
+                `• Use the CLI for larger files: npx datacert profile yourfile.csv`,
                 'OUT_OF_MEMORY',
             );
         }
