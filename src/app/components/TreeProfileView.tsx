@@ -77,12 +77,62 @@ export const TreeProfileView: Component = () => {
 
         setIsProfiling(true);
         try {
-            // TODO: Implement profiling on selected paths
-            // For now, navigate to a placeholder
-            console.log('Profiling selected paths:', selectedPaths);
+            const file = fileStore.store.file?.file;
+            if (!file) {
+                throw new Error('No file loaded');
+            }
 
-            // Will integrate with existing profiler in next step
-            navigate('/profile-results');
+            // Read the JSON file
+            const data = new Uint8Array(await file.arrayBuffer());
+            const jsonText = new TextDecoder().decode(data);
+
+            // Parse JSON (handle both array and lines format)
+            let jsonData: any[];
+            const trimmed = jsonText.trim();
+
+            if (trimmed.startsWith('[')) {
+                // JSON array format
+                jsonData = JSON.parse(jsonText);
+            } else {
+                // JSON Lines format
+                jsonData = trimmed.split('\n')
+                    .filter(line => line.trim())
+                    .map(line => JSON.parse(line));
+            }
+
+            // Extract only selected paths from each row
+            const extractValue = (obj: any, path: string): any => {
+                // Remove leading $. and split by .
+                const parts = path.replace(/^\$\./, '').split('.');
+                let value = obj;
+
+                for (const part of parts) {
+                    if (value == null) return null;
+                    value = value[part];
+                }
+
+                return value;
+            };
+
+            // Build rows with only selected columns
+            const headers = selectedPaths.map(path => path.replace(/^\$\./, ''));
+            const rows: Record<string, unknown>[] = jsonData.map(row => {
+                const newRow: Record<string, unknown> = {};
+                selectedPaths.forEach((path, idx) => {
+                    const value = extractValue(row, path);
+                    newRow[headers[idx]] = value;
+                });
+                return newRow;
+            });
+
+            // Use profileStore's profileFromRows to profile the selected columns
+            const { profileStore: profileStoreImport } = await import('../stores/profileStore');
+            profileStoreImport.profileFromRows(rows, headers);
+
+            // Navigate to results
+            setTimeout(() => {
+                navigate('/');
+            }, 100);
         } catch (error) {
             treeStore.setError(`Profiling failed: ${error}`);
         } finally {
