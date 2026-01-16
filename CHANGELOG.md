@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-01-16
+
+### Fixed
+- **SQL Mode consistency**: Resolved issue where SQL Mode could still be accessed via top navigation for large files.
+- **Navigation Sync**: The navigation bar now reactively disables the SQL Mode link based on the currently loaded file size.
+
+## [0.1.17] - 2026-01-16
+
+### Added
+- **File Size Limits**: Implemented 3-tier file size validation across all upload screens:
+  - Small files (<100MB): Instant confirmation with "Ready to Profile" banner
+  - Medium files (100-500MB): Warning banner about SQL Mode unavailability
+  - Large files (>500MB): Hard block with CLI suggestion
+- **Upload Confirmation Flow**: All file uploads now show an inline confirmation banner with options to Profile Now, Use Tree Mode, or Cancel.
+- **SQL Mode Auto-Disable**: Files >100MB automatically disable the SQL Mode button with tooltip explanation.
+- **Dynamic Memory Limits**: File size limits adapt to device memory via `navigator.deviceMemory` API.
+
+### Changed
+- Centralized file size configuration in new `fileSizeConfig.ts` module.
+- Enhanced batch mode to show descriptive rejection messages for oversized files.
+- Compare mode now validates file size before processing.
+
+---
+
 ## [0.1.15] - 2026-01-15
 
 ### Added

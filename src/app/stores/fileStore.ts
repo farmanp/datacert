@@ -2,6 +2,7 @@ import { createSignal, createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import type { ProfilerError } from '../types/errors';
 import { createTypedError } from '../types/errors';
+import { isFileTooLarge, getFileSizeError, formatFileSizeLimit, SQL_MODE_SIZE_LIMIT } from '../config/fileSizeConfig';
 
 // Supported file types
 export const SUPPORTED_EXTENSIONS = ['.csv', '.tsv', '.json', '.jsonl', '.parquet', '.xlsx', '.xls', '.avro'] as const;
@@ -11,7 +12,7 @@ export const SUPPORTED_MIME_TYPES = [
   'application/json',
   'application/x-jsonlines',
   'application/jsonl',
-  'application/octet-stream', 
+  'application/octet-stream',
   'application/x-parquet',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.ms-excel',
@@ -40,6 +41,8 @@ export interface FileStoreState {
   isDemo: boolean;
   sheets: string[];
   selectedSheet: string | null;
+  pendingFile: File | null;
+  showLargeFileWarning: boolean;
 }
 
 function createFileStore() {
@@ -52,6 +55,8 @@ function createFileStore() {
     isDemo: false,
     sheets: [],
     selectedSheet: null,
+    pendingFile: null,
+    showLargeFileWarning: false,
   });
 
   // Signal for tracking if we're dragging over the dropzone
@@ -64,10 +69,10 @@ function createFileStore() {
     const fileName = file.name.toLowerCase();
     return SUPPORTED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
   };
-  
+
   const isValidUrl = (url: string): boolean => {
-     const lower = url.toLowerCase();
-     return SUPPORTED_EXTENSIONS.some((ext) => lower.endsWith(ext));
+    const lower = url.toLowerCase();
+    return SUPPORTED_EXTENSIONS.some((ext) => lower.endsWith(ext));
   };
 
   /**
@@ -82,9 +87,27 @@ function createFileStore() {
   };
 
   /**
-   * Sets the file and begins processing
+   * Sets the file as pending for confirmation
    */
   const selectFile = (file: File): boolean => {
+    // Validate file size first
+    if (isFileTooLarge(file.size)) {
+      const profilerError = getFileSizeError(file.name, file.size);
+      setStore({
+        state: 'error',
+        file: null,
+        progress: 0,
+        error: `File too large. Maximum size is ${formatFileSizeLimit()}.`,
+        profilerError,
+        isDemo: false,
+        sheets: [],
+        selectedSheet: null,
+        pendingFile: null,
+        showLargeFileWarning: false,
+      });
+      return false;
+    }
+
     // Validate file type
     if (!isValidFileType(file)) {
       const profilerError = createTypedError(
@@ -100,11 +123,31 @@ function createFileStore() {
         isDemo: false,
         sheets: [],
         selectedSheet: null,
+        pendingFile: null,
+        showLargeFileWarning: false,
       });
       return false;
     }
 
-    // Set file info and start processing state
+    // Set as pending for confirmation
+    setStore({
+      pendingFile: file,
+      showLargeFileWarning: file.size > SQL_MODE_SIZE_LIMIT,
+      state: 'idle', // Stay in idle while pending confirmation
+      error: null,
+      profilerError: null,
+    });
+
+    return true;
+  };
+
+  /**
+   * Confirms the pending file and begins processing
+   */
+  const confirmFile = (fileToConfirm?: File) => {
+    const file = fileToConfirm || store.pendingFile;
+    if (!file) return false;
+
     setStore({
       state: 'processing',
       file: {
@@ -119,16 +162,45 @@ function createFileStore() {
       isDemo: false,
       sheets: [],
       selectedSheet: null,
+      pendingFile: null,
+      showLargeFileWarning: false,
     });
-
     return true;
   };
-  
+
+  /**
+   * Cancels the pending file confirmation
+   */
+  const cancelPending = () => {
+    setStore({
+      pendingFile: null,
+      showLargeFileWarning: false,
+    });
+  };
+
+
+
   /**
    * Prepare store for remote file processing
    */
   const setRemoteFile = (name: string, size: number, url: string) => {
-    // Basic validation
+    // Validate file size first
+    if (isFileTooLarge(size)) {
+      const profilerError = getFileSizeError(name, size);
+      setStore({
+        state: 'error',
+        file: null,
+        progress: 0,
+        error: `File too large. Maximum size is ${formatFileSizeLimit()}.`,
+        profilerError,
+        isDemo: false,
+        sheets: [],
+        selectedSheet: null,
+      });
+      return false;
+    }
+
+    // Basic type validation
     if (!isValidUrl(name) && !isValidUrl(url)) {
       const profilerError = createTypedError(
         'INVALID_FORMAT',
@@ -239,11 +311,11 @@ function createFileStore() {
   };
 
   const setSheets = (sheets: string[]) => {
-      setStore('sheets', sheets);
+    setStore('sheets', sheets);
   };
 
   const setSelectedSheet = (sheet: string | null) => {
-      setStore('selectedSheet', sheet);
+    setStore('selectedSheet', sheet);
   };
 
   /**
@@ -260,6 +332,8 @@ function createFileStore() {
       isDemo: false,
       sheets: [],
       selectedSheet: null,
+      pendingFile: null,
+      showLargeFileWarning: false,
     });
   };
 
@@ -283,6 +357,8 @@ function createFileStore() {
 
     // Actions
     selectFile,
+    confirmFile,
+    cancelPending,
     setRemoteFile,
     loadDemoFile,
     setProgress,

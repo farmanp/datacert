@@ -2,9 +2,10 @@ import { Component, Show, Switch, Match, createMemo } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { fileStore, FILE_ACCEPT, SUPPORTED_EXTENSIONS } from '../stores/fileStore';
 import { profileStore } from '../stores/profileStore';
+import { formatFileSizeLimit } from '../config/fileSizeConfig';
 import ErrorDisplay from './ErrorDisplay';
 
-const LARGE_FILE_THRESHOLD = 50 * 1024 * 1024; // 50MB
+const LARGE_FILE_THRESHOLD = 50 * 1024 * 1024; // 50MB for cancel confirmation
 
 /**
  * FileDropzone Component
@@ -22,7 +23,7 @@ const FileDropzone: Component = () => {
   let fileInputRef: HTMLInputElement | undefined;
   const navigate = useNavigate();
 
-  const { store, selectFile, setHover, reset, formatFileSize } = fileStore;
+  const { store, selectFile, confirmFile, cancelPending, setHover, reset, formatFileSize } = fileStore;
 
   // Compute the current visual state class
   const stateClasses = createMemo(() => {
@@ -41,68 +42,29 @@ const FileDropzone: Component = () => {
   });
 
   const onFileSelected = async (file: File) => {
-    if (!selectFile(file)) return;
+    selectFile(file);
+  };
 
-    // Check if this is a JSON file that needs tree mode detection
-    const isJSON = file.name.toLowerCase().endsWith('.json') || file.name.toLowerCase().endsWith('.jsonl');
-    const isParquet = file.name.toLowerCase().endsWith('.parquet');
 
-    if (isJSON) {
-      // Quick structure scan to determine if tree mode is recommended
-      try {
-        const { analyzeJsonStructure } = await import('../utils/structure-scanner');
-        const data = new Uint8Array(await file.arrayBuffer());
 
-        // Quick scan with small sample
-        const analysis = await analyzeJsonStructure(data, {
-          maxSampleRows: 100,
-          collectExamples: false,
-        });
-
-        // If tree mode is recommended, show modal
-        if (analysis.recommended_mode === 'tree') {
-          const useTreeMode = window.confirm(
-            `This JSON has ${analysis.total_paths} paths at ${analysis.max_depth} levels deep.\n\n` +
-            `Tree Mode is recommended for column selection.\n\n` +
-            `Click OK to use Tree Mode, or Cancel to profile all columns (may cause OOM).`
-          );
-
-          if (useTreeMode) {
-            // Navigate to tree mode using Solid router to preserve memory state
-            navigate('/tree-mode');
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to analyze JSON structure, falling back to normal profiling:', error);
-      }
-    } else if (isParquet) {
-      // Check for wide Parquet files
-      try {
-        const { readParquetSchema } = await import('../utils/parquet-schema');
-        const { totalColumns, maxDepth } = await readParquetSchema(file);
-
-        // If wide (>500 cols) or deep (>3 levels), recommend tree mode
-        if (totalColumns > 500 || maxDepth > 3) {
-          const useTreeMode = window.confirm(
-            `This Parquet has ${totalColumns} columns at ${maxDepth} levels deep.\n\n` +
-            `Tree Mode is recommended for selecting specifically which columns to profile.\n\n` +
-            `Click OK to use Tree Mode, or Cancel to profile all columns.`
-          );
-
-          if (useTreeMode) {
-            // Navigate to tree mode using Solid router to preserve memory state
-            navigate('/tree-mode');
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to analyze Parquet schema, falling back to normal profiling:', error);
-      }
+  // Handle confirmation: user chose to profile anyway
+  const handleProfileAnyway = async () => {
+    if (confirmFile()) {
+      profileStore.startProfiling();
     }
+  };
 
-    // Normal profiling flow
-    profileStore.startProfiling();
+  // Handle confirmation: user chose tree mode
+  const handleUseTreeMode = () => {
+    const file = store.pendingFile;
+    if (!file) return;
+    confirmFile(file); // Confirm it so it's in the store
+    navigate('/tree-mode');
+  };
+
+  // Handle confirmation: user cancelled
+  const handleCancelLargeFile = () => {
+    cancelPending();
   };
 
   // Handle file input change
@@ -301,7 +263,7 @@ const FileDropzone: Component = () => {
         </div>
 
         {/* Text content based on state */}
-        <Show when={store.state === 'idle' || store.state === 'hover'}>
+        <Show when={(store.state === 'idle' || store.state === 'hover') && !store.pendingFile}>
           <div class="text-center">
             <p class="text-lg font-bold font-heading text-slate-200 tracking-tight">
               {store.state === 'hover' ? 'Drop file to analyze' : 'Drag and drop your file here'}
@@ -311,6 +273,104 @@ const FileDropzone: Component = () => {
             </p>
             <p id="dropzone-description" class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black">
               Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
+            </p>
+            <p class="mt-1 text-[10px] text-slate-500">
+              Max file size: {formatFileSizeLimit()}
+            </p>
+          </div>
+        </Show>
+
+        {/* File confirmation banner - shows for ALL files */}
+        <Show when={store.pendingFile}>
+          <div class="text-center w-full max-w-md animate-in fade-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+            {/* Icon - different for small vs large files */}
+            <Show
+              when={store.showLargeFileWarning}
+              fallback={
+                <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+                  <svg class="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              }
+            >
+              <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/20 flex items-center justify-center">
+                <svg class="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </Show>
+
+            {/* Title - different for small vs large files */}
+            <h3 class={`text-lg font-bold mb-1 ${store.showLargeFileWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {store.showLargeFileWarning ? 'Large File Detected' : 'Ready to Profile'}
+            </h3>
+            <p class="text-slate-400 text-sm mb-1">
+              <span class="font-medium text-slate-300">{store.pendingFile?.name}</span>
+            </p>
+            <p class="text-slate-500 text-xs mb-4 font-mono">
+              {formatFileSize(store.pendingFile?.size || 0)}
+            </p>
+
+            {/* Warning message - only for large files */}
+            <Show when={store.showLargeFileWarning}>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-5">
+                <p class="text-amber-300/90 text-sm leading-relaxed">
+                  This file may take longer to process.<br />
+                  <span class="text-amber-400/70">SQL Mode will be unavailable</span> for in-browser querying.
+                </p>
+              </div>
+            </Show>
+
+            {/* Info message - only for small files */}
+            <Show when={!store.showLargeFileWarning}>
+              <div class="bg-slate-700/30 border border-slate-600/50 rounded-lg p-3 mb-5">
+                <p class="text-slate-300/90 text-sm leading-relaxed">
+                  Click <span class="font-semibold text-emerald-400">Profile Now</span> to analyze all columns,<br />
+                  or use <span class="text-slate-200">Tree Mode</span> to select specific ones.
+                </p>
+              </div>
+            </Show>
+
+            {/* Action buttons */}
+            <div class="flex flex-col sm:flex-row gap-2 justify-center">
+              <button
+                type="button"
+                onClick={handleProfileAnyway}
+                class={`px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg flex items-center justify-center gap-2 ${store.showLargeFileWarning
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 shadow-emerald-900/20'
+                  }`}
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                {store.showLargeFileWarning ? 'Profile Anyway' : 'Profile Now'}
+              </button>
+              <button
+                type="button"
+                onClick={handleUseTreeMode}
+                class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-200 font-semibold hover:bg-slate-600 transition-all border border-slate-600 flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                Use Tree Mode
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelLargeFile}
+                class="px-4 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+
+            {/* Tip - different for small vs large files */}
+            <p class="text-slate-600 text-[10px] mt-4 uppercase tracking-wider">
+              {store.showLargeFileWarning
+                ? 'Tip: Use Tree Mode to profile specific columns and reduce memory usage'
+                : 'Tip: Tree Mode lets you pick specific columns for faster profiling'}
             </p>
           </div>
         </Show>

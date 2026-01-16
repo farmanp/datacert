@@ -1,5 +1,5 @@
 import { Component, createSignal, onMount, Show } from 'solid-js';
-import { A } from '@solidjs/router';
+import { A, useNavigate } from '@solidjs/router';
 import FileDropzone from '../components/FileDropzone';
 import ProfileReport from '../components/ProfileReport';
 import GCSAuthButton from '../components/GCSAuthButton';
@@ -15,16 +15,19 @@ import TourModal from '../components/TourModal';
 import GlobalDragOverlay from '../components/GlobalDragOverlay';
 import ErrorDisplay from '../components/ErrorDisplay';
 
+
 /**
  * Home Page Component
  *
  * The main landing page for DataCert.
  */
 const Home: Component = () => {
+  const navigate = useNavigate();
   const [isRemoteModalOpen, setIsRemoteModalOpen] = createSignal(false);
   const [isTourOpen, setIsTourOpen] = createSignal(false);
 
   const { store } = profileStore;
+  const { store: fStore } = fileStore;
 
   const handleDragEnter = (e: DragEvent) => {
     e.preventDefault();
@@ -58,10 +61,28 @@ const Home: Component = () => {
 
     const file = e.dataTransfer?.files[0];
     if (file) {
-      if (fileStore.selectFile(file)) {
-        profileStore.startProfiling();
-      }
+      fileStore.selectFile(file);
     }
+  };
+
+  // Handle confirmation: user chose to profile
+  const handleProfileAnyway = async () => {
+    if (fileStore.confirmFile()) {
+      profileStore.startProfiling();
+    }
+  };
+
+  // Handle confirmation: user chose tree mode
+  const handleUseTreeMode = () => {
+    const file = fStore.pendingFile;
+    if (!file) return;
+    fileStore.confirmFile(file); // Confirm it so it's in the store
+    navigate('/tree-mode');
+  };
+
+  // Handle confirmation: user cancelled
+  const handleCancelConfirmation = () => {
+    fileStore.cancelPending();
   };
 
   onMount(async () => {
@@ -87,6 +108,101 @@ const Home: Component = () => {
             onRetry={() => fileStore.reset()}
             onUploadDifferent={() => fileStore.reset()}
           />
+        </div>
+      </Show>
+
+      {/* File Confirmation Overlay */}
+      <Show when={fStore.pendingFile}>
+        <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div class="text-center w-full max-w-md p-8 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl animate-in zoom-in-95 duration-300">
+            {/* Icon */}
+            <Show
+              when={fStore.showLargeFileWarning}
+              fallback={
+                <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+                  <svg class="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              }
+            >
+              <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-500/20 flex items-center justify-center">
+                <svg class="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </Show>
+
+            {/* Title */}
+            <h3 class={`text-2xl font-bold mb-2 ${fStore.showLargeFileWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {fStore.showLargeFileWarning ? 'Large File Detected' : 'Ready to Profile'}
+            </h3>
+            <p class="text-slate-300 font-medium mb-1">{fStore.pendingFile?.name}</p>
+            <p class="text-slate-500 text-sm font-mono mb-6">
+              {fileStore.formatFileSize(fStore.pendingFile?.size || 0)}
+            </p>
+
+            {/* Warning for large files */}
+            <Show when={fStore.showLargeFileWarning}>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                <p class="text-amber-300/90 text-sm leading-relaxed">
+                  This file may take longer to process.<br />
+                  <span class="text-amber-400/70 font-semibold">SQL Mode will be unavailable</span> for in-browser querying.
+                </p>
+              </div>
+            </Show>
+
+            {/* Info for small files */}
+            <Show when={!fStore.showLargeFileWarning}>
+              <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
+                <p class="text-slate-300 text-sm leading-relaxed">
+                  Click <span class="font-semibold text-emerald-400">Profile Now</span> to analyze all columns,<br />
+                  or use <span class="text-slate-200 font-medium">Tree Mode</span> to select specific ones.
+                </p>
+              </div>
+            </Show>
+
+            {/* Action buttons */}
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={handleProfileAnyway}
+                class={`px-6 py-3 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${fStore.showLargeFileWarning
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400'
+                  }`}
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                {fStore.showLargeFileWarning ? 'Profile Anyway' : 'Profile Now'}
+              </button>
+              <button
+                type="button"
+                onClick={handleUseTreeMode}
+                class="px-6 py-3 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition-all border border-slate-700 flex items-center justify-center gap-2"
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                Use Tree Mode
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleCancelConfirmation}
+              class="mt-4 px-4 py-2 text-slate-500 hover:text-slate-300 font-medium transition-colors"
+            >
+              Cancel
+            </button>
+
+            {/* Tip */}
+            <p class="text-slate-600 text-xs mt-6 uppercase tracking-wider">
+              {fStore.showLargeFileWarning
+                ? 'Tree Mode profiles specific columns to reduce memory usage'
+                : 'Pro tip: Tree Mode lets you pick specific columns'}
+            </p>
+          </div>
         </div>
       </Show>
 

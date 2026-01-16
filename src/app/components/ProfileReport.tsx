@@ -3,6 +3,7 @@ import { A } from '@solidjs/router';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
+import { SQL_MODE_SIZE_LIMIT } from '../config/fileSizeConfig';
 import ResultsTable from './ResultsTable';
 import ColumnCard from './ColumnCard';
 import EmptyState from './EmptyState';
@@ -307,20 +308,55 @@ const ProfileReport: Component = () => {
             </button>
           </div>
 
-          <A
-            href="/sql-mode"
-            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-              />
-            </svg>
-            SQL Mode
-          </A>
+          {/* SQL Mode - disabled for large files */}
+          {(() => {
+            const fileSize = fileStore.store.file?.size || 0;
+            // SQL mode is disabled for files larger than 100MB (DuckDB in-browser limit)
+            const isFileTooLargeForSql = fileSize > SQL_MODE_SIZE_LIMIT;
+
+            if (isFileTooLargeForSql) {
+              return (
+                <div class="relative group">
+                  <button
+                    disabled
+                    class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-500 font-semibold cursor-not-allowed flex items-center gap-2 opacity-60"
+                    title="File too large for SQL mode"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                      />
+                    </svg>
+                    SQL Mode
+                  </button>
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-700 text-slate-200 text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-600">
+                    File too large for in-browser SQL (max 100MB)
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-700" />
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <A
+                href="/sql-mode"
+                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                  />
+                </svg>
+                SQL Mode
+              </A>
+            );
+          })()}
         </div>
       </header>
 

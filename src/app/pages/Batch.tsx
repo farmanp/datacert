@@ -1,4 +1,4 @@
-import { Component, Show, createSignal, onMount, createMemo } from 'solid-js';
+import { Component, Show, onMount, createMemo } from 'solid-js';
 import Navigation from '../components/Navigation';
 import BatchDropzone from '../components/BatchDropzone';
 import BatchModeSelector from '../components/BatchModeSelector';
@@ -234,10 +234,9 @@ const Batch: Component = () => {
                       type="button"
                       class={`
                         px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg flex items-center gap-2
-                        ${
-                          canStartBatch()
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
-                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        ${canStartBatch()
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
+                          : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                         }
                       `}
                       onClick={startBatch}

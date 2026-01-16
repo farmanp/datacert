@@ -1,6 +1,8 @@
 import { Component, createSignal, Show, For, onCleanup, JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
+import { fileStore } from '../stores/fileStore';
+import { SQL_MODE_SIZE_LIMIT } from '../config/fileSizeConfig';
 import PrivacyBadge from './PrivacyBadge';
 
 /**
@@ -234,18 +236,42 @@ const Navigation: Component<NavigationProps> = (props) => {
             {/* Primary Navigation */}
             <div class="flex items-center gap-1">
               <For each={primaryNavItems}>
-                {(item) => (
-                  <A
-                    href={item.href}
-                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                      }`}
-                  >
-                    {item.icon()}
-                    <span class="hidden sm:inline">{item.label}</span>
-                  </A>
-                )}
+                {(item) => {
+                  const isSqlMode = item.label === 'SQL Mode';
+                  const isTooLarge = isSqlMode &&
+                    fileStore.store.file &&
+                    fileStore.store.file.size > SQL_MODE_SIZE_LIMIT;
+
+                  if (isTooLarge) {
+                    return (
+                      <div class="relative group">
+                        <button
+                          disabled
+                          class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-600 cursor-not-allowed opacity-50"
+                        >
+                          {item.icon()}
+                          <span class="hidden sm:inline">{item.label}</span>
+                        </button>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-800 text-slate-200 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-700 z-50">
+                          File too large (max 100MB)
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <A
+                      href={item.href}
+                      class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                        }`}
+                    >
+                      {item.icon()}
+                      <span class="hidden sm:inline">{item.label}</span>
+                    </A>
+                  );
+                }}
               </For>
 
               {/* More Tools Dropdown */}

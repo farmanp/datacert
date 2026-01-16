@@ -1,6 +1,7 @@
 import { Component, Show, Switch, Match } from 'solid-js';
 import { comparisonStore, ComparisonFileKey, ComparisonFileState } from '../stores/comparisonStore';
 import { FILE_ACCEPT, SUPPORTED_EXTENSIONS } from '../stores/fileStore';
+import { formatFileSizeLimit } from '../config/fileSizeConfig';
 
 /**
  * SingleDropzone Component
@@ -196,11 +197,10 @@ const SingleDropzone: Component<{ fileKey: ComparisonFileKey; label: string }> =
       {/* Label */}
       <div class="mb-3 flex items-center gap-2">
         <span
-          class={`px-3 py-1 rounded-lg text-sm font-bold ${
-            props.fileKey === 'A'
+          class={`px-3 py-1 rounded-lg text-sm font-bold ${props.fileKey === 'A'
               ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
               : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-          }`}
+            }`}
         >
           {props.label}
         </span>
@@ -255,6 +255,9 @@ const SingleDropzone: Component<{ fileKey: ComparisonFileKey; label: string }> =
             </p>
             <p class="mt-1 text-xs text-slate-400">
               {SUPPORTED_EXTENSIONS.join(', ')}
+            </p>
+            <p class="mt-0.5 text-[10px] text-slate-500">
+              Max: {formatFileSizeLimit()}
             </p>
           </div>
         </Show>

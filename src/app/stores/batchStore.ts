@@ -2,6 +2,7 @@ import { createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { ProfileResult } from './profileStore';
 import { SUPPORTED_EXTENSIONS } from './fileStore';
+import { isFileTooLarge, formatFileSizeLimit } from '../config/fileSizeConfig';
 import {
   ComparisonDelta,
   TrendAnalysis,
@@ -100,22 +101,28 @@ function createBatchStore() {
 
   /**
    * Adds multiple files to the batch
-   * Returns array of invalid file names (if any)
+   * Returns array of rejected file names (invalid type or too large)
    */
   const addFiles = (files: File[]): string[] => {
-    const invalidFiles: string[] = [];
+    const rejectedFiles: string[] = [];
     const validEntries: BatchFileEntry[] = [];
 
     for (const file of files) {
+      // Check file size first
+      if (isFileTooLarge(file.size)) {
+        rejectedFiles.push(`${file.name} (exceeds ${formatFileSizeLimit()})`);
+        continue;
+      }
+
       if (!isValidFileType(file)) {
-        invalidFiles.push(file.name);
+        rejectedFiles.push(file.name);
         continue;
       }
 
       // Check for duplicate file names
       const existingFile = store.files.find((f) => f.name === file.name);
       if (existingFile) {
-        // Skip duplicates silently or could add to invalidFiles
+        // Skip duplicates silently or could add to rejectedFiles
         continue;
       }
 
@@ -141,7 +148,7 @@ function createBatchStore() {
       }
     }
 
-    return invalidFiles;
+    return rejectedFiles;
   };
 
   /**

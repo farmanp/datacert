@@ -1,6 +1,7 @@
 import { Component, createSignal, Show } from 'solid-js';
 import { batchStore } from '../stores/batchStore';
 import { FILE_ACCEPT, SUPPORTED_EXTENSIONS } from '../stores/fileStore';
+import { formatFileSizeLimit } from '../config/fileSizeConfig';
 
 /**
  * BatchDropzone Component
@@ -197,7 +198,7 @@ const BatchDropzone: Component = () => {
             Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
           </p>
           <p class="mt-1 text-xs text-slate-500">
-            Select multiple files for batch processing
+            Max file size: {formatFileSizeLimit()} per file
           </p>
         </div>
       </div>

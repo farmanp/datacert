@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { profileStore } from './profileStore';
-import { createRoot } from 'solid-js';
 
 describe('profileStore', () => {
     beforeEach(() => {

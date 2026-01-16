@@ -2,6 +2,7 @@ import { createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { ProfileResult, ColumnProfile } from './profileStore';
 import { SUPPORTED_EXTENSIONS } from './fileStore';
+import { isFileTooLarge, formatFileSizeLimit } from '../config/fileSizeConfig';
 
 export type ComparisonFileKey = 'A' | 'B';
 
@@ -99,6 +100,18 @@ export function createComparisonStore() {
    * Select a file for comparison
    */
   const selectFile = (key: ComparisonFileKey, file: File): boolean => {
+    // Validate file size first
+    if (isFileTooLarge(file.size)) {
+      setStore(key === 'A' ? 'fileA' : 'fileB', {
+        file: null,
+        state: 'error',
+        progress: 0,
+        error: `File too large. Maximum size is ${formatFileSizeLimit()}.`,
+        results: null,
+      });
+      return false;
+    }
+
     if (!isValidFileType(file)) {
       setStore(key === 'A' ? 'fileA' : 'fileB', {
         file: null,
