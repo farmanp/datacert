@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **SQL Mode consistency**: Resolved issue where SQL Mode could still be accessed via top navigation for large files.
 - **Navigation Sync**: The navigation bar now reactively disables the SQL Mode link based on the currently loaded file size.
+- **Large File Confirmation**: Fixed bug where the confirmation overlay would not appear on subsequent upload attempts after cancelling or refreshing.
 
 ## [0.1.17] - 2026-01-16
 
