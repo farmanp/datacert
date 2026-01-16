@@ -15,6 +15,7 @@ interface ProfilerWorkerGlobals {
     extractedRows: [number, string[]][] | null;
     totalBytesReceived: number;
     useLargeFileMode: boolean;
+    startTime: number | null;
 }
 
 const workerGlobals: ProfilerWorkerGlobals = {
@@ -22,7 +23,8 @@ const workerGlobals: ProfilerWorkerGlobals = {
     avroBuffer: null,
     extractedRows: null,
     totalBytesReceived: 0,
-    useLargeFileMode: false
+    useLargeFileMode: false,
+    startTime: null
 };
 
 /**
@@ -65,6 +67,7 @@ self.onmessage = async (e: MessageEvent) => {
                 workerGlobals.useLargeFileMode = false;
                 workerGlobals.parquetBuffer = null;
                 workerGlobals.avroBuffer = null;
+                workerGlobals.startTime = performance.now();
 
                 // Check if this is a large Parquet/Avro file that should use DuckDB
                 const isLargeFile = fileSize && fileSize > LARGE_FILE_THRESHOLD_BYTES;
@@ -198,8 +201,20 @@ self.onmessage = async (e: MessageEvent) => {
                     finalStats = (profiler as DataCertProfiler).finalize();
                 }
 
-                self.postMessage({ type: 'final_stats', result: finalStats });
+                const durationSeconds = workerGlobals.startTime
+                    ? (performance.now() - workerGlobals.startTime) / 1000
+                    : 0;
+
+                self.postMessage({
+                    type: 'final_stats',
+                    result: finalStats,
+                    performanceMetrics: {
+                        durationSeconds,
+                        fileSizeBytes: workerGlobals.totalBytesReceived
+                    }
+                });
                 profiler = null;
+                workerGlobals.startTime = null;
                 break;
             }
 
@@ -279,6 +294,8 @@ self.onmessage = async (e: MessageEvent) => {
                 // Initialize CSV profiler with comma delimiter and headers
                 mode = 'csv';
                 profiler = new DataCertProfiler(44, true); // 44 = comma ASCII
+                workerGlobals.startTime = performance.now();
+                workerGlobals.totalBytesReceived = 0; // Reset for SQL rows
 
                 // Process the CSV content
                 const encoder = new TextEncoder();
@@ -287,8 +304,21 @@ self.onmessage = async (e: MessageEvent) => {
 
                 // Finalize and return results
                 const finalStats = (profiler as DataCertProfiler).finalize();
-                self.postMessage({ type: 'final_stats', result: finalStats });
+
+                const durationSeconds = workerGlobals.startTime
+                    ? (performance.now() - workerGlobals.startTime) / 1000
+                    : 0;
+
+                self.postMessage({
+                    type: 'final_stats',
+                    result: finalStats,
+                    performanceMetrics: {
+                        durationSeconds,
+                        fileSizeBytes: bytes.byteLength // In this mode, we use the generated CSV size
+                    }
+                });
                 profiler = null;
+                workerGlobals.startTime = null;
                 break;
             }
 

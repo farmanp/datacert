@@ -7,10 +7,13 @@ import Navigation from '../components/Navigation';
 import { profileStore } from '../stores/profileStore';
 import { fileStore } from '../stores/fileStore';
 import { authStore } from '../stores/auth.store';
+import { engineStore } from '../stores/engine.store';
 import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
 import { AnomalyDrilldown } from '../components/AnomalyDrilldown';
 import RemoteSourcesModal from '../components/RemoteSourcesModal';
 import TourModal from '../components/TourModal';
+import GlobalDragOverlay from '../components/GlobalDragOverlay';
+import ErrorDisplay from '../components/ErrorDisplay';
 
 /**
  * Home Page Component
@@ -18,33 +21,75 @@ import TourModal from '../components/TourModal';
  * The main landing page for DataCert.
  */
 const Home: Component = () => {
-  const [wasmStatus, setWasmStatus] = createSignal('Loading WASM...');
-  const [wasmReady, setWasmReady] = createSignal(false);
   const [isRemoteModalOpen, setIsRemoteModalOpen] = createSignal(false);
   const [isTourOpen, setIsTourOpen] = createSignal(false);
 
   const { store } = profileStore;
 
+  const handleDragEnter = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only trigger if dragging files
+    if (e.dataTransfer?.types.includes('Files')) {
+      fileStore.setHover(true);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // We only want to hide the overlay if the drag actually leaves the window
+    // relatedTarget is null when leaving the window
+    if (!e.relatedTarget || (e.relatedTarget as HTMLElement).nodeName === 'HTML') {
+      fileStore.setHover(false);
+    }
+  };
+
+  const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileStore.setHover(false);
+
+    const file = e.dataTransfer?.files[0];
+    if (file) {
+      if (fileStore.selectFile(file)) {
+        profileStore.startProfiling();
+      }
+    }
+  };
+
   onMount(async () => {
     authStore.init();
-    try {
-      // Import the WASM module
-      const wasmModule = await import('../../wasm/pkg/datacert_wasm');
-      // Initialize the WASM binary (default export loads the .wasm file)
-      await wasmModule.default();
-      // Call the init function
-      wasmModule.init();
-      setWasmStatus('WASM Ready');
-      setWasmReady(true);
-    } catch (e) {
-      console.error('Failed to load WASM', e);
-      setWasmStatus('WASM Failed to load');
-      setWasmReady(false);
-    }
+    engineStore.init();
   });
 
   return (
-    <div class="min-h-screen bg-slate-950 text-white flex flex-col selection:bg-blue-500/30">
+    <div
+      class="min-h-screen bg-slate-950 text-white flex flex-col selection:bg-blue-500/30"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <GlobalDragOverlay />
+
+      {/* File-related Errors Overlay */}
+      <Show when={fileStore.store.state === 'error' && fileStore.store.profilerError}>
+        <div class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+          <ErrorDisplay
+            error={fileStore.store.profilerError!}
+            onRetry={() => fileStore.reset()}
+            onUploadDifferent={() => fileStore.reset()}
+          />
+        </div>
+      </Show>
+
       <Navigation />
       <AnomalyDrilldown />
       <RemoteSourcesModal
@@ -95,7 +140,41 @@ const Home: Component = () => {
 
             {/* Main Content */}
             <main class="w-full max-w-6xl relative">
-              {/* Premium Loading Overlay */}
+
+              {/* Initialization Loading Overlay */}
+              <Show when={engineStore.state.isLoading}>
+                <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md">
+                  <div class="relative w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center border border-blue-500/30 shadow-2xl shadow-blue-500/20 mb-8">
+                    <svg class="w-10 h-10 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  <h2 class="text-xl font-bold text-white mb-2 tracking-tight">Initializing Data Engine...</h2>
+                  <p class="text-slate-400 text-sm">Preparing local WASM environment</p>
+                </div>
+              </Show>
+
+              {/* Initialization Error Overlay */}
+              <Show when={engineStore.state.error}>
+                <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-xl">
+                  <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/30 mb-6">
+                    <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <h2 class="text-2xl font-bold text-white mb-2">Failed to initialize engine</h2>
+                  <p class="text-slate-400 mb-6 text-center max-w-md">{engineStore.state.error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors"
+                  >
+                    Reload Application
+                  </button>
+                </div>
+              </Show>
+
+              {/* Premium Loading Overlay (Processing File) */}
               <Show when={fileStore.store.state === 'processing' || profileStore.store.isProfiling}>
                 <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xl animate-in fade-in duration-500">
                   <div class="relative">
@@ -154,9 +233,11 @@ const Home: Component = () => {
                 {/* Card 1: Import Files */}
                 <div
                   onClick={() => {
-                    document.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+                    if (engineStore.state.isReady) {
+                      document.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+                    }
                   }}
-                  class="group relative bg-slate-900/40 backdrop-blur-sm border-2 border-dashed border-slate-800 rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-500/50 hover:bg-slate-800/40 transition-all duration-300 hover:-translate-y-1"
+                  class={`group relative bg-slate-900/40 backdrop-blur-sm border-2 border-dashed border-slate-800 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-blue-500/50 hover:bg-slate-800/40 transition-all duration-300 hover:-translate-y-1 ${!engineStore.state.isReady ? 'cursor-not-allowed opacity-50 grayscale' : 'cursor-pointer'} ${fileStore.store.state === 'hover' ? 'border-blue-500/50 bg-slate-800/40 ring-4 ring-blue-500/20' : ''}`}
                 >
                   <div class="w-20 h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
                     <svg class="w-10 h-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,17 +292,19 @@ const Home: Component = () => {
 
               {/* Hidden FileDropzone */}
               <div class="hidden">
-                <FileDropzone />
+                <Show when={engineStore.state.isReady}>
+                  <FileDropzone />
+                </Show>
               </div>
 
               {/* Sample Data Integration */}
               <div class={`flex flex-col items-center gap-6 mt-12 py-8 border-t border-slate-800/50 transition-all duration-500 ${fileStore.store.state === 'processing' || profileStore.store.isProfiling ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
                 <div class="flex items-center gap-4">
                   <div
-                    class={`h-2.5 w-2.5 rounded-full animate-pulse ${wasmReady() ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                    class={`h-2.5 w-2.5 rounded-full animate-pulse ${engineStore.state.isReady ? 'bg-emerald-500' : 'bg-amber-500'}`}
                   />
                   <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    {wasmStatus()}
+                    {engineStore.state.isReady ? 'WASM READY' : engineStore.state.isLoading ? 'INITIALIZING...' : 'OFFLINE'}
                   </span>
                 </div>
 
@@ -232,16 +315,18 @@ const Home: Component = () => {
                       profileStore.startProfiling();
                     }
                   }}
-                  disabled={fileStore.store.state === 'processing'}
-                  class="group flex items-center gap-3 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-2xl transition-all border border-slate-800 hover:border-blue-500/30"
+                  disabled={fileStore.store.state === 'processing' || !engineStore.state.isReady}
+                  class="group relative flex items-center gap-3 px-6 py-3 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-blue-400 font-bold rounded-full transition-all border border-slate-800 hover:border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                 >
-                  <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="w-6 h-6 bg-blue-500/10 rounded-full flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                    <svg class="w-3 h-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  Try with Sample Data
+                  <span class="text-sm tracking-tight">Explore with Sample Data</span>
+
+                  {/* Subtle underline glow */}
+                  <div class="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/0 group-hover:via-blue-500/50 to-transparent transition-all duration-500"></div>
                 </button>
               </div>
 

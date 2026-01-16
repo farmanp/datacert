@@ -8,6 +8,7 @@ import NWayComparisonView from '../components/NWayComparisonView';
 import SchemaValidationDialog from '../components/SchemaValidationDialog';
 import MergedResultsView from '../components/MergedResultsView';
 import { batchStore } from '../stores/batchStore';
+import { engineStore } from '../stores/engine.store';
 
 /**
  * Batch Page Component
@@ -22,9 +23,6 @@ import { batchStore } from '../stores/batchStore';
  * Results display will be implemented in Phase 2.
  */
 const Batch: Component = () => {
-  const [wasmStatus, setWasmStatus] = createSignal('Loading WASM...');
-  const [wasmReady, setWasmReady] = createSignal(false);
-
   const {
     store,
     startBatch,
@@ -39,17 +37,7 @@ const Batch: Component = () => {
   const summary = createMemo(() => getSummary());
 
   onMount(async () => {
-    try {
-      // Import the WASM module
-      const wasm = await import('../../wasm/pkg/datacert_wasm');
-      wasm.init();
-      setWasmStatus('WASM Ready');
-      setWasmReady(true);
-    } catch (e) {
-      console.error('Failed to load WASM', e);
-      setWasmStatus('WASM Failed to load');
-      setWasmReady(false);
-    }
+    engineStore.init();
   });
 
   const getModeDescription = () => {
@@ -83,10 +71,10 @@ const Batch: Component = () => {
             {/* WASM Status */}
             <div class="flex items-center space-x-3 mb-6">
               <div
-                class={`h-3 w-3 rounded-full ${wasmReady() ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                class={`h-3 w-3 rounded-full ${engineStore.state.isReady ? 'bg-emerald-500' : 'bg-amber-500'}`}
               />
               <span class="text-sm font-medium text-slate-300 uppercase tracking-wider">
-                {wasmStatus()}
+                {engineStore.state.isReady ? 'WASM Ready' : engineStore.state.isLoading ? 'Initializing...' : 'Offline'}
               </span>
             </div>
 

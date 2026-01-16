@@ -1,6 +1,7 @@
 import { Component, createSignal, Show, For, onCleanup, JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import { isFeatureEnabled, FEATURE_FLAGS } from '../utils/featureFlags';
+import PrivacyBadge from './PrivacyBadge';
 
 /**
  * Navigation item type for primary and secondary navigation
@@ -199,9 +200,12 @@ const Navigation: Component<NavigationProps> = (props) => {
             </div>
 
             <Show when={props.title}>
-              <h1 class="text-xl sm:text-2xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                {props.title}
-              </h1>
+              <div class="flex items-center gap-4">
+                <h1 class="text-xl sm:text-2xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                  {props.title}
+                </h1>
+                <PrivacyBadge />
+              </div>
             </Show>
 
             <div class="w-24" />
@@ -225,17 +229,18 @@ const Navigation: Component<NavigationProps> = (props) => {
               </span>
             </A>
 
+            <PrivacyBadge />
+
             {/* Primary Navigation */}
             <div class="flex items-center gap-1">
               <For each={primaryNavItems}>
                 {(item) => (
                   <A
                     href={item.href}
-                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      location.pathname === item.href
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
+                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
+                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
                   >
                     {item.icon()}
                     <span class="hidden sm:inline">{item.label}</span>
@@ -251,13 +256,12 @@ const Navigation: Component<NavigationProps> = (props) => {
                       e.stopPropagation();
                       toggleDropdown();
                     }}
-                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      isMoreToolsActive()
-                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                        : isDropdownOpen()
-                          ? 'bg-slate-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
+                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${isMoreToolsActive()
+                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                      : isDropdownOpen()
+                        ? 'bg-slate-700 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
                     aria-expanded={isDropdownOpen()}
                     aria-haspopup="true"
                   >
@@ -294,11 +298,10 @@ const Navigation: Component<NavigationProps> = (props) => {
                             <A
                               href={item.href}
                               onClick={() => setIsDropdownOpen(false)}
-                              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                                location.pathname === item.href
-                                  ? 'bg-purple-500/20 text-purple-400'
-                                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
-                              }`}
+                              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
+                                ? 'bg-purple-500/20 text-purple-400'
+                                : 'text-slate-300 hover:text-white hover:bg-slate-700'
+                                }`}
                             >
                               {item.icon()}
                               <span>{item.label}</span>

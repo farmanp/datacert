@@ -97,6 +97,11 @@ export interface ProfileStoreState {
   largeFileMode: boolean;
   /** Memory warning message if memory pressure detected */
   memoryWarning: string | null;
+  /** Performance metrics for the last profiling run */
+  performanceMetrics: {
+    durationSeconds: number;
+    fileSizeBytes: number;
+  } | null;
 
   // Drilldown sub-state (merged from drilldownStore)
   drilldown: DrilldownState;
@@ -116,6 +121,7 @@ function createProfileStore() {
     viewMode: 'table',
     largeFileMode: false,
     memoryWarning: null,
+    performanceMetrics: null,
 
     // Drilldown sub-state initial values
     drilldown: {
@@ -157,6 +163,7 @@ function createProfileStore() {
       results: null,
       largeFileMode: false,
       memoryWarning: null,
+      performanceMetrics: null,
     });
 
     worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
@@ -242,6 +249,7 @@ function createProfileStore() {
             isProfiling: false,
             progress: 100,
             largeFileMode: false,
+            performanceMetrics: e.data.performanceMetrics,
           });
           worker?.terminate();
           break;
@@ -322,6 +330,7 @@ function createProfileStore() {
               results: result as ProfilerResult,
               isProfiling: false,
               progress: 100,
+              performanceMetrics: e.data.performanceMetrics,
             });
             worker?.terminate();
             break;
@@ -454,7 +463,12 @@ function createProfileStore() {
               worker?.postMessage({ type: 'process_chunk', data: bytes }, [bytes.buffer]);
               worker?.postMessage({ type: 'finalize' });
             } else if (wType === 'final_stats') {
-              setStore({ results: result as ProfilerResult, isProfiling: false, progress: 100 });
+              setStore({
+                results: result as ProfilerResult,
+                isProfiling: false,
+                progress: 100,
+                performanceMetrics: ev.data.performanceMetrics,
+              });
               worker?.terminate();
               worker = null;
             } else if (wType === 'error') {
@@ -561,6 +575,7 @@ function createProfileStore() {
             results: result as ProfilerResult,
             isProfiling: false,
             progress: 100,
+            performanceMetrics: e.data.performanceMetrics,
           });
           worker?.terminate();
           worker = null;
@@ -592,6 +607,7 @@ function createProfileStore() {
    * @param format - The file format ('parquet' or 'avro')
    */
   const profileLargeFileWithDuckDB = async (file: File, format: string) => {
+    const startTime = performance.now();
     try {
       setStore('progress', 20);
 
@@ -861,6 +877,10 @@ function createProfileStore() {
         isProfiling: false,
         progress: 100,
         largeFileMode: false,
+        performanceMetrics: {
+          durationSeconds: (performance.now() - startTime) / 1000,
+          fileSizeBytes: file.size,
+        },
       });
 
       fileStore.setProgress(100);
@@ -899,6 +919,7 @@ function createProfileStore() {
       viewMode: 'table',
       largeFileMode: false,
       memoryWarning: null,
+      performanceMetrics: null,
       drilldown: {
         isOpen: false,
         columnName: '',
@@ -1015,6 +1036,7 @@ function createProfileStore() {
               results: result as ProfilerResult,
               isProfiling: false,
               progress: 100,
+              performanceMetrics: e.data.performanceMetrics,
             });
             worker?.terminate();
             break;
@@ -1211,6 +1233,7 @@ function createProfileStore() {
     processExcel,
     selectSheet,
     setViewMode,
+    setStore,
     reset,
     cancelProfiling,
 

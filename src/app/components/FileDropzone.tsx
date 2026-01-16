@@ -28,7 +28,7 @@ const FileDropzone: Component = () => {
   const stateClasses = createMemo(() => {
     switch (store.state) {
       case 'hover':
-        return 'border-blue-500 bg-blue-500/10 scale-[1.02]';
+        return 'border-blue-500 bg-blue-500/20 scale-[1.02] shadow-[0_0_40px_rgba(59,130,246,0.3)] ring-4 ring-blue-500/10';
       case 'processing':
         return 'border-amber-500 bg-amber-500/10 cursor-wait';
       case 'error':
@@ -304,7 +304,7 @@ const FileDropzone: Component = () => {
         <Show when={store.state === 'idle' || store.state === 'hover'}>
           <div class="text-center">
             <p class="text-lg font-bold font-heading text-slate-200 tracking-tight">
-              {store.state === 'hover' ? 'Drop your file here' : 'Drag and drop your file here'}
+              {store.state === 'hover' ? 'Drop file to analyze' : 'Drag and drop your file here'}
             </p>
             <p class="mt-1 text-sm text-slate-400">
               or <span class="text-blue-400 underline">click to browse</span>

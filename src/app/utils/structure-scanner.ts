@@ -1,4 +1,5 @@
-import init, { analyze_json_structure_wasm } from '../../wasm/pkg/datacert_wasm';
+import { analyze_json_structure_wasm } from '../../wasm/pkg/datacert_wasm';
+import { engineStore } from '../stores/engine.store';
 
 /**
  * Tree node representing a path in JSON structure
@@ -61,7 +62,7 @@ export async function analyzeJsonStructure(
     config?: StructureConfig
 ): Promise<StructureAnalysis> {
     // Ensure WASM is initialized
-    await init();
+    await engineStore.init();
 
     // Call WASM function
     const result = await analyze_json_structure_wasm(

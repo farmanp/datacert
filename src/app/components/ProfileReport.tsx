@@ -210,22 +210,44 @@ const ProfileReport: Component = () => {
   return (
     <div class="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 print:p-0">
       <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 print:hidden">
-        <div>
-          <h2 class="text-3xl font-extrabold text-white tracking-tight">Profiling Results</h2>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3">
+            <h2 class="text-3xl font-extrabold text-white tracking-tight">Profiling Results</h2>
+            <Show when={fileStore.store.isDemo}>
+              <div class="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full flex items-center gap-1.5 transition-all hover:bg-indigo-500/20 group/demo">
+                <div class="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                <span class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] leading-none">
+                  Demo
+                </span>
+              </div>
+            </Show>
+          </div>
           <Show when={fileStore.store.file}>
             {(file) => (
-              <p class="text-slate-400 mt-1 flex items-center gap-2">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                <span>
-                  Analyzed <span class="text-blue-400 font-semibold">{file().name}</span> (
-                  {fileStore.formatFileSize(file().size)})
-                </span>
-                <Show when={fileStore.store.isDemo}>
-                  <span class="ml-2 px-2 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-blue-300 text-[10px] font-bold uppercase tracking-wider">
-                    Demo Data
+              <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-[13px] text-slate-500 tracking-wide">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+                  <span>
+                    Analyzed <span class="text-slate-300 font-medium">{file().name}</span>
+                    <span class="ml-1 text-slate-600 opacity-60">({fileStore.formatFileSize(file().size)})</span>
                   </span>
+                </div>
+
+                <Show when={store.performanceMetrics}>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-700 font-light">|</span>
+                    <span class="text-slate-500">
+                      Processed <span class="text-emerald-500/90 font-medium">
+                        {fileStore.formatFileSize(store.performanceMetrics!.fileSizeBytes)}
+                      </span> in <span class="text-emerald-500/90 font-medium whitespace-nowrap">
+                        {store.performanceMetrics!.durationSeconds < 0.1
+                          ? `${(store.performanceMetrics!.durationSeconds * 1000).toFixed(0)}ms`
+                          : `${store.performanceMetrics!.durationSeconds.toFixed(2)}s`}
+                      </span>
+                    </span>
+                  </div>
                 </Show>
-              </p>
+              </div>
             )}
           </Show>
         </div>
@@ -310,17 +332,15 @@ const ProfileReport: Component = () => {
       {/* PII Summary Banner */}
       <Show when={piiColumns().length > 0}>
         <div
-          class={`rounded-xl p-4 mb-2 border ${
-            hasHighSeverityPii()
-              ? 'bg-rose-500/10 border-rose-500/30'
-              : 'bg-amber-500/10 border-amber-500/30'
-          } print:bg-amber-50 print:border-amber-200`}
+          class={`rounded-xl p-4 mb-2 border ${hasHighSeverityPii()
+            ? 'bg-rose-500/10 border-rose-500/30'
+            : 'bg-amber-500/10 border-amber-500/30'
+            } print:bg-amber-50 print:border-amber-200`}
         >
           <div class="flex items-start gap-3">
             <div
-              class={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                hasHighSeverityPii() ? 'bg-rose-500/20' : 'bg-amber-500/20'
-              }`}
+              class={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${hasHighSeverityPii() ? 'bg-rose-500/20' : 'bg-amber-500/20'
+                }`}
             >
               <svg
                 class={`w-5 h-5 ${hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'}`}
@@ -339,9 +359,8 @@ const ProfileReport: Component = () => {
             </div>
             <div class="flex-1 min-w-0">
               <h3
-                class={`font-bold text-base ${
-                  hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'
-                } print:text-amber-600`}
+                class={`font-bold text-base ${hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'
+                  } print:text-amber-600`}
               >
                 Potential PII Detected
               </h3>
@@ -353,13 +372,12 @@ const ProfileReport: Component = () => {
                 <For each={piiColumns()}>
                   {(col) => (
                     <div
-                      class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
-                        col.severity === 'error'
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : col.severity === 'warning'
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
-                      }`}
+                      class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${col.severity === 'error'
+                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        : col.severity === 'warning'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
+                        }`}
                     >
                       <span class="font-semibold">{col.name}</span>
                       <span class="opacity-60">({col.piiType})</span>

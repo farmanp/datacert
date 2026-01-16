@@ -4,6 +4,7 @@ import DualDropzone from '../components/DualDropzone';
 import ComparisonTable from '../components/ComparisonTable';
 import Toast from '../components/Toast';
 import { comparisonStore } from '../stores/comparisonStore';
+import { engineStore } from '../stores/engine.store';
 import { downloadFile } from '../utils/exportReport';
 
 /**
@@ -14,8 +15,6 @@ import { downloadFile } from '../utils/exportReport';
  * to identify schema drift and statistical changes between data versions.
  */
 const Compare: Component = () => {
-  const [wasmStatus, setWasmStatus] = createSignal('Loading WASM...');
-  const [wasmReady, setWasmReady] = createSignal(false);
   const [showToast, setShowToast] = createSignal(false);
   const [toastMessage, setToastMessage] = createSignal('');
   const [toastType, setToastType] = createSignal<'success' | 'error'>('success');
@@ -33,17 +32,7 @@ const Compare: Component = () => {
   };
 
   onMount(async () => {
-    try {
-      // Import the WASM module
-      const wasm = await import('../../wasm/pkg/datacert_wasm');
-      wasm.init();
-      setWasmStatus('WASM Ready');
-      setWasmReady(true);
-    } catch (e) {
-      console.error('Failed to load WASM', e);
-      setWasmStatus('WASM Failed to load');
-      setWasmReady(false);
-    }
+    engineStore.init();
   });
 
   // Check if both files have been profiled
@@ -228,10 +217,10 @@ const Compare: Component = () => {
             {/* WASM Status */}
             <div class="flex items-center space-x-3 mb-6">
               <div
-                class={`h-3 w-3 rounded-full ${wasmReady() ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                class={`h-3 w-3 rounded-full ${engineStore.state.isReady ? 'bg-emerald-500' : 'bg-amber-500'}`}
               />
               <span class="text-sm font-medium text-slate-300 uppercase tracking-wider">
-                {wasmStatus()}
+                {engineStore.state.isReady ? 'WASM Ready' : engineStore.state.isLoading ? 'Initializing...' : 'Offline'}
               </span>
             </div>
 
