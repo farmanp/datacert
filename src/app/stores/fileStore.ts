@@ -129,13 +129,18 @@ function createFileStore() {
       return false;
     }
 
-    // Set as pending for confirmation
+    // Set as pending for confirmation - fully reset store to prevent stale state
     setStore({
-      pendingFile: file,
-      showLargeFileWarning: file.size > SQL_MODE_SIZE_LIMIT,
-      state: 'idle', // Stay in idle while pending confirmation
+      state: 'idle',
+      file: null,
+      progress: 0,
       error: null,
       profilerError: null,
+      isDemo: false,
+      sheets: [],
+      selectedSheet: null,
+      pendingFile: file,
+      showLargeFileWarning: file.size > SQL_MODE_SIZE_LIMIT,
     });
 
     return true;
