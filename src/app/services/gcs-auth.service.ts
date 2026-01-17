@@ -16,7 +16,8 @@ interface TokenResponse {
 }
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const SCOPES = 'https://www.googleapis.com/auth/devstorage.read_only https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+const SCOPES =
+  'https://www.googleapis.com/auth/devstorage.read_only https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 class GCSAuthService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +42,7 @@ class GCSAuthService {
 
   private initTokenClient() {
     if (!window.google) return;
-    
+
     if (!CLIENT_ID) {
       console.warn('Google Client ID not found. GCS authentication will not work.');
       return;
@@ -68,14 +69,15 @@ class GCSAuthService {
         // Retry init if script just loaded
         this.initTokenClient();
         if (!this.tokenClient) {
-            if (!CLIENT_ID) return reject(new Error('Missing VITE_GOOGLE_CLIENT_ID in environment variables'));
-            return reject(new Error('Google Identity Services not loaded yet'));
+          if (!CLIENT_ID)
+            return reject(new Error('Missing VITE_GOOGLE_CLIENT_ID in environment variables'));
+          return reject(new Error('Google Identity Services not loaded yet'));
         }
       }
 
       this.resolveAuth = resolve;
       this.rejectAuth = reject;
-      
+
       // Prompt the user
       this.tokenClient.requestAccessToken();
     });
@@ -87,11 +89,11 @@ class GCSAuthService {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch user profile');
     }
-    
+
     return response.json();
   }
 }

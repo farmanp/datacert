@@ -195,11 +195,10 @@ const BatchDropzone: Component = () => {
             id="batch-dropzone-description"
             class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black"
           >
-            Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
+            Supported:{' '}
+            <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
           </p>
-          <p class="mt-1 text-xs text-slate-500">
-            Max file size: {formatFileSizeLimit()} per file
-          </p>
+          <p class="mt-1 text-xs text-slate-500">Max file size: {formatFileSizeLimit()} per file</p>
         </div>
       </div>
 

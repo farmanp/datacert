@@ -23,7 +23,8 @@ const FileDropzone: Component = () => {
   let fileInputRef: HTMLInputElement | undefined;
   const navigate = useNavigate();
 
-  const { store, selectFile, confirmFile, cancelPending, setHover, reset, formatFileSize } = fileStore;
+  const { store, selectFile, confirmFile, cancelPending, setHover, reset, formatFileSize } =
+    fileStore;
 
   // Compute the current visual state class
   const stateClasses = createMemo(() => {
@@ -44,8 +45,6 @@ const FileDropzone: Component = () => {
   const onFileSelected = async (file: File) => {
     selectFile(file);
   };
-
-
 
   // Handle confirmation: user chose to profile anyway
   const handleProfileAnyway = async () => {
@@ -143,24 +142,31 @@ const FileDropzone: Component = () => {
 
   // Get icon based on state using Switch/Match for proper reactivity
   const StateIcon: Component = () => (
-    <Switch fallback={
-      <svg
-        class="w-12 h-12 text-slate-400 group-hover:text-slate-300 transition-colors"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-        />
-      </svg>
-    }>
+    <Switch
+      fallback={
+        <svg
+          class="w-12 h-12 text-slate-400 group-hover:text-slate-300 transition-colors"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
+      }
+    >
       <Match when={store.state === 'processing'}>
-        <svg class="w-12 h-12 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          class="w-12 h-12 text-amber-500 animate-spin"
+          fill="none"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <circle
             class="opacity-25"
             cx="12"
@@ -177,7 +183,13 @@ const FileDropzone: Component = () => {
         </svg>
       </Match>
       <Match when={store.state === 'error'}>
-        <svg class="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <svg
+          class="w-12 h-12 text-red-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -271,38 +283,65 @@ const FileDropzone: Component = () => {
             <p class="mt-1 text-sm text-slate-400">
               or <span class="text-blue-400 underline">click to browse</span>
             </p>
-            <p id="dropzone-description" class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black">
-              Supported: <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
+            <p
+              id="dropzone-description"
+              class="mt-3 text-[10px] text-slate-400 uppercase tracking-widest font-black"
+            >
+              Supported:{' '}
+              <span class="font-mono text-slate-400">{SUPPORTED_EXTENSIONS.join(', ')}</span>
             </p>
-            <p class="mt-1 text-[10px] text-slate-500">
-              Max file size: {formatFileSizeLimit()}
-            </p>
+            <p class="mt-1 text-[10px] text-slate-500">Max file size: {formatFileSizeLimit()}</p>
           </div>
         </Show>
 
         {/* File confirmation banner - shows for ALL files */}
         <Show when={store.pendingFile}>
-          <div class="text-center w-full max-w-md animate-in fade-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+          <div
+            class="text-center w-full max-w-md animate-in fade-in zoom-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Icon - different for small vs large files */}
             <Show
               when={store.showLargeFileWarning}
               fallback={
                 <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                  <svg class="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    class="w-7 h-7 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
               }
             >
               <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/20 flex items-center justify-center">
-                <svg class="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  class="w-7 h-7 text-amber-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               </div>
             </Show>
 
             {/* Title - different for small vs large files */}
-            <h3 class={`text-lg font-bold mb-1 ${store.showLargeFileWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
+            <h3
+              class={`text-lg font-bold mb-1 ${store.showLargeFileWarning ? 'text-amber-400' : 'text-emerald-400'}`}
+            >
               {store.showLargeFileWarning ? 'Large File Detected' : 'Ready to Profile'}
             </h3>
             <p class="text-slate-400 text-sm mb-1">
@@ -316,8 +355,10 @@ const FileDropzone: Component = () => {
             <Show when={store.showLargeFileWarning}>
               <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-5">
                 <p class="text-amber-300/90 text-sm leading-relaxed">
-                  This file may take longer to process.<br />
-                  <span class="text-amber-400/70">SQL Mode will be unavailable</span> for in-browser querying.
+                  This file may take longer to process.
+                  <br />
+                  <span class="text-amber-400/70">SQL Mode will be unavailable</span> for in-browser
+                  querying.
                 </p>
               </div>
             </Show>
@@ -326,7 +367,9 @@ const FileDropzone: Component = () => {
             <Show when={!store.showLargeFileWarning}>
               <div class="bg-slate-700/30 border border-slate-600/50 rounded-lg p-3 mb-5">
                 <p class="text-slate-300/90 text-sm leading-relaxed">
-                  Click <span class="font-semibold text-emerald-400">Profile Now</span> to analyze all columns,<br />
+                  Click <span class="font-semibold text-emerald-400">Profile Now</span> to analyze
+                  all columns,
+                  <br />
                   or use <span class="text-slate-200">Tree Mode</span> to select specific ones.
                 </p>
               </div>
@@ -337,13 +380,19 @@ const FileDropzone: Component = () => {
               <button
                 type="button"
                 onClick={handleProfileAnyway}
-                class={`px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg flex items-center justify-center gap-2 ${store.showLargeFileWarning
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 shadow-emerald-900/20'
-                  }`}
+                class={`px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg flex items-center justify-center gap-2 ${
+                  store.showLargeFileWarning
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 shadow-emerald-900/20'
+                }`}
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
                 {store.showLargeFileWarning ? 'Profile Anyway' : 'Profile Now'}
               </button>
@@ -353,7 +402,12 @@ const FileDropzone: Component = () => {
                 class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-200 font-semibold hover:bg-slate-600 transition-all border border-slate-600 flex items-center justify-center gap-2"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                  />
                 </svg>
                 Use Tree Mode
               </button>
@@ -378,14 +432,17 @@ const FileDropzone: Component = () => {
         <Show when={store.state === 'processing'}>
           <div class="text-center">
             <p class="text-lg font-bold font-heading text-amber-400 tracking-tight">
-              {profileStore.store.isCancelling ? 'Cancelling...' : `Processing ${store.file?.name}...`}
+              {profileStore.store.isCancelling
+                ? 'Cancelling...'
+                : `Processing ${store.file?.name}...`}
             </p>
             <div class="mt-4 w-full max-w-xs">
               {/* Progress bar */}
               <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  class={`h-full rounded-full transition-all duration-200 ${profileStore.store.isCancelling ? 'bg-red-500' : 'bg-amber-500'
-                    }`}
+                  class={`h-full rounded-full transition-all duration-200 ${
+                    profileStore.store.isCancelling ? 'bg-red-500' : 'bg-amber-500'
+                  }`}
                   style={{ width: `${store.progress}%` }}
                 />
               </div>
@@ -455,7 +512,9 @@ const FileDropzone: Component = () => {
             <p class="text-lg font-medium text-emerald-400">File ready for analysis</p>
             <div class="mt-3 p-3 bg-slate-800/80 rounded-lg border border-slate-700">
               <p class="text-sm font-bold text-slate-200">{store.file?.name}</p>
-              <p class="text-xs text-slate-400 mt-1 font-mono tracking-tighter">{formatFileSize(store.file?.size || 0)}</p>
+              <p class="text-xs text-slate-400 mt-1 font-mono tracking-tighter">
+                {formatFileSize(store.file?.size || 0)}
+              </p>
             </div>
             <button
               type="button"

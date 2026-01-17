@@ -15,7 +15,7 @@ const BatchResultsTabs: Component = () => {
 
   // Get completed files with results
   const completedFiles = createMemo(() =>
-    store.files.filter((f) => f.status === 'completed' && f.results !== null)
+    store.files.filter((f) => f.status === 'completed' && f.results !== null),
   );
 
   // Get files with errors for retry option
@@ -61,7 +61,12 @@ const BatchResultsTabs: Component = () => {
     switch (file.status) {
       case 'completed':
         return (
-          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            class="w-4 h-4 text-emerald-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -83,11 +88,7 @@ const BatchResultsTabs: Component = () => {
         );
       case 'processing':
         return (
-          <svg
-            class="w-4 h-4 text-amber-400 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               class="opacity-25"
               cx="12"
@@ -186,7 +187,12 @@ const BatchResultsTabs: Component = () => {
                       onClick={() => retryFile(file.id)}
                       class="px-3 py-1.5 text-xs font-semibold bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-1.5"
                     >
-                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -240,7 +246,10 @@ const BatchResultsTabs: Component = () => {
               Data Types
             </p>
             <p class="text-2xl font-bold text-blue-400 tabular-nums">
-              {new Set(activeResults()!.column_profiles.map((p) => p.base_stats.inferred_type)).size}
+              {
+                new Set(activeResults()!.column_profiles.map((p) => p.base_stats.inferred_type))
+                  .size
+              }
             </p>
           </div>
           <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50">

@@ -4,12 +4,7 @@ import { fileStore } from './fileStore';
 import { gcsStreamingService } from '../services/gcs-streaming.service';
 import type { ProfilerError } from '../types/errors';
 import { createProfilerError, createTypedError } from '../types/errors';
-import {
-  initDuckDB,
-  executeQuery,
-  registerParquet,
-  DuckDBError,
-} from '../utils/duckdb';
+import { initDuckDB, executeQuery, registerParquet, DuckDBError } from '../utils/duckdb';
 
 // Re-export generated types for backwards compatibility
 // Other files can continue importing from profileStore
@@ -222,7 +217,7 @@ function createProfileStore() {
           const { usedMB, limitMB, ratio } = e.data;
           setStore(
             'memoryWarning',
-            `High memory usage: ${usedMB}MB / ${limitMB}MB (${Math.round(ratio * 100)}%)`
+            `High memory usage: ${usedMB}MB / ${limitMB}MB (${Math.round(ratio * 100)}%)`,
           );
           break;
         }
@@ -232,7 +227,7 @@ function createProfileStore() {
           const { usedMB, limitMB } = e.data;
           setStore(
             'memoryWarning',
-            `Critical memory: ${usedMB}MB / ${limitMB}MB - Consider using SQL Mode`
+            `Critical memory: ${usedMB}MB / ${limitMB}MB - Consider using SQL Mode`,
           );
           break;
         }
@@ -276,12 +271,15 @@ function createProfileStore() {
       fileStore.store.state = 'processing';
       fileStore.store.progress = 0;
 
-      const { stream, size, name } = await gcsStreamingService.getFileStream(url, (_bytes, _total) => {
-        // Update download progress if we want to show it separately? 
-        // For now, we combine download + processing into one progress bar in the UI
-        // But here we can't easily distinguish download speed vs processing speed unless we pipe.
-        // The fetch stream yields chunks as they download.
-      });
+      const { stream, size, name } = await gcsStreamingService.getFileStream(
+        url,
+        (_bytes, _total) => {
+          // Update download progress if we want to show it separately?
+          // For now, we combine download + processing into one progress bar in the UI
+          // But here we can't easily distinguish download speed vs processing speed unless we pipe.
+          // The fetch stream yields chunks as they download.
+        },
+      );
 
       // Update file store with metadata
       fileStore.setRemoteFile(name, size, url);
@@ -317,7 +315,7 @@ function createProfileStore() {
               data: {
                 delimiter: undefined,
                 hasHeaders: true,
-                format: format
+                format: format,
               },
             });
             break;
@@ -375,10 +373,13 @@ function createProfileStore() {
           // slice it to ensure we send only the data
           const buffer = value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
 
-          worker.postMessage({
-            type: 'process_chunk',
-            data: buffer
-          }, [buffer]);
+          worker.postMessage(
+            {
+              type: 'process_chunk',
+              data: buffer,
+            },
+            [buffer],
+          );
 
           processedBytes += value.byteLength;
           const progress = totalSize > 0 ? Math.round((processedBytes / totalSize) * 100) : 0;
@@ -388,7 +389,6 @@ function createProfileStore() {
       }
 
       worker.postMessage({ type: 'finalize' });
-
     } catch (err: unknown) {
       const error = err as Error;
       worker.postMessage({ type: 'error', error: error.message });
@@ -401,7 +401,9 @@ function createProfileStore() {
 
   const processExcel = async (file: File) => {
     if (!excelWorker) {
-      excelWorker = new Worker(new URL('../workers/excel.worker.ts', import.meta.url), { type: 'module' });
+      excelWorker = new Worker(new URL('../workers/excel.worker.ts', import.meta.url), {
+        type: 'module',
+      });
     }
 
     setStore('progress', 10);
@@ -416,13 +418,13 @@ function createProfileStore() {
           fileStore.setSelectedSheet(sheetNames[0]);
           excelWorker?.postMessage({
             type: 'parse_sheet',
-            data: { workbookBuffer: buffer, selectedSheet: sheetNames[0] }
+            data: { workbookBuffer: buffer, selectedSheet: sheetNames[0] },
           });
         } else if (fileStore.store.selectedSheet) {
           // Already selected (e.g. user switched sheet)
           excelWorker?.postMessage({
             type: 'parse_sheet',
-            data: { workbookBuffer: buffer, selectedSheet: fileStore.store.selectedSheet }
+            data: { workbookBuffer: buffer, selectedSheet: fileStore.store.selectedSheet },
           });
         } else {
           // Waiting for user selection
@@ -443,13 +445,15 @@ function createProfileStore() {
 
         const csvContent = [
           headers.map(escape).join(','),
-          ...rows.map((row: string[]) => row.map(escape).join(','))
+          ...rows.map((row: string[]) => row.map(escape).join(',')),
         ].join('\n');
 
         setStore({ isProfiling: true, progress: 50 });
 
         if (!worker) {
-          worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), { type: 'module' });
+          worker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+            type: 'module',
+          });
           worker.onmessage = (ev) => {
             const { type: wType, result, error } = ev.data;
             if (wType === 'ready') {
@@ -526,7 +530,7 @@ function createProfileStore() {
     // We rely on worker cache, so no buffer needed
     excelWorker.postMessage({
       type: 'parse_sheet',
-      data: { selectedSheet: sheetName }
+      data: { selectedSheet: sheetName },
     });
   };
 
@@ -625,7 +629,7 @@ function createProfileStore() {
       } else {
         // For Avro, we need to fall back to error since DuckDB doesn't support Avro natively
         throw new Error(
-          'Large Avro files are not yet supported. Consider converting to Parquet format.'
+          'Large Avro files are not yet supported. Consider converting to Parquet format.',
         );
       }
 
@@ -633,19 +637,19 @@ function createProfileStore() {
 
       // Create table from the registered file
       await executeQuery(`DROP TABLE IF EXISTS ${tableName}`);
-      await executeQuery(
-        `CREATE TABLE ${tableName} AS SELECT * FROM read_parquet('${fileName}')`
-      );
+      await executeQuery(`CREATE TABLE ${tableName} AS SELECT * FROM read_parquet('${fileName}')`);
 
       setStore('progress', 60);
 
       // Get column information
       const schemaResult = await executeQuery<{ column_name: string; column_type: string }>(
-        `DESCRIBE ${tableName}`
+        `DESCRIBE ${tableName}`,
       );
 
       // Get total row count
-      const countResult = await executeQuery<{ cnt: string }>(`SELECT COUNT(*) as cnt FROM ${tableName}`);
+      const countResult = await executeQuery<{ cnt: string }>(
+        `SELECT COUNT(*) as cnt FROM ${tableName}`,
+      );
       const totalRows = parseInt(countResult.rows[0]?.cnt || '0', 10);
 
       setStore('progress', 70);
@@ -771,16 +775,14 @@ function createProfileStore() {
               `;
 
               const histResult = await executeQuery<{ bin_idx: string; bin_count: string }>(
-                histogramQuery
+                histogramQuery,
               );
 
               const bins = [];
               for (let i = 0; i < binCount; i++) {
                 const binStart = minVal + i * binWidth;
                 const binEnd = minVal + (i + 1) * binWidth;
-                const found = histResult.rows.find(
-                  (r) => parseInt(r.bin_idx || '0', 10) === i
-                );
+                const found = histResult.rows.find((r) => parseInt(r.bin_idx || '0', 10) === i);
                 bins.push({
                   start: binStart,
                   end: binEnd,
@@ -822,9 +824,7 @@ function createProfileStore() {
                 value: row.value || '',
                 count: parseInt(row.count || '0', 10),
                 percentage:
-                  totalNonNull > 0
-                    ? (parseInt(row.count || '0', 10) / totalNonNull) * 100
-                    : 0,
+                  totalNonNull > 0 ? (parseInt(row.count || '0', 10) / totalNonNull) * 100 : 0,
               })),
               unique_count: distinctCount,
             };
@@ -856,7 +856,7 @@ function createProfileStore() {
             pii_rows: [],
             outlier_rows: [],
           };
-        })
+        }),
       );
 
       setStore('progress', 95);
@@ -890,7 +890,7 @@ function createProfileStore() {
       const profilerError = createProfilerError(
         isDuckDBError
           ? `DuckDB Error: ${error.message}`
-          : `Large file profiling failed: ${error.message}`
+          : `Large file profiling failed: ${error.message}`,
       );
 
       setStore({
@@ -1023,7 +1023,7 @@ function createProfileStore() {
               data: {
                 delimiter: undefined,
                 hasHeaders: true,
-                format: format
+                format: format,
               },
             });
             break;
@@ -1116,7 +1116,7 @@ function createProfileStore() {
                     ? `"${str.replace(/"/g, '""')}"`
                     : str;
                 })
-                .join(',')
+                .join(','),
             ),
           ].join('\n');
 
@@ -1168,7 +1168,7 @@ function createProfileStore() {
     column: ColumnProfile,
     type: DrilldownType,
     indices: number[],
-    headers: string[]
+    headers: string[],
   ) => {
     setStore('drilldown', {
       isOpen: true,

@@ -66,10 +66,9 @@ export function useCorrelationMatrix(props: UseCorrelationProps): UseCorrelation
 
     try {
       // Create a new worker for correlation computation
-      correlationWorker = new Worker(
-        new URL('../workers/profiler.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
+      correlationWorker = new Worker(new URL('../workers/profiler.worker.ts', import.meta.url), {
+        type: 'module',
+      });
 
       // Set up timeout protection
       timeoutId = setTimeout(() => {
@@ -106,12 +105,15 @@ export function useCorrelationMatrix(props: UseCorrelationProps): UseCorrelation
             // Parse headers and rows
             const delimiter = text.includes('\t') ? '\t' : ',';
             const headers = lines[0].split(delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
-            const rows = lines.slice(1).map((line) =>
-              line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ''))
-            );
+            const rows = lines
+              .slice(1)
+              .map((line) =>
+                line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, '')),
+              );
 
             // Get numeric column indices with validation
-            const numericIndices = props.numericColumns()
+            const numericIndices = props
+              .numericColumns()
               .map((col) => headers.indexOf(col.name))
               .filter((idx) => idx !== -1); // Filter out columns not found in headers
 

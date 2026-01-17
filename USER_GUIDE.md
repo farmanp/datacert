@@ -16,27 +16,34 @@ Welcome to **DataCert**, a high-performance, local-first data profiling tool des
 ## Core Features
 
 ### 1. Streaming Data Processing
+
 DataCert uses a custom Rust-powered engine compiled to WebAssembly. This allows it to handle large files (hundreds of megabytes) smoothly by processing them in chunks, keeping the UI responsive.
 
 ### 2. Comprehensive Statistics
+
 For every column in your dataset, DataCert calculates:
+
 - **Base Stats**: Total count, missing values, and uniqueness (distinct count).
 - **Numeric Analysis**: Mean, Median, Min/Max, Standard Deviation, Skewness, and Kurtosis.
 - **Quantiles**: P25, P75, P90, P95, and P99.
 - **Categorical Analysis**: Top-N frequency distribution for non-numeric data.
 
 ### 3. Visualizations
+
 - **Histograms**: Distribution views for numeric data.
 - **Top Values**: Visual bars for categorical frequency.
 - **Sparklines**: Mini-distributions in the tabular view for quick comparison.
 
 ### 4. Correlation Matrix
+
 Understand relationships between numeric columns at a glance:
+
 - Click the **"Compute Correlation"** button to generate a Pearson correlation matrix.
 - View results as an interactive heatmap: red (-1) to white (0) to green (+1).
 - Correlations are computed on-demand rather than automatically, keeping performance snappy for large datasets.
 
 ### 5. Interactive Results Table
+
 - **Sorting**: Click any header to sort your columns by specific metrics (e.g., sort by "Missing %" to find dirty columns).
 - **Search**: Quickly find specific columns by name.
 - **View Toggles**: Switch between a compact **Table View** for comparison and high-detail **Card View** for deep dives.
@@ -48,11 +55,13 @@ Understand relationships between numeric columns at a glance:
 Compare two datasets side-by-side to track schema changes, data quality shifts, or version differences.
 
 ### Getting Started
+
 1. Navigate to `/compare` or click **"Compare Mode"** from the home page.
 2. Upload **File A** (your baseline) on the left panel.
 3. Upload **File B** (your comparison target) on the right panel.
 
 ### What You'll See
+
 - **Schema Differences**: Columns are categorized as added, removed, modified, or unchanged.
 - **Statistical Deltas**: Compare metrics between files with color-coded indicators:
   - Green: Improvement (e.g., fewer missing values)
@@ -60,6 +69,7 @@ Compare two datasets side-by-side to track schema changes, data quality shifts, 
   - Gray: Unchanged or negligible difference
 
 ### Exporting Comparisons
+
 Click **"Export Comparison"** to generate a standalone HTML report that includes all schema differences and statistical comparisons.
 
 ---
@@ -71,21 +81,25 @@ Stream files directly from Google Cloud Storage without downloading them to your
 ### Authentication Options
 
 **Option 1: OAuth (Recommended for regular use)**
+
 1. Click the **GCS** button in the upload area.
 2. Select **"Sign in with Google"**.
 3. Authorize DataCert to access your Cloud Storage.
 4. Browse and select files from your buckets.
 
 **Option 2: Signed URL (Quick access)**
+
 1. Click the **GCS** button in the upload area.
 2. Select **"Use Signed URL"**.
 3. Paste your pre-signed URL.
 4. DataCert will stream the file directly.
 
 ### CORS Configuration
+
 To stream files from your GCS bucket, you'll need to configure CORS settings. See [GCS Setup Guide](docs/user-guides/gcs-setup.md) for detailed instructions.
 
 ### Privacy Note
+
 Data flows directly from GCS to your browser—it never passes through DataCert servers. Your cloud credentials are handled securely by Google's OAuth flow.
 
 ---
@@ -93,15 +107,18 @@ Data flows directly from GCS to your browser—it never passes through DataCert 
 ## Supported Formats
 
 ### CSV (Comma Separated Values)
+
 - **Auto-detection**: DataCert automatically detects the delimiter (comma, semicolon, tab, pipe).
 - **Header Detection**: Automatically identifies if the first row contains column headers.
 
 ### JSON (JavaScript Object Notation)
+
 - **Standard Arrays**: `[{...}, {...}]`
 - **JSON Lines**: One JSON object per line.
 - **Flattening**: Nested JSON objects are automatically flattened into dot-notation columns (e.g., `user.address.zip`).
 
 ### Apache Parquet
+
 - **Columnar Format**: Efficiently handles `.parquet` files commonly used in data engineering and analytics pipelines.
 - **Auto-detection**: File type is automatically detected from the extension.
 
@@ -151,7 +168,9 @@ Need to stop a profile in progress? DataCert has you covered:
 ## Troubleshooting
 
 ### Error Messages
+
 DataCert provides clear, actionable error messages when something goes wrong:
+
 - **Error Description**: A plain-language explanation of what happened.
 - **Likely Cause**: The most probable reason for the error.
 - **Recovery Suggestions**: Specific steps you can take to resolve the issue.
@@ -170,12 +189,14 @@ For the best experience, use a modern browser (Chrome, Edge, Firefox, or Safari)
 
 **GCS Connection Issues**
 If you're having trouble connecting to GCS:
+
 - Verify your CORS configuration is correct (see [GCS Setup Guide](docs/user-guides/gcs-setup.md)).
 - Ensure your signed URL hasn't expired.
 - Check that your Google account has read access to the bucket.
 
 **Processing Seems Stuck**
 If a file appears to be processing indefinitely:
+
 - Use the Cancel button to stop and try again.
 - For very large files, consider sampling your data first.
 - Check the browser console for any error messages (press F12 to open developer tools).

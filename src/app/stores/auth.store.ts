@@ -50,10 +50,10 @@ function createAuthStore() {
     try {
       setState({ error: null });
       const response = await gcsAuthService.signIn();
-      
+
       const expiresIn = response.expires_in; // Seconds
       const expiry = Date.now() + expiresIn * 1000;
-      
+
       const user = await gcsAuthService.getUserProfile(response.access_token);
 
       setState({
@@ -67,7 +67,6 @@ function createAuthStore() {
       sessionStorage.setItem('gcs_access_token', response.access_token);
       sessionStorage.setItem('gcs_token_expiry', expiry.toString());
       sessionStorage.setItem('gcs_user', JSON.stringify(user));
-
     } catch (err: unknown) {
       const error = err as Error;
       setState({ error: error.message || 'Authentication failed' });
@@ -97,15 +96,15 @@ function createAuthStore() {
     // Google Identity Services (GIS) Token Model:
     // We can request a new token silently if the user approved the app previously.
     if (state.tokenExpiry && Date.now() > state.tokenExpiry - 5 * 60 * 1000) {
-        // Token expired or close to expiring
-        try {
-            await login(); // Triggers GIS which might auto-approve if signed in to Google
-            return state.accessToken;
-        } catch {
-            return null;
-        }
+      // Token expired or close to expiring
+      try {
+        await login(); // Triggers GIS which might auto-approve if signed in to Google
+        return state.accessToken;
+      } catch {
+        return null;
+      }
     }
-    
+
     return state.accessToken;
   };
 

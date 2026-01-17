@@ -110,9 +110,7 @@ const SqlEditor: Component<SqlEditorProps> = (props) => {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span class="text-sm font-medium text-emerald-400">
-              {formattedExecutionTime()}
-            </span>
+            <span class="text-sm font-medium text-emerald-400">{formattedExecutionTime()}</span>
           </div>
         </Show>
       </div>
@@ -150,11 +148,7 @@ const SqlEditor: Component<SqlEditorProps> = (props) => {
       <div class="flex items-center justify-between px-4 py-3 bg-slate-800/60 border-t border-slate-700/50">
         <div class="flex-1 min-w-0">
           <Show when={props.error}>
-            <div
-              id="sql-error"
-              class="flex items-start gap-2 text-sm text-red-400"
-              role="alert"
-            >
+            <div id="sql-error" class="flex items-start gap-2 text-sm text-red-400" role="alert">
               <svg
                 class="w-4 h-4 mt-0.5 flex-shrink-0"
                 fill="none"
@@ -174,9 +168,14 @@ const SqlEditor: Component<SqlEditorProps> = (props) => {
           </Show>
           <Show when={!props.error && !props.isExecuting}>
             <span class="text-xs text-slate-500">
-              Press <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 font-mono text-[10px]">Ctrl</kbd>
+              Press{' '}
+              <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 font-mono text-[10px]">
+                Ctrl
+              </kbd>
               <span class="mx-0.5">+</span>
-              <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 font-mono text-[10px]">Enter</kbd>
+              <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 font-mono text-[10px]">
+                Enter
+              </kbd>
               <span class="ml-1">to run</span>
             </span>
           </Show>
@@ -226,12 +225,7 @@ const SqlEditor: Component<SqlEditorProps> = (props) => {
               </svg>
             }
           >
-            <svg
-              class="w-4 h-4 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <circle
                 class="opacity-25"
                 cx="12"

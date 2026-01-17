@@ -73,9 +73,7 @@ const errorConfigs: Record<ErrorType, ErrorConfig> = {
       'Too many columns causing memory overflow',
       'Very large cell values consuming memory',
     ],
-    actions: [
-      { label: 'Upload Smaller File', action: 'upload_different' },
-    ],
+    actions: [{ label: 'Upload Smaller File', action: 'upload_different' }],
   },
 
   INVALID_FORMAT: {
@@ -86,9 +84,7 @@ const errorConfigs: Record<ErrorType, ErrorConfig> = {
       'File content does not match its extension',
       'File is actually a different format (e.g., Excel .xlsx)',
     ],
-    actions: [
-      { label: 'Upload Different File', action: 'upload_different' },
-    ],
+    actions: [{ label: 'Upload Different File', action: 'upload_different' }],
   },
 
   ENCODING_ERROR: {
@@ -168,7 +164,10 @@ const errorPatterns: Array<{ pattern: RegExp; type: ErrorType }> = [
 
   // Network errors
   { pattern: /network|fetch|cors|connection|timeout/i, type: 'NETWORK_ERROR' },
-  { pattern: /401|403|404|unauthorized|forbidden|not found|authentication/i, type: 'NETWORK_ERROR' },
+  {
+    pattern: /401|403|404|unauthorized|forbidden|not found|authentication/i,
+    type: 'NETWORK_ERROR',
+  },
   { pattern: /gcs|storage\.googleapis|bucket/i, type: 'NETWORK_ERROR' },
 
   // WASM errors
@@ -194,10 +193,7 @@ export function classifyError(errorMessage: string): ErrorType {
 /**
  * Creates a ProfilerError from an error message
  */
-export function createProfilerError(
-  errorMessage: string,
-  overrideType?: ErrorType
-): ProfilerError {
+export function createProfilerError(errorMessage: string, overrideType?: ErrorType): ProfilerError {
   const type = overrideType || classifyError(errorMessage);
   const config = errorConfigs[type];
 

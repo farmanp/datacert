@@ -74,7 +74,11 @@ const Batch: Component = () => {
                 class={`h-3 w-3 rounded-full ${engineStore.state.isReady ? 'bg-emerald-500' : 'bg-amber-500'}`}
               />
               <span class="text-sm font-medium text-slate-300 uppercase tracking-wider">
-                {engineStore.state.isReady ? 'WASM Ready' : engineStore.state.isLoading ? 'Initializing...' : 'Offline'}
+                {engineStore.state.isReady
+                  ? 'WASM Ready'
+                  : engineStore.state.isLoading
+                    ? 'Initializing...'
+                    : 'Offline'}
               </span>
             </div>
 
@@ -106,7 +110,13 @@ const Batch: Component = () => {
             </Show>
 
             {/* Baseline selection reminder for comparison mode */}
-            <Show when={store.mode === 'comparison' && store.files.length > 0 && !store.files.some((f) => f.isBaseline)}>
+            <Show
+              when={
+                store.mode === 'comparison' &&
+                store.files.length > 0 &&
+                !store.files.some((f) => f.isBaseline)
+              }
+            >
               <div class="mb-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
                 <div class="flex items-start gap-3">
                   <svg
@@ -123,8 +133,8 @@ const Batch: Component = () => {
                     />
                   </svg>
                   <p class="text-sm text-purple-300">
-                    Click the star icon next to a file in the list below to set it as the baseline for comparison.
-                    All other files will be compared against it.
+                    Click the star icon next to a file in the list below to set it as the baseline
+                    for comparison. All other files will be compared against it.
                   </p>
                 </div>
               </div>
@@ -149,7 +159,8 @@ const Batch: Component = () => {
                           Baseline: <span class="text-white">{baselineFile?.name}</span>
                         </p>
                         <p class="text-xs text-purple-400/70 mt-0.5">
-                          {store.files.length - 1} file{store.files.length - 1 !== 1 ? 's' : ''} will be compared against this baseline
+                          {store.files.length - 1} file{store.files.length - 1 !== 1 ? 's' : ''}{' '}
+                          will be compared against this baseline
                         </p>
                       </div>
                     </div>
@@ -213,12 +224,7 @@ const Batch: Component = () => {
                         class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-500 transition-all shadow-lg flex items-center gap-2"
                         onClick={cancelBatch}
                       >
-                        <svg
-                          class="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -234,9 +240,10 @@ const Batch: Component = () => {
                       type="button"
                       class={`
                         px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg flex items-center gap-2
-                        ${canStartBatch()
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
-                          : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        ${
+                          canStartBatch()
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-amber-900/20'
+                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                         }
                       `}
                       onClick={startBatch}
@@ -275,11 +282,7 @@ const Batch: Component = () => {
           <Show when={store.isProcessing}>
             <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div class="flex items-center gap-4">
-                <svg
-                  class="w-8 h-8 text-amber-500 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-8 h-8 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle
                     class="opacity-25"
                     cx="12"

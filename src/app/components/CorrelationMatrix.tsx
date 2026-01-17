@@ -91,9 +91,13 @@ const CorrelationMatrix: Component<CorrelationMatrixProps> = (props) => {
       <div class="flex items-center justify-end gap-4 mb-4">
         <div class="flex items-center gap-2">
           <span class="text-xs text-slate-400">-1</span>
-          <div class="w-32 h-3 rounded" style={{
-            background: 'linear-gradient(to right, rgb(239, 68, 68), rgb(255, 255, 255), rgb(34, 197, 94))'
-          }} />
+          <div
+            class="w-32 h-3 rounded"
+            style={{
+              background:
+                'linear-gradient(to right, rgb(239, 68, 68), rgb(255, 255, 255), rgb(34, 197, 94))',
+            }}
+          />
           <span class="text-xs text-slate-400">+1</span>
         </div>
       </div>
@@ -161,7 +165,8 @@ const CorrelationMatrix: Component<CorrelationMatrixProps> = (props) => {
       {/* Tooltip */}
       <Show when={hoveredCell()}>
         {(cell) => (
-          <div class="fixed z-50 pointer-events-none bg-slate-900/95 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 shadow-xl backdrop-blur-md"
+          <div
+            class="fixed z-50 pointer-events-none bg-slate-900/95 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 shadow-xl backdrop-blur-md"
             style={{
               top: '50%',
               left: '50%',
@@ -178,8 +183,8 @@ const CorrelationMatrix: Component<CorrelationMatrixProps> = (props) => {
                   cell().value > 0.5
                     ? 'text-emerald-400'
                     : cell().value < -0.5
-                    ? 'text-red-400'
-                    : 'text-slate-200'
+                      ? 'text-red-400'
+                      : 'text-slate-200'
                 }`}
               >
                 {cell().value.toFixed(4)}
@@ -189,14 +194,14 @@ const CorrelationMatrix: Component<CorrelationMatrixProps> = (props) => {
               {cell().value > 0.7
                 ? 'Strong positive'
                 : cell().value > 0.3
-                ? 'Moderate positive'
-                : cell().value > 0
-                ? 'Weak positive'
-                : cell().value > -0.3
-                ? 'Weak negative'
-                : cell().value > -0.7
-                ? 'Moderate negative'
-                : 'Strong negative'}
+                  ? 'Moderate positive'
+                  : cell().value > 0
+                    ? 'Weak positive'
+                    : cell().value > -0.3
+                      ? 'Weak negative'
+                      : cell().value > -0.7
+                        ? 'Moderate negative'
+                        : 'Strong negative'}
             </div>
           </div>
         )}

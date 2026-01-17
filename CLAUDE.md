@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **DataCert** is a local-first, in-browser data profiling toolkit powered by WebAssembly. It analyzes datasets (CSV/TSV/JSON/Parquet/Excel/Avro) and provides statistical summaries, quality metrics, SQL querying, and visualizations - all processing happens locally in the browser. No data ever leaves the user's device.
 
 **Key value propositions:**
+
 - **Privacy-first**: All processing local, safe for PII and sensitive data
 - **Near-native speed**: Rust/WASM streaming engine handles massive files
 - **Zero dependencies**: No Python, Docker, or cloud console needed
@@ -109,13 +110,13 @@ ProfileReport UI (for filtered/transformed data)
 
 ### Supported File Formats
 
-| Format | Parser | Large File Handling |
-|--------|--------|---------------------|
-| CSV/TSV | Rust WASM streaming | 64KB chunks |
-| JSON/JSONL | Rust WASM streaming | 64KB chunks with nested flattening |
-| Parquet | DuckDB-WASM | Columnar reads, >100MB uses DuckDB path |
-| Excel (.xlsx/.xls) | xlsx.js in Web Worker | Sheet selection UI |
-| Avro | Rust WASM | Schema extraction + data profiling |
+| Format             | Parser                | Large File Handling                     |
+| ------------------ | --------------------- | --------------------------------------- |
+| CSV/TSV            | Rust WASM streaming   | 64KB chunks                             |
+| JSON/JSONL         | Rust WASM streaming   | 64KB chunks with nested flattening      |
+| Parquet            | DuckDB-WASM           | Columnar reads, >100MB uses DuckDB path |
+| Excel (.xlsx/.xls) | xlsx.js in Web Worker | Sheet selection UI                      |
+| Avro               | Rust WASM             | Schema extraction + data profiling      |
 
 ### Large File Handling (>100MB)
 
@@ -216,20 +217,21 @@ tests/                          # Vitest test suites (unit, integration, accurac
 
 Uses SolidJS stores created via `createRoot` for singleton instances:
 
-| Store | Purpose |
-|-------|---------|
-| `fileStore` | File selection, validation, upload progress (persists across navigation) |
-| `profileStore` | Profiling state, worker coordination, results |
-| `sqlStore` | SQL Mode state, DuckDB initialization, query execution |
-| `treeStore` | Tree Mode JSON structure analysis |
-| `comparisonStore` | Dual-file comparison state and results |
-| `batchStore` | Multi-file batch processing state |
-| `validationStore` | Schema validation state (GE/Soda/JSON Schema) |
-| `drilldownStore` | Anomaly drill-down row inspection |
+| Store             | Purpose                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `fileStore`       | File selection, validation, upload progress (persists across navigation) |
+| `profileStore`    | Profiling state, worker coordination, results                            |
+| `sqlStore`        | SQL Mode state, DuckDB initialization, query execution                   |
+| `treeStore`       | Tree Mode JSON structure analysis                                        |
+| `comparisonStore` | Dual-file comparison state and results                                   |
+| `batchStore`      | Multi-file batch processing state                                        |
+| `validationStore` | Schema validation state (GE/Soda/JSON Schema)                            |
+| `drilldownStore`  | Anomaly drill-down row inspection                                        |
 
 ### Worker Communication Protocol
 
 **Messages to worker:**
+
 - `init` - Initialize WASM module
 - `start_profiling` - Begin profiling with config (delimiter, hasHeaders, format, fileSize)
 - `process_chunk` - Send 64KB data chunk (Transferable ArrayBuffer)
@@ -237,6 +239,7 @@ Uses SolidJS stores created via `createRoot` for singleton instances:
 - `finalize` - Complete profiling and compute final stats
 
 **Messages from worker:**
+
 - `ready` - WASM initialized, ready to profile
 - `started` - Profiling started, send chunks
 - `final_stats` - Complete ProfilerResult
@@ -262,28 +265,29 @@ Uses SolidJS stores created via `createRoot` for singleton instances:
 ## Streaming Architecture (SPIKE-001 Findings)
 
 ### Data Flow
+
 ```
 File → ReadableStream (64KB chunks) → Transferable ArrayBuffer → Worker → WASM → Online Stats → JSON Result
 ```
 
 ### Online Algorithms
 
-| Statistic | Algorithm | Space | Notes |
-|-----------|-----------|-------|-------|
-| Mean/Sum | Running accumulator | O(1) | Exact |
-| Variance/StdDev | Welford's | O(1) | Numerically stable |
-| Median/Quantiles | t-digest | ~2KB | <0.01% error for P1/P99 |
-| Distinct Count | HyperLogLog | ~1.5KB | 2% error, uses `hyperloglogplus` crate |
-| Top-N Values | Count-Min Sketch + Heap | ~1KB | For top-10 tracking |
-| Histogram | Dynamic binning | O(bins) | Derived from quantiles |
+| Statistic        | Algorithm               | Space   | Notes                                  |
+| ---------------- | ----------------------- | ------- | -------------------------------------- |
+| Mean/Sum         | Running accumulator     | O(1)    | Exact                                  |
+| Variance/StdDev  | Welford's               | O(1)    | Numerically stable                     |
+| Median/Quantiles | t-digest                | ~2KB    | <0.01% error for P1/P99                |
+| Distinct Count   | HyperLogLog             | ~1.5KB  | 2% error, uses `hyperloglogplus` crate |
+| Top-N Values     | Count-Min Sketch + Heap | ~1KB    | For top-10 tracking                    |
+| Histogram        | Dynamic binning         | O(bins) | Derived from quantiles                 |
 
 ### Performance Targets
 
-| File Size | Time | Memory |
-|-----------|------|--------|
-| 10MB | < 3s | < 50MB |
-| 100MB | < 15s | < 200MB |
-| 500MB | < 60s | < 1GB |
+| File Size | Time  | Memory  |
+| --------- | ----- | ------- |
+| 10MB      | < 3s  | < 50MB  |
+| 100MB     | < 15s | < 200MB |
+| 500MB     | < 60s | < 1GB   |
 
 ### Browser Compatibility
 
@@ -294,26 +298,26 @@ File → ReadableStream (64KB chunks) → Transferable ArrayBuffer → Worker �
 
 ## Key Entry Points
 
-| Task | File |
-|------|------|
-| Add UI component | `src/app/components/` |
-| Modify main page | `src/app/pages/Home.tsx` |
-| Change file handling | `src/app/stores/fileStore.ts` |
-| Modify profiling logic | `src/app/stores/profileStore.ts` |
-| Change worker protocol | `src/app/workers/profiler.worker.ts` |
-| Modify WASM exports | `src/wasm/src/lib.rs` |
-| Add/modify statistics | `src/wasm/src/stats/` |
-| Modify CSV parsing | `src/wasm/src/parser/csv.rs` |
-| Modify JSON parsing | `src/wasm/src/parser/json.rs` |
-| Modify SQL Mode | `src/app/pages/SqlMode.tsx` |
-| Change SQL state | `src/app/stores/sqlStore.ts` |
-| Modify DuckDB loading | `src/app/utils/duckdb.ts` |
-| Modify Tree Mode | `src/app/pages/TreeMode.tsx`, `src/app/stores/treeStore.ts` |
-| Add export format | `src/app/utils/export*.ts` |
-| Add import format | `src/app/utils/import*.ts` |
-| Modify CLI | `src/cli/index.ts` |
-| Add data quality rule | `src/wasm/src/quality/` |
-| Modify E2E tests | `e2e/` |
+| Task                   | File                                                        |
+| ---------------------- | ----------------------------------------------------------- |
+| Add UI component       | `src/app/components/`                                       |
+| Modify main page       | `src/app/pages/Home.tsx`                                    |
+| Change file handling   | `src/app/stores/fileStore.ts`                               |
+| Modify profiling logic | `src/app/stores/profileStore.ts`                            |
+| Change worker protocol | `src/app/workers/profiler.worker.ts`                        |
+| Modify WASM exports    | `src/wasm/src/lib.rs`                                       |
+| Add/modify statistics  | `src/wasm/src/stats/`                                       |
+| Modify CSV parsing     | `src/wasm/src/parser/csv.rs`                                |
+| Modify JSON parsing    | `src/wasm/src/parser/json.rs`                               |
+| Modify SQL Mode        | `src/app/pages/SqlMode.tsx`                                 |
+| Change SQL state       | `src/app/stores/sqlStore.ts`                                |
+| Modify DuckDB loading  | `src/app/utils/duckdb.ts`                                   |
+| Modify Tree Mode       | `src/app/pages/TreeMode.tsx`, `src/app/stores/treeStore.ts` |
+| Add export format      | `src/app/utils/export*.ts`                                  |
+| Add import format      | `src/app/utils/import*.ts`                                  |
+| Modify CLI             | `src/cli/index.ts`                                          |
+| Add data quality rule  | `src/wasm/src/quality/`                                     |
+| Modify E2E tests       | `e2e/`                                                      |
 
 ## CLI Usage
 
@@ -335,18 +339,21 @@ The CLI reuses the same WASM engine as the web UI.
 ## Testing
 
 **Unit/Integration Tests (Vitest):**
+
 - Framework: Vitest with jsdom environment
 - Setup: `src/app/setupTests.ts`
 - Test files: `*.test.ts` / `*.test.tsx` pattern
 - Run single test: `npx vitest run path/to/test.test.tsx`
 
 **E2E Tests (Playwright):**
+
 - Config: `playwright.config.ts`
 - Test files: `e2e/*.spec.ts`
 - Run: `npm run test:e2e`
 - Debug: `npm run test:e2e:debug`
 
 **Rust Tests:**
+
 - Run: `npm run test:rust` or `cd src/wasm && cargo test`
 
 ## Development Roadmap
@@ -354,6 +361,7 @@ The CLI reuses the same WASM engine as the web UI.
 See `tickets/README.md` for the full backlog organized by phase and sprint.
 
 ### Completed Features
+
 - CSV/TSV streaming parser with auto-delimiter detection
 - JSON/JSONL parser with nested object flattening
 - Parquet support (via DuckDB for large files)
@@ -369,19 +377,22 @@ See `tickets/README.md` for the full backlog organized by phase and sprint.
 - PWA with offline support
 
 ### Spike Research Completed
+
 - `SPIKE-001` - Streaming architecture: 64KB chunks, online algorithms, O(1) memory
 - `SPIKE-005` - DuckDB-WASM: 1M rows in 97ms, enables SQL mode and large file handling
 
 ### Upcoming High-Impact Features
-| Feature | Description | Impact |
-|---------|-------------|--------|
-| FEAT-029 | Profile Diff / Schema Drift Detection | Unique differentiator |
-| FEAT-030 | Shareable Profile Links | Collaboration, virality |
-| FEAT-031 | Remote URL Profiling (S3/GCS/HTTP) | Enterprise use cases |
-| FEAT-032 | dbt Integration | dbt ecosystem adoption |
-| FEAT-034 | Smart Data Quality Suggestions | Actionable insights |
-| FEAT-035 | VS Code Extension | Developer adoption |
+
+| Feature  | Description                           | Impact                  |
+| -------- | ------------------------------------- | ----------------------- |
+| FEAT-029 | Profile Diff / Schema Drift Detection | Unique differentiator   |
+| FEAT-030 | Shareable Profile Links               | Collaboration, virality |
+| FEAT-031 | Remote URL Profiling (S3/GCS/HTTP)    | Enterprise use cases    |
+| FEAT-032 | dbt Integration                       | dbt ecosystem adoption  |
+| FEAT-034 | Smart Data Quality Suggestions        | Actionable insights     |
+| FEAT-035 | VS Code Extension                     | Developer adoption      |
 
 ### Tickets Location
+
 - `tickets/` - All development tickets in AI-ready format
 - `tickets/README.md` - Implementation order, dependency graph, strategic priorities

@@ -95,7 +95,9 @@ const DeltaCell: Component<{
             <span class="text-slate-200 font-mono">{formatNum(delta().valueB)}</span>
           </div>
           <Show when={delta().delta !== null}>
-            <div class={`flex items-center gap-1 text-xs font-semibold ${getDeltaColor(delta().direction)}`}>
+            <div
+              class={`flex items-center gap-1 text-xs font-semibold ${getDeltaColor(delta().direction)}`}
+            >
               <span>Delta:</span>
               <span class="font-mono">
                 {props.showPercent

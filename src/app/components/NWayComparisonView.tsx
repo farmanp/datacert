@@ -149,14 +149,23 @@ const ColumnComparisonRow: Component<{
           <Show when={baselineDelta()} fallback={<span class="text-slate-500">-</span>}>
             <div class="flex flex-col gap-0.5 text-xs">
               <span class="text-slate-400">
-                Null: <span class="text-slate-200 font-mono">{formatNum(baselineDelta()!.baseline.nullRate * 100, 1)}%</span>
+                Null:{' '}
+                <span class="text-slate-200 font-mono">
+                  {formatNum(baselineDelta()!.baseline.nullRate * 100, 1)}%
+                </span>
               </span>
               <span class="text-slate-400">
-                Distinct: <span class="text-slate-200 font-mono">{formatNum(baselineDelta()!.baseline.distinctCount, 0)}</span>
+                Distinct:{' '}
+                <span class="text-slate-200 font-mono">
+                  {formatNum(baselineDelta()!.baseline.distinctCount, 0)}
+                </span>
               </span>
               <Show when={baselineDelta()!.baseline.mean !== undefined}>
                 <span class="text-slate-400">
-                  Mean: <span class="text-slate-200 font-mono">{formatNum(baselineDelta()!.baseline.mean)}</span>
+                  Mean:{' '}
+                  <span class="text-slate-200 font-mono">
+                    {formatNum(baselineDelta()!.baseline.mean)}
+                  </span>
                 </span>
               </Show>
             </div>
@@ -245,7 +254,10 @@ const ColumnComparisonRow: Component<{
               <For each={props.deltas.filter((d) => d.delta !== null)}>
                 {(item) => (
                   <div>
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 truncate" title={item.fileName}>
+                    <h4
+                      class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 truncate"
+                      title={item.fileName}
+                    >
                       {item.fileName}
                     </h4>
                     <Show when={item.delta}>
@@ -276,7 +288,9 @@ const ColumnComparisonRow: Component<{
                             <span class="text-slate-200 font-mono">
                               {formatNum(delta().current.distinctCount, 0)}
                             </span>
-                            <span class={`ml-1 ${getDeltaColor(delta().changes.distinctCount.delta)}`}>
+                            <span
+                              class={`ml-1 ${getDeltaColor(delta().changes.distinctCount.delta)}`}
+                            >
                               ({formatPctChange(delta().changes.distinctCount.pctChange)})
                             </span>
                           </p>
@@ -373,7 +387,9 @@ const NWayComparisonView: Component = () => {
       case 'column_name':
         return filtered.sort((a, b) => a.name.localeCompare(b.name));
       case 'type':
-        return filtered.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
+        return filtered.sort(
+          (a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name),
+        );
       case 'most_changed':
       default:
         return filtered.sort((a, b) => {
@@ -382,14 +398,14 @@ const NWayComparisonView: Component = () => {
               sum +
               Math.abs(d.changes.nullRate.pctChange ?? 0) +
               Math.abs(d.changes.distinctCount.pctChange ?? 0),
-            0
+            0,
           );
           const scoreB = b.deltas.reduce(
             (sum, d) =>
               sum +
               Math.abs(d.changes.nullRate.pctChange ?? 0) +
               Math.abs(d.changes.distinctCount.pctChange ?? 0),
-            0
+            0,
           );
           return scoreB - scoreA;
         });
@@ -424,8 +440,7 @@ const NWayComparisonView: Component = () => {
           <h2 class="text-2xl font-extrabold text-white tracking-tight">N-Way Comparison</h2>
           <Show when={baselineFile()}>
             <p class="text-slate-400 mt-1">
-              Baseline:{' '}
-              <span class="text-purple-400 font-semibold">{baselineFile()!.name}</span>
+              Baseline: <span class="text-purple-400 font-semibold">{baselineFile()!.name}</span>
               {' vs '}
               <span class="text-amber-400 font-semibold">{comparisonDeltas().length}</span> files
             </p>
@@ -445,13 +460,17 @@ const NWayComparisonView: Component = () => {
           <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black mb-1">
             Columns Tracked
           </p>
-          <p class="text-2xl font-bold text-blue-400 tabular-nums">{summary().totalColumnsTracked}</p>
+          <p class="text-2xl font-bold text-blue-400 tabular-nums">
+            {summary().totalColumnsTracked}
+          </p>
         </div>
         <div class="bg-slate-800/50 p-4 rounded-xl border border-amber-500/30">
           <p class="text-[10px] text-amber-400 uppercase tracking-widest font-black mb-1">
             Significant Changes
           </p>
-          <p class="text-2xl font-bold text-amber-400 tabular-nums">{summary().significantChanges}</p>
+          <p class="text-2xl font-bold text-amber-400 tabular-nums">
+            {summary().significantChanges}
+          </p>
         </div>
         <div class="bg-slate-800/50 p-4 rounded-xl border border-emerald-500/30">
           <p class="text-[10px] text-emerald-400 uppercase tracking-widest font-black mb-1">

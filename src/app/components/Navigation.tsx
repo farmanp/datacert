@@ -132,9 +132,7 @@ const Navigation: Component<NavigationProps> = (props) => {
 
   // Get visible "More Tools" items based on feature flags
   const getVisibleMoreTools = () => {
-    return moreToolsItems.filter(
-      (item) => !item.featureFlag || isFeatureEnabled(item.featureFlag)
-    );
+    return moreToolsItems.filter((item) => !item.featureFlag || isFeatureEnabled(item.featureFlag));
   };
 
   // Check if any "More Tools" item is currently active
@@ -238,7 +236,8 @@ const Navigation: Component<NavigationProps> = (props) => {
               <For each={primaryNavItems}>
                 {(item) => {
                   const isSqlMode = item.label === 'SQL Mode';
-                  const isTooLarge = isSqlMode &&
+                  const isTooLarge =
+                    isSqlMode &&
                     fileStore.store.file &&
                     fileStore.store.file.size > SQL_MODE_SIZE_LIMIT;
 
@@ -262,10 +261,11 @@ const Navigation: Component<NavigationProps> = (props) => {
                   return (
                     <A
                       href={item.href}
-                      class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                        }`}
+                      class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        location.pathname === item.href
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
                     >
                       {item.icon()}
                       <span class="hidden sm:inline">{item.label}</span>
@@ -282,12 +282,13 @@ const Navigation: Component<NavigationProps> = (props) => {
                       e.stopPropagation();
                       toggleDropdown();
                     }}
-                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${isMoreToolsActive()
-                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                      : isDropdownOpen()
-                        ? 'bg-slate-700 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                      }`}
+                    class={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isMoreToolsActive()
+                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                        : isDropdownOpen()
+                          ? 'bg-slate-700 text-white'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
                     aria-expanded={isDropdownOpen()}
                     aria-haspopup="true"
                   >
@@ -324,10 +325,11 @@ const Navigation: Component<NavigationProps> = (props) => {
                             <A
                               href={item.href}
                               onClick={() => setIsDropdownOpen(false)}
-                              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${location.pathname === item.href
-                                ? 'bg-purple-500/20 text-purple-400'
-                                : 'text-slate-300 hover:text-white hover:bg-slate-700'
-                                }`}
+                              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                location.pathname === item.href
+                                  ? 'bg-purple-500/20 text-purple-400'
+                                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
+                              }`}
                             >
                               {item.icon()}
                               <span>{item.label}</span>

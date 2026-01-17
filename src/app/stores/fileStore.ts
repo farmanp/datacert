@@ -2,10 +2,24 @@ import { createSignal, createRoot } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import type { ProfilerError } from '../types/errors';
 import { createTypedError } from '../types/errors';
-import { isFileTooLarge, getFileSizeError, formatFileSizeLimit, SQL_MODE_SIZE_LIMIT } from '../config/fileSizeConfig';
+import {
+  isFileTooLarge,
+  getFileSizeError,
+  formatFileSizeLimit,
+  SQL_MODE_SIZE_LIMIT,
+} from '../config/fileSizeConfig';
 
 // Supported file types
-export const SUPPORTED_EXTENSIONS = ['.csv', '.tsv', '.json', '.jsonl', '.parquet', '.xlsx', '.xls', '.avro'] as const;
+export const SUPPORTED_EXTENSIONS = [
+  '.csv',
+  '.tsv',
+  '.json',
+  '.jsonl',
+  '.parquet',
+  '.xlsx',
+  '.xls',
+  '.avro',
+] as const;
 export const SUPPORTED_MIME_TYPES = [
   'text/csv',
   'text/tab-separated-values',
@@ -112,7 +126,7 @@ function createFileStore() {
     if (!isValidFileType(file)) {
       const profilerError = createTypedError(
         'INVALID_FORMAT',
-        `Unsupported file type: ${file.name}`
+        `Unsupported file type: ${file.name}`,
       );
       setStore({
         state: 'error',
@@ -183,8 +197,6 @@ function createFileStore() {
     });
   };
 
-
-
   /**
    * Prepare store for remote file processing
    */
@@ -209,7 +221,7 @@ function createFileStore() {
     if (!isValidUrl(name) && !isValidUrl(url)) {
       const profilerError = createTypedError(
         'INVALID_FORMAT',
-        `Unsupported file extension: ${name}`
+        `Unsupported file extension: ${name}`,
       );
       setStore({
         state: 'error',
@@ -247,7 +259,15 @@ function createFileStore() {
    */
   const loadDemoFile = async (): Promise<File | null> => {
     try {
-      setStore({ state: 'processing', progress: 10, error: null, profilerError: null, isDemo: true, sheets: [], selectedSheet: null });
+      setStore({
+        state: 'processing',
+        progress: 10,
+        error: null,
+        profilerError: null,
+        isDemo: true,
+        sheets: [],
+        selectedSheet: null,
+      });
 
       const response = await fetch('/samples/demo-data.csv');
       if (!response.ok) throw new Error('Failed to load demo data');

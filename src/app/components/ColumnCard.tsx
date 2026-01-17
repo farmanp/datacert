@@ -51,8 +51,13 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
           }
           onClick={() => {
             if (props.profile.missing_rows && props.profile.missing_rows.length > 0) {
-              const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-              profileStore.openDrilldown(props.profile, 'missing', props.profile.missing_rows, headers);
+              const headers = profileStore.store.results?.column_profiles.map((c) => c.name) || [];
+              profileStore.openDrilldown(
+                props.profile,
+                'missing',
+                props.profile.missing_rows,
+                headers,
+              );
             }
           }}
         />
@@ -177,9 +182,7 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
             </p>
             <Show
               when={props.profile.sample_values && props.profile.sample_values.length > 0}
-              fallback={
-                <p class="text-xs text-slate-400 italic">No sample data available</p>
-              }
+              fallback={<p class="text-xs text-slate-400 italic">No sample data available</p>}
             >
               <div class="flex flex-wrap gap-2">
                 <For each={props.profile.sample_values}>
@@ -208,8 +211,14 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
               <Show when={props.profile.pii_rows && props.profile.pii_rows.length > 0}>
                 <button
                   onClick={() => {
-                    const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-                    profileStore.openDrilldown(props.profile, 'pii', props.profile.pii_rows, headers);
+                    const headers =
+                      profileStore.store.results?.column_profiles.map((c) => c.name) || [];
+                    profileStore.openDrilldown(
+                      props.profile,
+                      'pii',
+                      props.profile.pii_rows,
+                      headers,
+                    );
                   }}
                   class="mt-2 text-[10px] font-bold text-amber-600 hover:underline cursor-pointer block"
                 >
@@ -219,8 +228,14 @@ const ColumnCard: Component<ColumnCardProps> = (props) => {
               <Show when={props.profile.outlier_rows && props.profile.outlier_rows.length > 0}>
                 <button
                   onClick={() => {
-                    const headers = profileStore.store.results?.column_profiles.map(c => c.name) || [];
-                    profileStore.openDrilldown(props.profile, 'outlier', props.profile.outlier_rows, headers);
+                    const headers =
+                      profileStore.store.results?.column_profiles.map((c) => c.name) || [];
+                    profileStore.openDrilldown(
+                      props.profile,
+                      'outlier',
+                      props.profile.outlier_rows,
+                      headers,
+                    );
                   }}
                   class="mt-2 text-[10px] font-bold text-rose-500 hover:underline cursor-pointer block"
                 >

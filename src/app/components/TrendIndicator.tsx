@@ -58,11 +58,7 @@ const TrendIndicator: Component<TrendIndicatorProps> = (props) => {
               stroke="currentColor"
               stroke-width="2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M5 10l7-7m0 0l7 7m-7-7v18"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
             </svg>
           ),
         };
@@ -80,11 +76,7 @@ const TrendIndicator: Component<TrendIndicatorProps> = (props) => {
               stroke="currentColor"
               stroke-width="2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           ),
         };
@@ -205,11 +197,7 @@ export const TrendBadge: Component<TrendIndicatorProps> = (props) => {
               stroke="currentColor"
               stroke-width="2.5"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M5 10l7-7m0 0l7 7m-7-7v18"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
             </svg>
           ),
         };
@@ -227,11 +215,7 @@ export const TrendBadge: Component<TrendIndicatorProps> = (props) => {
               stroke="currentColor"
               stroke-width="2.5"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           ),
         };

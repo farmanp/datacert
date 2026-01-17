@@ -33,19 +33,19 @@ const MEMORY_MULTIPLIER = 0.5;
  * @returns Maximum file size in bytes
  */
 export function getMaxFileSize(): number {
-    // Check for deviceMemory API (returns GB of RAM)
-    // @ts-expect-error - deviceMemory is not in all TS definitions
-    const deviceMemory = navigator?.deviceMemory;
+  // Check for deviceMemory API (returns GB of RAM)
+  // @ts-expect-error - deviceMemory is not in all TS definitions
+  const deviceMemory = navigator?.deviceMemory;
 
-    if (typeof deviceMemory === 'number' && deviceMemory > 0) {
-        // Convert GB to bytes and apply multiplier
-        const memoryBasedLimit = deviceMemory * 1024 * 1024 * 1024 * MEMORY_MULTIPLIER;
+  if (typeof deviceMemory === 'number' && deviceMemory > 0) {
+    // Convert GB to bytes and apply multiplier
+    const memoryBasedLimit = deviceMemory * 1024 * 1024 * 1024 * MEMORY_MULTIPLIER;
 
-        // Clamp between MIN and DEFAULT limits
-        return Math.max(MIN_FILE_SIZE_LIMIT, Math.min(DEFAULT_MAX_FILE_SIZE, memoryBasedLimit));
-    }
+    // Clamp between MIN and DEFAULT limits
+    return Math.max(MIN_FILE_SIZE_LIMIT, Math.min(DEFAULT_MAX_FILE_SIZE, memoryBasedLimit));
+  }
 
-    return DEFAULT_MAX_FILE_SIZE;
+  return DEFAULT_MAX_FILE_SIZE;
 }
 
 /**
@@ -54,9 +54,9 @@ export function getMaxFileSize(): number {
  * @returns Formatted string like "500 MB"
  */
 export function formatFileSizeLimit(): string {
-    const bytes = getMaxFileSize();
-    const mb = bytes / (1024 * 1024);
-    return `${Math.round(mb)} MB`;
+  const bytes = getMaxFileSize();
+  const mb = bytes / (1024 * 1024);
+  return `${Math.round(mb)} MB`;
 }
 
 /**
@@ -66,18 +66,18 @@ export function formatFileSizeLimit(): string {
  * @returns true if file is too large
  */
 export function isFileTooLarge(size: number): boolean {
-    return size > getMaxFileSize();
+  return size > getMaxFileSize();
 }
 
 /**
  * Formats bytes to human-readable string.
  */
 function formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
 /**
@@ -88,10 +88,10 @@ function formatBytes(bytes: number): string {
  * @returns ProfilerError with detailed message
  */
 export function getFileSizeError(fileName: string, fileSize: number): ProfilerError {
-    const error = createTypedError(
-        'FILE_TOO_LARGE',
-        `File "${fileName}" is ${formatBytes(fileSize)}, which exceeds the ${formatFileSizeLimit()} limit. ` +
-        `For larger files, consider using the DataCert CLI tool: npx datacert "${fileName}"`
-    );
-    return error;
+  const error = createTypedError(
+    'FILE_TOO_LARGE',
+    `File "${fileName}" is ${formatBytes(fileSize)}, which exceeds the ${formatFileSizeLimit()} limit. ` +
+      `For larger files, consider using the DataCert CLI tool: npx datacert "${fileName}"`,
+  );
+  return error;
 }

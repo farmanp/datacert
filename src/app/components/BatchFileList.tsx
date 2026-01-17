@@ -20,12 +20,7 @@ const BatchFileList: Component = () => {
     switch (status) {
       case 'pending':
         return (
-          <svg
-            class="w-5 h-5 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -36,11 +31,7 @@ const BatchFileList: Component = () => {
         );
       case 'processing':
         return (
-          <svg
-            class="w-5 h-5 text-amber-500 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               class="opacity-25"
               cx="12"
@@ -74,12 +65,7 @@ const BatchFileList: Component = () => {
         );
       case 'error':
         return (
-          <svg
-            class="w-5 h-5 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -90,12 +76,7 @@ const BatchFileList: Component = () => {
         );
       case 'skipped':
         return (
-          <svg
-            class="w-5 h-5 text-slate-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -250,7 +231,9 @@ const BatchFileList: Component = () => {
                   </Show>
 
                   {/* Set as baseline button (comparison mode only, visible on hover) */}
-                  <Show when={store.mode === 'comparison' && !file.isBaseline && !store.isProcessing}>
+                  <Show
+                    when={store.mode === 'comparison' && !file.isBaseline && !store.isProcessing}
+                  >
                     <button
                       type="button"
                       class="p-1.5 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"

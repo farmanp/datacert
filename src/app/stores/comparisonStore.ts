@@ -345,9 +345,9 @@ export function createComparisonStore() {
       const distinctDelta =
         profileA && profileB
           ? calculateDelta(
-            profileA.base_stats.distinct_estimate,
-            profileB.base_stats.distinct_estimate,
-          )
+              profileA.base_stats.distinct_estimate,
+              profileB.base_stats.distinct_estimate,
+            )
           : null;
 
       const minDelta =

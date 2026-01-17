@@ -40,9 +40,10 @@ interface JsonSchema {
 /**
  * Maps DataCert inferred types to JSON Schema types
  */
-function mapDataCertTypeToJsonSchema(
-  inferredType: string
-): { type: string | string[]; format?: string } {
+function mapDataCertTypeToJsonSchema(inferredType: string): {
+  type: string | string[];
+  format?: string;
+} {
   const typeMapping: Record<string, { type: string | string[]; format?: string }> = {
     Integer: { type: 'integer' },
     Numeric: { type: 'number' },

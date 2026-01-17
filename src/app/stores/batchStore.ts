@@ -9,10 +9,7 @@ import {
   computeDeltas,
   computeTrends,
 } from '../utils/nwayComparison';
-import {
-  BatchSchemaValidation,
-  validateBatchSchemas,
-} from '../utils/schemaValidation';
+import { BatchSchemaValidation, validateBatchSchemas } from '../utils/schemaValidation';
 import { MergedStats, mergeProfilesFlexible } from '../utils/statsAggregation';
 
 export type BatchMode = 'sequential' | 'merge' | 'comparison';
@@ -346,7 +343,10 @@ function createBatchStore() {
         await processFile(fileEntry);
 
         // Auto-select first completed file's tab
-        if (!store.activeTabId || store.files.find((f) => f.id === store.activeTabId)?.status !== 'completed') {
+        if (
+          !store.activeTabId ||
+          store.files.find((f) => f.id === store.activeTabId)?.status !== 'completed'
+        ) {
           setStore('activeTabId', fileEntry.id);
         }
       } catch (error) {
@@ -444,7 +444,7 @@ function createBatchStore() {
     // 4. For each non-baseline completed file, compute deltas against baseline
     const comparisonDeltas: ComparisonDelta[] = [];
     const completedNonBaselineFiles = store.files.filter(
-      (f) => !f.isBaseline && f.status === 'completed' && f.results !== null
+      (f) => !f.isBaseline && f.status === 'completed' && f.results !== null,
     );
 
     for (const file of completedNonBaselineFiles) {
@@ -528,7 +528,7 @@ function createBatchStore() {
 
     // 2. Get all completed files with results
     const completedFiles = store.files.filter(
-      (f) => f.status === 'completed' && f.results !== null
+      (f) => f.status === 'completed' && f.results !== null,
     );
 
     if (completedFiles.length < 2) {
@@ -570,7 +570,7 @@ function createBatchStore() {
    */
   const performMerge = () => {
     const completedFiles = store.files.filter(
-      (f) => f.status === 'completed' && f.results !== null
+      (f) => f.status === 'completed' && f.results !== null,
     );
 
     if (completedFiles.length < 2) {

@@ -67,8 +67,7 @@ function calculatePooledVariance(
   if (totalCount === 0) return 0;
 
   // Calculate pooled mean
-  const pooledMean =
-    datasets.reduce((sum, d) => sum + d.count * d.mean, 0) / totalCount;
+  const pooledMean = datasets.reduce((sum, d) => sum + d.count * d.mean, 0) / totalCount;
 
   // Calculate pooled variance using parallel algorithm
   let pooledVar = 0;
@@ -129,7 +128,10 @@ function mergeColumnStats(columns: ColumnProfile[]): MergedColumnStats {
   const numericColumns = columns.filter((c) => c.numeric_stats !== null);
   if (numericColumns.length > 0) {
     // Calculate weighted mean
-    const totalNumericCount = numericColumns.reduce((sum, c) => sum + (c.numeric_stats?.count || 0), 0);
+    const totalNumericCount = numericColumns.reduce(
+      (sum, c) => sum + (c.numeric_stats?.count || 0),
+      0,
+    );
 
     if (totalNumericCount > 0) {
       // Weighted mean

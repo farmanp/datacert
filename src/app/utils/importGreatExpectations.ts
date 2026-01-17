@@ -88,8 +88,7 @@ export function parseGXSuiteJSON(jsonString: string): GXImportResult {
       error: {
         type: 'format_error',
         message: 'Invalid Great Expectations Suite format',
-        details:
-          'File must contain expectation_suite_name (string) and expectations (array)',
+        details: 'File must contain expectation_suite_name (string) and expectations (array)',
       },
     };
   }

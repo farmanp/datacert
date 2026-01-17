@@ -1,99 +1,99 @@
 export interface ParsedUrl {
-    type: 's3' | 'gcs' | 'http';
-    url: string;
-    filename: string;
-    bucket?: string;
-    key?: string;
+  type: 's3' | 'gcs' | 'http';
+  url: string;
+  filename: string;
+  bucket?: string;
+  key?: string;
 }
 
 /**
  * Parses a data URL to extract source type, bucket, key, and filename.
  */
 export function parseDataUrl(input: string): ParsedUrl {
-    const trimmedInput = input.trim();
+  const trimmedInput = input.trim();
 
-    // S3 Protocol
-    if (trimmedInput.startsWith('s3://')) {
-        const withoutProtocol = trimmedInput.replace('s3://', '');
-        const firstSlashIndex = withoutProtocol.indexOf('/');
+  // S3 Protocol
+  if (trimmedInput.startsWith('s3://')) {
+    const withoutProtocol = trimmedInput.replace('s3://', '');
+    const firstSlashIndex = withoutProtocol.indexOf('/');
 
-        if (firstSlashIndex === -1) {
-            return {
-                type: 's3',
-                url: trimmedInput,
-                bucket: withoutProtocol,
-                key: '',
-                filename: withoutProtocol,
-            };
-        }
-
-        const bucket = withoutProtocol.substring(0, firstSlashIndex);
-        const key = withoutProtocol.substring(firstSlashIndex + 1);
-        const filename = key.split('/').pop() || bucket;
-
-        return {
-            type: 's3',
-            url: trimmedInput,
-            bucket,
-            key,
-            filename,
-        };
+    if (firstSlashIndex === -1) {
+      return {
+        type: 's3',
+        url: trimmedInput,
+        bucket: withoutProtocol,
+        key: '',
+        filename: withoutProtocol,
+      };
     }
 
-    // GCS Protocol
-    if (trimmedInput.startsWith('gs://')) {
-        const withoutProtocol = trimmedInput.replace('gs://', '');
-        const firstSlashIndex = withoutProtocol.indexOf('/');
+    const bucket = withoutProtocol.substring(0, firstSlashIndex);
+    const key = withoutProtocol.substring(firstSlashIndex + 1);
+    const filename = key.split('/').pop() || bucket;
 
-        if (firstSlashIndex === -1) {
-            return {
-                type: 'gcs',
-                url: trimmedInput,
-                bucket: withoutProtocol,
-                key: '',
-                filename: withoutProtocol,
-            };
-        }
+    return {
+      type: 's3',
+      url: trimmedInput,
+      bucket,
+      key,
+      filename,
+    };
+  }
 
-        const bucket = withoutProtocol.substring(0, firstSlashIndex);
-        const key = withoutProtocol.substring(firstSlashIndex + 1);
-        const filename = key.split('/').pop() || bucket;
+  // GCS Protocol
+  if (trimmedInput.startsWith('gs://')) {
+    const withoutProtocol = trimmedInput.replace('gs://', '');
+    const firstSlashIndex = withoutProtocol.indexOf('/');
 
-        return {
-            type: 'gcs',
-            url: trimmedInput,
-            bucket,
-            key,
-            filename,
-        };
+    if (firstSlashIndex === -1) {
+      return {
+        type: 'gcs',
+        url: trimmedInput,
+        bucket: withoutProtocol,
+        key: '',
+        filename: withoutProtocol,
+      };
     }
 
-    // HTTP/HTTPS or Pre-signed URLs
-    try {
-        const url = new URL(trimmedInput);
-        let type: 's3' | 'gcs' | 'http' = 'http';
+    const bucket = withoutProtocol.substring(0, firstSlashIndex);
+    const key = withoutProtocol.substring(firstSlashIndex + 1);
+    const filename = key.split('/').pop() || bucket;
 
-        // Heuristics for pre-signed URLs
-        if (url.hostname.includes('.s3.') || url.hostname.endsWith('.amazonaws.com')) {
-            type = 's3';
-        } else if (url.hostname.includes('storage.googleapis.com')) {
-            type = 'gcs';
-        }
+    return {
+      type: 'gcs',
+      url: trimmedInput,
+      bucket,
+      key,
+      filename,
+    };
+  }
 
-        const pathname = url.pathname;
-        const filename = pathname.split('/').pop() || 'remote_file';
+  // HTTP/HTTPS or Pre-signed URLs
+  try {
+    const url = new URL(trimmedInput);
+    let type: 's3' | 'gcs' | 'http' = 'http';
 
-        return {
-            type,
-            url: trimmedInput,
-            filename,
-        };
-    } catch (e) {
-        // Treat as fallback HTTP if URL parsing fails or just return minimal
-        return {
-            type: 'http',
-            url: trimmedInput,
-            filename: trimmedInput.split('/').pop() || 'remote_file',
-        };
+    // Heuristics for pre-signed URLs
+    if (url.hostname.includes('.s3.') || url.hostname.endsWith('.amazonaws.com')) {
+      type = 's3';
+    } else if (url.hostname.includes('storage.googleapis.com')) {
+      type = 'gcs';
     }
+
+    const pathname = url.pathname;
+    const filename = pathname.split('/').pop() || 'remote_file';
+
+    return {
+      type,
+      url: trimmedInput,
+      filename,
+    };
+  } catch (e) {
+    // Treat as fallback HTTP if URL parsing fails or just return minimal
+    return {
+      type: 'http',
+      url: trimmedInput,
+      filename: trimmedInput.split('/').pop() || 'remote_file',
+    };
+  }
 }

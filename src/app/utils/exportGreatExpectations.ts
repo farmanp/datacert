@@ -57,12 +57,12 @@ const DEFAULT_OPTIONS: Required<GXExportOptions> = {
  */
 function mapTypeToGX(dataCertType: string): string | null {
   const typeMap: Record<string, string> = {
-    'Integer': 'INTEGER',
-    'Numeric': 'FLOAT',
-    'String': 'STRING',
-    'Boolean': 'BOOLEAN',
-    'Date': 'DATE',
-    'DateTime': 'DATETIME',
+    Integer: 'INTEGER',
+    Numeric: 'FLOAT',
+    String: 'STRING',
+    Boolean: 'BOOLEAN',
+    Date: 'DATE',
+    DateTime: 'DATETIME',
   };
   return typeMap[dataCertType] ?? null;
 }
@@ -92,7 +92,7 @@ function roundValue(value: number, decimals: number = 6): number {
 function generateColumnExpectations(
   column: ColumnProfile,
   _totalRows: number,
-  options: Required<GXExportOptions>
+  options: Required<GXExportOptions>,
 ): GXExpectation[] {
   const expectations: GXExpectation[] = [];
   const { base_stats, numeric_stats, categorical_stats } = column;
@@ -127,16 +127,15 @@ function generateColumnExpectations(
 
   // 3. Null expectation (using mostly parameter)
   if (options.includeNullExpectations) {
-    const completeness = base_stats.count > 0
-      ? (base_stats.count - base_stats.missing) / base_stats.count
-      : 0;
+    const completeness =
+      base_stats.count > 0 ? (base_stats.count - base_stats.missing) / base_stats.count : 0;
 
     // Only add null expectation if data has reasonable completeness
     if (completeness >= options.minCompletenessForNullExpectation) {
       // Apply tolerance: if data has 5% nulls and tolerance is 10%, allow up to 15% nulls
       // mostly = 1 - (null_rate + null_rate * tolerance)
       const nullRate = base_stats.missing / base_stats.count;
-      const allowedNullRate = nullRate + (nullRate * options.tolerance);
+      const allowedNullRate = nullRate + nullRate * options.tolerance;
       const mostly = Math.max(0, roundValue(1 - allowedNullRate, 4));
 
       expectations.push({
@@ -151,12 +150,8 @@ function generateColumnExpectations(
 
   // 4. Numeric range expectations
   if (options.includeRangeExpectations && numeric_stats) {
-    const minValue = roundValue(
-      applyTolerance(numeric_stats.min, options.tolerance, 'lower')
-    );
-    const maxValue = roundValue(
-      applyTolerance(numeric_stats.max, options.tolerance, 'upper')
-    );
+    const minValue = roundValue(applyTolerance(numeric_stats.min, options.tolerance, 'lower'));
+    const maxValue = roundValue(applyTolerance(numeric_stats.max, options.tolerance, 'upper'));
 
     expectations.push({
       expectation_type: 'expect_column_values_to_be_between',
@@ -170,12 +165,8 @@ function generateColumnExpectations(
 
     // Add mean expectation if we have sufficient data
     if (base_stats.count >= 10 && numeric_stats.mean !== null) {
-      const meanLower = roundValue(
-        applyTolerance(numeric_stats.mean, options.tolerance, 'lower')
-      );
-      const meanUpper = roundValue(
-        applyTolerance(numeric_stats.mean, options.tolerance, 'upper')
-      );
+      const meanLower = roundValue(applyTolerance(numeric_stats.mean, options.tolerance, 'lower'));
+      const meanUpper = roundValue(applyTolerance(numeric_stats.mean, options.tolerance, 'upper'));
 
       expectations.push({
         expectation_type: 'expect_column_mean_to_be_between',
@@ -218,7 +209,7 @@ function generateColumnExpectations(
     const validCount = base_stats.count - base_stats.missing;
     // Only add value set expectation for low-cardinality columns
     if (categorical_stats.unique_count <= 20 && validCount > 0) {
-      const valueSet = categorical_stats.top_values.map(tv => tv.value);
+      const valueSet = categorical_stats.top_values.map((tv) => tv.value);
       expectations.push({
         expectation_type: 'expect_column_distinct_values_to_be_in_set',
         kwargs: {
@@ -243,7 +234,7 @@ function generateColumnExpectations(
 export function generateGXSuite(
   results: ProfileResult,
   filename: string,
-  options: GXExportOptions = {}
+  options: GXExportOptions = {},
 ): GXSuite {
   const opts: Required<GXExportOptions> = { ...DEFAULT_OPTIONS, ...options };
 
@@ -303,7 +294,7 @@ export function generateGXSuite(
 export function generateGXSuiteJSON(
   results: ProfileResult,
   filename: string,
-  options: GXExportOptions = {}
+  options: GXExportOptions = {},
 ): string {
   const suite = generateGXSuite(results, filename, options);
   return JSON.stringify(suite, null, 2);
@@ -315,7 +306,7 @@ export function generateGXSuiteJSON(
  */
 export function getExpectationSummary(
   results: ProfileResult,
-  options: GXExportOptions = {}
+  options: GXExportOptions = {},
 ): {
   totalExpectations: number;
   byType: Record<string, number>;

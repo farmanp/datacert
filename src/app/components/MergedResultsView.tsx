@@ -285,7 +285,8 @@ const MergedResultsView: Component<MergedResultsViewProps> = (props) => {
                   aria-sort={getAriaSort('distinctEstimate')}
                   class="text-sm font-semibold text-slate-300 cursor-pointer group flex items-center ml-auto rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 >
-                  Distinct <SortIcon active={sortKey() === 'distinctEstimate'} order={sortOrder()} />
+                  Distinct{' '}
+                  <SortIcon active={sortKey() === 'distinctEstimate'} order={sortOrder()} />
                 </button>
               </th>
               <th class="hidden md:table-cell p-4 border-b border-slate-700 text-right">

@@ -42,7 +42,7 @@ function createProfileResult(columns: Partial<ColumnProfile>[] = []): ProfileRes
   return {
     total_rows: 100,
     column_profiles: columns.map((col, idx) =>
-      createColumnProfile({ name: `column_${idx}`, ...col })
+      createColumnProfile({ name: `column_${idx}`, ...col }),
     ),
     duplicate_issues: [],
     avro_schema: null,
@@ -68,63 +68,93 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const existExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_to_exist' &&
-             e.kwargs.column === 'user_id'
+        (e) => e.expectation_type === 'expect_column_to_exist' && e.kwargs.column === 'user_id',
       );
       expect(existExp).toBeDefined();
     });
 
     it('should include type expectations for typed columns', () => {
       const results = createProfileResult([
-        { name: 'int_col', base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'Integer' } },
-        { name: 'num_col', base_stats: { count: 100, missing: 0, distinct_estimate: 90, inferred_type: 'Numeric' } },
-        { name: 'str_col', base_stats: { count: 100, missing: 0, distinct_estimate: 80, inferred_type: 'String' } },
-        { name: 'bool_col', base_stats: { count: 100, missing: 0, distinct_estimate: 2, inferred_type: 'Boolean' } },
+        {
+          name: 'int_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'Integer' },
+        },
+        {
+          name: 'num_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 90, inferred_type: 'Numeric' },
+        },
+        {
+          name: 'str_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 80, inferred_type: 'String' },
+        },
+        {
+          name: 'bool_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 2, inferred_type: 'Boolean' },
+        },
       ]);
       const suite = generateGXSuite(results, 'test.csv');
 
       const typeExps = suite.expectations.filter(
-        e => e.expectation_type === 'expect_column_values_to_be_of_type'
+        (e) => e.expectation_type === 'expect_column_values_to_be_of_type',
       );
 
-      expect(typeExps.find(e => e.kwargs.column === 'int_col' && e.kwargs.type_ === 'INTEGER')).toBeDefined();
-      expect(typeExps.find(e => e.kwargs.column === 'num_col' && e.kwargs.type_ === 'FLOAT')).toBeDefined();
-      expect(typeExps.find(e => e.kwargs.column === 'str_col' && e.kwargs.type_ === 'STRING')).toBeDefined();
-      expect(typeExps.find(e => e.kwargs.column === 'bool_col' && e.kwargs.type_ === 'BOOLEAN')).toBeDefined();
+      expect(
+        typeExps.find((e) => e.kwargs.column === 'int_col' && e.kwargs.type_ === 'INTEGER'),
+      ).toBeDefined();
+      expect(
+        typeExps.find((e) => e.kwargs.column === 'num_col' && e.kwargs.type_ === 'FLOAT'),
+      ).toBeDefined();
+      expect(
+        typeExps.find((e) => e.kwargs.column === 'str_col' && e.kwargs.type_ === 'STRING'),
+      ).toBeDefined();
+      expect(
+        typeExps.find((e) => e.kwargs.column === 'bool_col' && e.kwargs.type_ === 'BOOLEAN'),
+      ).toBeDefined();
     });
 
     it('should skip type expectations for Mixed type', () => {
       const results = createProfileResult([
-        { name: 'mixed_col', base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'Mixed' } },
+        {
+          name: 'mixed_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'Mixed' },
+        },
       ]);
       const suite = generateGXSuite(results, 'test.csv');
 
       const typeExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_of_type' &&
-             e.kwargs.column === 'mixed_col'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_be_of_type' &&
+          e.kwargs.column === 'mixed_col',
       );
       expect(typeExp).toBeUndefined();
     });
 
     it('should skip Empty columns entirely', () => {
       const results = createProfileResult([
-        { name: 'empty_col', base_stats: { count: 100, missing: 100, distinct_estimate: 0, inferred_type: 'Empty' } },
+        {
+          name: 'empty_col',
+          base_stats: { count: 100, missing: 100, distinct_estimate: 0, inferred_type: 'Empty' },
+        },
       ]);
       const suite = generateGXSuite(results, 'test.csv');
 
-      const colExps = suite.expectations.filter(e => e.kwargs.column === 'empty_col');
+      const colExps = suite.expectations.filter((e) => e.kwargs.column === 'empty_col');
       expect(colExps.length).toBe(0);
     });
 
     it('should include null expectations with mostly parameter', () => {
       const results = createProfileResult([
-        { name: 'col_with_nulls', base_stats: { count: 100, missing: 5, distinct_estimate: 90, inferred_type: 'String' } },
+        {
+          name: 'col_with_nulls',
+          base_stats: { count: 100, missing: 5, distinct_estimate: 90, inferred_type: 'String' },
+        },
       ]);
       const suite = generateGXSuite(results, 'test.csv');
 
       const nullExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_not_be_null' &&
-             e.kwargs.column === 'col_with_nulls'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_not_be_null' &&
+          e.kwargs.column === 'col_with_nulls',
       );
       expect(nullExp).toBeDefined();
       // 5% nulls + 10% tolerance = 5.5% allowed nulls, so mostly = 0.945
@@ -161,8 +191,9 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const rangeExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_between' &&
-             e.kwargs.column === 'amount'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_be_between' &&
+          e.kwargs.column === 'amount',
       );
       expect(rangeExp).toBeDefined();
       // min=100 with 10% tolerance = 90
@@ -181,8 +212,8 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const uniqueExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_unique' &&
-             e.kwargs.column === 'id'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_be_unique' && e.kwargs.column === 'id',
       );
       expect(uniqueExp).toBeDefined();
     });
@@ -197,8 +228,9 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const uniqueExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_unique' &&
-             e.kwargs.column === 'status'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_be_unique' &&
+          e.kwargs.column === 'status',
       );
       expect(uniqueExp).toBeUndefined();
     });
@@ -213,8 +245,9 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const boolExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_in_set' &&
-             e.kwargs.column === 'is_active'
+        (e) =>
+          e.expectation_type === 'expect_column_values_to_be_in_set' &&
+          e.kwargs.column === 'is_active',
       );
       expect(boolExp).toBeDefined();
       expect(boolExp?.kwargs.value_set).toContain(true);
@@ -228,7 +261,7 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const rowCountExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_table_row_count_to_be_between'
+        (e) => e.expectation_type === 'expect_table_row_count_to_be_between',
       );
       expect(rowCountExp).toBeDefined();
       // 1000 rows with 10% tolerance = 900-1100
@@ -242,7 +275,7 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const colCountExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_table_column_count_to_equal'
+        (e) => e.expectation_type === 'expect_table_column_count_to_equal',
       );
       expect(colCountExp).toBeDefined();
       expect(colCountExp?.kwargs.value).toBe(3);
@@ -287,7 +320,7 @@ describe('exportGreatExpectations', () => {
       expect(suite.meta.tolerance).toBe(0.05);
 
       const rangeExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_values_to_be_between'
+        (e) => e.expectation_type === 'expect_column_values_to_be_between',
       );
       // min=100 with 5% tolerance = 95
       expect(rangeExp?.kwargs.min_value).toBe(95);
@@ -314,8 +347,9 @@ describe('exportGreatExpectations', () => {
       const suite = generateGXSuite(results, 'test.csv');
 
       const distinctExp = suite.expectations.find(
-        e => e.expectation_type === 'expect_column_distinct_values_to_be_in_set' &&
-             e.kwargs.column === 'status'
+        (e) =>
+          e.expectation_type === 'expect_column_distinct_values_to_be_in_set' &&
+          e.kwargs.column === 'status',
       );
       expect(distinctExp).toBeDefined();
       expect(distinctExp?.kwargs.value_set).toContain('active');
@@ -352,10 +386,7 @@ describe('exportGreatExpectations', () => {
 
   describe('getExpectationSummary', () => {
     it('should return correct total expectation count', () => {
-      const results = createProfileResult([
-        { name: 'col1' },
-        { name: 'col2' },
-      ]);
+      const results = createProfileResult([{ name: 'col1' }, { name: 'col2' }]);
 
       const summary = getExpectationSummary(results);
 
@@ -363,10 +394,7 @@ describe('exportGreatExpectations', () => {
     });
 
     it('should count expectations by type', () => {
-      const results = createProfileResult([
-        { name: 'col1' },
-        { name: 'col2' },
-      ]);
+      const results = createProfileResult([{ name: 'col1' }, { name: 'col2' }]);
 
       const summary = getExpectationSummary(results);
 
@@ -376,8 +404,14 @@ describe('exportGreatExpectations', () => {
 
     it('should track columns included vs skipped', () => {
       const results = createProfileResult([
-        { name: 'valid_col', base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'String' } },
-        { name: 'empty_col', base_stats: { count: 100, missing: 100, distinct_estimate: 0, inferred_type: 'Empty' } },
+        {
+          name: 'valid_col',
+          base_stats: { count: 100, missing: 0, distinct_estimate: 50, inferred_type: 'String' },
+        },
+        {
+          name: 'empty_col',
+          base_stats: { count: 100, missing: 100, distinct_estimate: 0, inferred_type: 'Empty' },
+        },
       ]);
 
       const summary = getExpectationSummary(results);

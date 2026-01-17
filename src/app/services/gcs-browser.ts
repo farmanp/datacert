@@ -114,7 +114,7 @@ class GCSBrowserService {
    */
   async listObjects(
     bucket: string,
-    options: ListObjectsOptions = {}
+    options: ListObjectsOptions = {},
   ): Promise<{
     objects: GCSObject[];
     folders: string[];
@@ -146,7 +146,7 @@ class GCSBrowserService {
       }
       if (response.status === 403) {
         throw new Error(
-          'Access denied to bucket. Check that you have storage.objects.list permission.'
+          'Access denied to bucket. Check that you have storage.objects.list permission.',
         );
       }
       if (response.status === 404) {
@@ -191,7 +191,7 @@ class GCSBrowserService {
     bucket: string,
     prefix: string = '',
     maxResults: number = 100,
-    pageToken?: string
+    pageToken?: string,
   ): Promise<{
     items: GCSObject[];
     nextPageToken?: string;
@@ -200,7 +200,11 @@ class GCSBrowserService {
     // Ensure prefix ends with / if not empty (for folder navigation)
     const normalizedPrefix = prefix && !prefix.endsWith('/') ? `${prefix}/` : prefix;
 
-    const { objects, folders, nextPageToken: nextToken } = await this.listObjects(bucket, {
+    const {
+      objects,
+      folders,
+      nextPageToken: nextToken,
+    } = await this.listObjects(bucket, {
       prefix: normalizedPrefix,
       delimiter: '/',
       maxResults,
@@ -222,7 +226,7 @@ class GCSBrowserService {
 
     // Filter out folder placeholder objects (objects that are just the prefix itself)
     const fileObjects = objects.filter(
-      (obj) => obj.name && !obj.name.endsWith('/') && obj.size > 0
+      (obj) => obj.name && !obj.name.endsWith('/') && obj.size > 0,
     );
 
     // Combine folders and files, folders first
@@ -277,7 +281,7 @@ class GCSBrowserService {
   async searchFiles(
     bucket: string,
     searchTerm: string,
-    options: { prefix?: string; maxResults?: number } = {}
+    options: { prefix?: string; maxResults?: number } = {},
   ): Promise<GCSObject[]> {
     // GCS doesn't support wildcard search, so we list with prefix and filter client-side
     const { objects } = await this.listObjects(bucket, {
@@ -295,7 +299,7 @@ class GCSBrowserService {
   async listDataFiles(
     bucket: string,
     prefix: string = '',
-    maxResults: number = 100
+    maxResults: number = 100,
   ): Promise<GCSObject[]> {
     const { items } = await this.browseFolder(bucket, prefix, maxResults);
     return items.filter((item) => item.isFolder || isSupportedDataFormat(item.name));

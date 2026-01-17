@@ -1,4 +1,12 @@
-import { Component, createSignal, createMemo, onMount, onCleanup, createEffect, Show } from 'solid-js';
+import {
+  Component,
+  createSignal,
+  createMemo,
+  onMount,
+  onCleanup,
+  createEffect,
+  Show,
+} from 'solid-js';
 import { Histogram as HistogramData } from '../stores/profileStore';
 
 interface HistogramProps {

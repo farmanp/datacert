@@ -3,108 +3,108 @@ import { createComparisonStore, ColumnComparison } from './comparisonStore';
 import { createRoot } from 'solid-js';
 
 describe('comparisonStore', () => {
-    let mockWorker: {
-        postMessage: ReturnType<typeof vi.fn>;
-        terminate: ReturnType<typeof vi.fn>;
-        onmessage: ((e: MessageEvent) => void) | null;
+  let mockWorker: {
+    postMessage: ReturnType<typeof vi.fn>;
+    terminate: ReturnType<typeof vi.fn>;
+    onmessage: ((e: MessageEvent) => void) | null;
+  };
+
+  beforeEach(() => {
+    mockWorker = {
+      postMessage: vi.fn(),
+      terminate: vi.fn(),
+      onmessage: null,
     };
 
-    beforeEach(() => {
-        mockWorker = {
-            postMessage: vi.fn(),
-            terminate: vi.fn(),
-            onmessage: null,
-        };
+    // @ts-expect-error - test mock setup
+    global.Worker = vi.fn(() => mockWorker);
 
-        // @ts-expect-error - test mock setup
-        global.Worker = vi.fn(() => mockWorker);
+    // Mock URL.createObjectURL/revokeObjectURL if needed, though mostly used in components
+    global.URL.createObjectURL = vi.fn();
+    global.URL.revokeObjectURL = vi.fn();
+  });
 
-        // Mock URL.createObjectURL/revokeObjectURL if needed, though mostly used in components
-        global.URL.createObjectURL = vi.fn();
-        global.URL.revokeObjectURL = vi.fn();
+  it('initializes with default state', () => {
+    createRoot((dispose) => {
+      const { store } = createComparisonStore();
+
+      expect(store.fileA.state).toBe('idle');
+      expect(store.fileB.state).toBe('idle');
+      expect(store.comparisons).toHaveLength(0);
+      expect(store.isComparing).toBe(false);
+
+      dispose();
     });
+  });
 
-    it('initializes with default state', () => {
-        createRoot((dispose) => {
-            const { store } = createComparisonStore();
+  it('updates state when a valid file is selected', () => {
+    createRoot((dispose) => {
+      const { store, selectFile } = createComparisonStore();
+      const file = new File(['header\n1'], 'test.csv', { type: 'text/csv' });
 
-            expect(store.fileA.state).toBe('idle');
-            expect(store.fileB.state).toBe('idle');
-            expect(store.comparisons).toHaveLength(0);
-            expect(store.isComparing).toBe(false);
+      selectFile('A', file);
 
-            dispose();
-        });
+      expect(store.fileA.state).toBe('processing');
+      expect(store.fileA.file?.name).toBe('test.csv');
+      expect(global.Worker).toHaveBeenCalledTimes(1);
+
+      dispose();
     });
+  });
 
-    it('updates state when a valid file is selected', () => {
-        createRoot((dispose) => {
-            const { store, selectFile } = createComparisonStore();
-            const file = new File(['header\n1'], 'test.csv', { type: 'text/csv' });
+  it('sets error state for unsupported file types', () => {
+    createRoot((dispose) => {
+      const { store, selectFile } = createComparisonStore();
+      const file = new File(['%PDF'], 'test.pdf', { type: 'application/pdf' });
 
-            selectFile('A', file);
+      selectFile('B', file);
 
-            expect(store.fileA.state).toBe('processing');
-            expect(store.fileA.file?.name).toBe('test.csv');
-            expect(global.Worker).toHaveBeenCalledTimes(1);
+      expect(store.fileB.state).toBe('error');
+      expect(store.fileB.error).toBeDefined();
+      expect(global.Worker).not.toHaveBeenCalled();
 
-            dispose();
-        });
+      dispose();
     });
+  });
 
-    it('sets error state for unsupported file types', () => {
-        createRoot((dispose) => {
-            const { store, selectFile } = createComparisonStore();
-            const file = new File(['%PDF'], 'test.pdf', { type: 'application/pdf' });
+  it('resets file state correctly', () => {
+    createRoot((dispose) => {
+      const { store, selectFile, resetFile } = createComparisonStore();
+      const file = new File([''], 'test.csv');
 
-            selectFile('B', file);
+      selectFile('A', file);
+      resetFile('A');
 
-            expect(store.fileB.state).toBe('error');
-            expect(store.fileB.error).toBeDefined();
-            expect(global.Worker).not.toHaveBeenCalled();
+      expect(store.fileA.state).toBe('idle');
+      expect(store.fileA.file).toBeNull();
+      expect(mockWorker.terminate).toHaveBeenCalled();
 
-            dispose();
-        });
+      dispose();
     });
+  });
 
-    it('resets file state correctly', () => {
-        createRoot((dispose) => {
-            const { store, selectFile, resetFile } = createComparisonStore();
-            const file = new File([''], 'test.csv');
+  it('computes comparison summary correctly', () => {
+    createRoot((dispose) => {
+      const { store, getSummary } = createComparisonStore();
 
-            selectFile('A', file);
-            resetFile('A');
+      // Manually populate comparisons for testing by direct assignment
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (store as any).comparisons = [
+        { status: 'added', name: 'col1' } as ColumnComparison,
+        { status: 'removed', name: 'col2' } as ColumnComparison,
+        { status: 'modified', name: 'col3' } as ColumnComparison,
+        { status: 'unchanged', name: 'col4' } as ColumnComparison,
+        { status: 'unchanged', name: 'col5' } as ColumnComparison,
+      ];
 
-            expect(store.fileA.state).toBe('idle');
-            expect(store.fileA.file).toBeNull();
-            expect(mockWorker.terminate).toHaveBeenCalled();
+      const summary = getSummary();
+      expect(summary.total).toBe(5);
+      expect(summary.added).toBe(1);
+      expect(summary.removed).toBe(1);
+      expect(summary.modified).toBe(1);
+      expect(summary.unchanged).toBe(2);
 
-            dispose();
-        });
+      dispose();
     });
-
-    it('computes comparison summary correctly', () => {
-        createRoot((dispose) => {
-            const { store, getSummary } = createComparisonStore();
-
-            // Manually populate comparisons for testing by direct assignment
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (store as any).comparisons = [
-                { status: 'added', name: 'col1' } as ColumnComparison,
-                { status: 'removed', name: 'col2' } as ColumnComparison,
-                { status: 'modified', name: 'col3' } as ColumnComparison,
-                { status: 'unchanged', name: 'col4' } as ColumnComparison,
-                { status: 'unchanged', name: 'col5' } as ColumnComparison,
-            ];
-
-            const summary = getSummary();
-            expect(summary.total).toBe(5);
-            expect(summary.added).toBe(1);
-            expect(summary.removed).toBe(1);
-            expect(summary.modified).toBe(1);
-            expect(summary.unchanged).toBe(2);
-
-            dispose();
-        });
-    });
+  });
 });

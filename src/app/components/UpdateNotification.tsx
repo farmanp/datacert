@@ -58,9 +58,7 @@ export default function UpdateNotification() {
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-sm font-semibold text-slate-100">Update Available</h3>
-            <p class="mt-1 text-sm text-slate-400">
-              A new version of DataCert is available.
-            </p>
+            <p class="mt-1 text-sm text-slate-400">A new version of DataCert is available.</p>
           </div>
           <button
             onClick={handleDismiss}

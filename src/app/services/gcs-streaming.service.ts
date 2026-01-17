@@ -27,7 +27,9 @@ function createCORSError(url: string, originalError?: Error): CORSError {
       '1. Create a cors.json file:\n' +
       '   [\n' +
       '     {\n' +
-      '       "origin": ["' + window.location.origin + '"],\n' +
+      '       "origin": ["' +
+      window.location.origin +
+      '"],\n' +
       '       "method": ["GET", "HEAD"],\n' +
       '       "responseHeader": ["Content-Type", "Content-Length", "Content-Range"],\n' +
       '       "maxAgeSeconds": 3600\n' +
@@ -35,7 +37,7 @@ function createCORSError(url: string, originalError?: Error): CORSError {
       '   ]\n\n' +
       '2. Apply to your bucket:\n' +
       `   gsutil cors set cors.json gs://${bucketName || 'your-bucket'}\n\n` +
-      'See the "CORS Setup" section in Remote Sources for more details.'
+      'See the "CORS Setup" section in Remote Sources for more details.',
   ) as CORSError;
 
   error.isCORSError = true;
@@ -86,7 +88,8 @@ export function validateGCSUrl(url: string): { valid: boolean; error?: string } 
   if (!/^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(bucketName) && bucketName.length > 2) {
     return {
       valid: false,
-      error: 'Bucket name must start and end with letter/number, contain only lowercase letters, numbers, dashes, underscores, and dots',
+      error:
+        'Bucket name must start and end with letter/number, contain only lowercase letters, numbers, dashes, underscores, and dots',
     };
   }
 
@@ -150,7 +153,7 @@ export class RemoteStreamingService {
   async getFileStream(
     url: string,
     onProgress?: (bytes: number, total: number) => void,
-    retryOptions?: RetryOptions
+    retryOptions?: RetryOptions,
   ): Promise<{ stream: ReadableStream<Uint8Array>; size: number; name: string }> {
     const options = { ...DEFAULT_RETRY_OPTIONS, ...retryOptions };
     const httpsUrl = this.normalizeUrl(url);
@@ -214,7 +217,7 @@ export class RemoteStreamingService {
     originalUrl: string,
     httpsUrl: string,
     isGCS: boolean,
-    onProgress?: (bytes: number, total: number) => void
+    onProgress?: (bytes: number, total: number) => void,
   ): Promise<{ stream: ReadableStream<Uint8Array>; size: number; name: string }> {
     const headers: Record<string, string> = {};
 
@@ -242,19 +245,15 @@ export class RemoteStreamingService {
         throw createCORSError(originalUrl);
       }
       if (response.status === 401) {
-        throw new Error(
-          'Unauthorized (401). Please sign in with Google to access this file.'
-        );
+        throw new Error('Unauthorized (401). Please sign in with Google to access this file.');
       }
       if (response.status === 403) {
         throw new Error(
-          'Access denied (403). Check that you have read permissions on this bucket/file, or verify any pre-signed URL has not expired.'
+          'Access denied (403). Check that you have read permissions on this bucket/file, or verify any pre-signed URL has not expired.',
         );
       }
       if (response.status === 404) {
-        throw new Error(
-          'File not found (404). Check that the bucket and file path are correct.'
-        );
+        throw new Error('File not found (404). Check that the bucket and file path are correct.');
       }
       throw new Error(`Remote Error: ${response.status} ${response.statusText}`);
     }

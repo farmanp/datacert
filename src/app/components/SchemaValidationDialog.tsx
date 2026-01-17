@@ -85,10 +85,7 @@ const SchemaValidationDialog: Component<SchemaValidationDialogProps> = (props) =
               </svg>
             </div>
             <div>
-              <h2
-                id="schema-dialog-title"
-                class="text-xl font-bold text-white tracking-tight"
-              >
+              <h2 id="schema-dialog-title" class="text-xl font-bold text-white tracking-tight">
                 Schema Mismatch Detected
               </h2>
               <p class="mt-1 text-sm text-slate-400">
@@ -137,9 +134,7 @@ const SchemaValidationDialog: Component<SchemaValidationDialogProps> = (props) =
           </h3>
 
           <div class="space-y-4">
-            <For each={incompatibleFiles()}>
-              {(file) => <FileSchemaCard file={file} />}
-            </For>
+            <For each={incompatibleFiles()}>{(file) => <FileSchemaCard file={file} />}</For>
           </div>
 
           {/* Warning about proceeding */}
@@ -201,12 +196,7 @@ const FileSchemaCard: Component<{ file: FileSchemaResult }> = (props) => {
     <div class="p-4 bg-slate-700/20 border border-slate-600/50 rounded-xl">
       {/* File name */}
       <div class="flex items-center gap-2 mb-3">
-        <svg
-          class="w-4 h-4 text-slate-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"

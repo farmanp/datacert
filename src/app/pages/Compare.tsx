@@ -220,7 +220,11 @@ const Compare: Component = () => {
                 class={`h-3 w-3 rounded-full ${engineStore.state.isReady ? 'bg-emerald-500' : 'bg-amber-500'}`}
               />
               <span class="text-sm font-medium text-slate-300 uppercase tracking-wider">
-                {engineStore.state.isReady ? 'WASM Ready' : engineStore.state.isLoading ? 'Initializing...' : 'Offline'}
+                {engineStore.state.isReady
+                  ? 'WASM Ready'
+                  : engineStore.state.isLoading
+                    ? 'Initializing...'
+                    : 'Offline'}
               </span>
             </div>
 
@@ -236,11 +240,7 @@ const Compare: Component = () => {
             <Show when={isProcessing()}>
               <div class="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
                 <div class="flex items-center gap-3">
-                  <svg
-                    class="w-5 h-5 text-amber-500 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg class="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle
                       class="opacity-25"
                       cx="12"
@@ -272,7 +272,12 @@ const Compare: Component = () => {
             >
               <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
                 <div class="flex items-center gap-3">
-                  <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    class="w-5 h-5 text-blue-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -314,12 +319,7 @@ const Compare: Component = () => {
                     onClick={handleExportHTML}
                     class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
                   >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"

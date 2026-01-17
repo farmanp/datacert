@@ -121,7 +121,7 @@ function calculateChange(baseline: number, current: number): MetricChange {
  */
 function calculateOptionalChange(
   baseline: number | undefined,
-  current: number | undefined
+  current: number | undefined,
 ): MetricChange | undefined {
   if (baseline === undefined || current === undefined) {
     return undefined;
@@ -136,7 +136,7 @@ export function computeDeltas(
   baseline: ProfileResult,
   comparison: ProfileResult,
   comparisonFileId: string,
-  comparisonFileName: string
+  comparisonFileName: string,
 ): ComparisonDelta {
   const baselineProfiles = new Map<string, ColumnProfile>();
   const comparisonProfiles = new Map<string, ColumnProfile>();
@@ -179,7 +179,10 @@ export function computeDeltas(
         changes: {
           rowCount: calculateChange(baselineMetrics.rowCount, currentMetrics.rowCount),
           nullRate: calculateChange(baselineMetrics.nullRate, currentMetrics.nullRate),
-          distinctCount: calculateChange(baselineMetrics.distinctCount, currentMetrics.distinctCount),
+          distinctCount: calculateChange(
+            baselineMetrics.distinctCount,
+            currentMetrics.distinctCount,
+          ),
           mean: calculateOptionalChange(baselineMetrics.mean, currentMetrics.mean),
           stdDev: calculateOptionalChange(baselineMetrics.stdDev, currentMetrics.stdDev),
         },
@@ -210,7 +213,7 @@ export function computeDeltas(
 function determineTrendDirection(
   baselineValue: number,
   values: TrendValue[],
-  lowerIsBetter: boolean = false
+  lowerIsBetter: boolean = false,
 ): TrendDirection {
   if (values.length === 0) {
     return 'stable';
@@ -262,7 +265,7 @@ function determineTrendDirection(
  */
 export function computeTrends(
   baseline: ProfileResult,
-  comparisons: ComparisonDelta[]
+  comparisons: ComparisonDelta[],
 ): TrendAnalysis[] {
   const trends: TrendAnalysis[] = [];
   const baselineProfiles = new Map<string, ColumnProfile>();

@@ -29,14 +29,14 @@ const init = async () => {
       await wasmModule.default();
       // Call the init function
       wasmModule.init();
-      
+
       setState({ isReady: true, isLoading: false });
     } catch (e) {
       console.error('Failed to load WASM', e);
-      setState({ 
-        isReady: false, 
-        isLoading: false, 
-        error: 'Failed to initialize the analysis engine. Please reload.' 
+      setState({
+        isReady: false,
+        isLoading: false,
+        error: 'Failed to initialize the analysis engine. Please reload.',
       });
       throw e;
     }

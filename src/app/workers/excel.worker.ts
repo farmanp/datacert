@@ -6,21 +6,27 @@ interface ExcelWorkerGlobals {
 }
 
 const workerGlobals: ExcelWorkerGlobals = {
-  workbookCache: null
+  workbookCache: null,
 };
 
 // Exported for testing
-export function parseWorkbookMetadata(buffer: ArrayBuffer): { sheetNames: string[]; workbook: WorkBook } {
+export function parseWorkbookMetadata(buffer: ArrayBuffer): {
+  sheetNames: string[];
+  workbook: WorkBook;
+} {
   const data = new Uint8Array(buffer);
   const workbook = read(data, { type: 'array', dense: true });
   return {
     sheetNames: workbook.SheetNames,
-    workbook
+    workbook,
   };
 }
 
 // Exported for testing
-export function parseSheetData(wb: WorkBook, selectedSheet: string): { headers: string[]; rows: string[][] } {
+export function parseSheetData(
+  wb: WorkBook,
+  selectedSheet: string,
+): { headers: string[]; rows: string[][] } {
   const sheet = wb.Sheets[selectedSheet];
   if (!sheet) {
     throw new Error(`Sheet "${selectedSheet}" not found`);
@@ -32,8 +38,8 @@ export function parseSheetData(wb: WorkBook, selectedSheet: string): { headers: 
     return { headers: [], rows: [] };
   }
 
-  const headers = rows[0].map(cell => String(cell));
-  const dataRows = rows.slice(1).map(row => row.map(cell => String(cell)));
+  const headers = rows[0].map((cell) => String(cell));
+  const dataRows = rows.slice(1).map((row) => row.map((cell) => String(cell)));
 
   return { headers, rows: dataRows };
 }
@@ -51,7 +57,7 @@ self.onmessage = async (e: MessageEvent) => {
 
         self.postMessage({
           type: 'workbook_parsed',
-          sheetNames
+          sheetNames,
         });
         break;
       }
@@ -72,7 +78,7 @@ self.onmessage = async (e: MessageEvent) => {
         self.postMessage({
           type: 'sheet_processed',
           headers: result.headers,
-          rows: result.rows
+          rows: result.rows,
         });
         break;
       }
