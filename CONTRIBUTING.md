@@ -41,6 +41,7 @@ Have an idea?
 
 1. Fork and clone the repo.
 2. Install dependencies: `npm install`
+   - Keep lockfiles in sync: commit updates to `package-lock.json` and `website/package-lock.json` when dependencies change. CI uses `npm ci`.
 3. Build the WASM module: `npm run build:wasm`
 4. Start the dev server: `npm run dev`
 
