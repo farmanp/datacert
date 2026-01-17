@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,20 +34,16 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npm run lint || true  # Don't fail on pre-existing warnings
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Accuracy tests
+        run: npm run test:accuracy
 
       - name: Run Rust tests
         run: npm run test:rust
-
-      - name: Build web app
-        run: npm run build
-
-      - name: Build CLI
-        run: npm run build:cli
-
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
