@@ -83,7 +83,7 @@ const QueryResults: Component<QueryResultsProps> = (props) => {
             }
             return strValue;
           })
-          .join('\t')
+          .join('\t'),
       );
       const csvContent = [headerRow, ...dataRows].join('\n');
 
@@ -146,7 +146,7 @@ const QueryResults: Component<QueryResultsProps> = (props) => {
 
           {/* Profile Results Button */}
           <button
-            onClick={props.onProfileResults}
+            onClick={() => props.onProfileResults()}
             disabled={!props.isProfilingAvailable}
             class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           >

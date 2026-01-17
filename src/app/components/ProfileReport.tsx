@@ -30,8 +30,7 @@ const ProfileReport: Component = () => {
   const numericColumns = createMemo(() => {
     const profiles = store.results?.column_profiles || [];
     return profiles.filter(
-      (p) =>
-        p.base_stats.inferred_type === 'Integer' || p.base_stats.inferred_type === 'Numeric'
+      (p) => p.base_stats.inferred_type === 'Integer' || p.base_stats.inferred_type === 'Numeric',
     );
   });
 
@@ -48,7 +47,6 @@ const ProfileReport: Component = () => {
     file: () => fileStore.store.file ?? undefined,
     numericColumns,
   });
-
 
   // Debounce search query updates (150ms)
   const handleSearchInput = (value: string) => {
@@ -111,9 +109,7 @@ const ProfileReport: Component = () => {
           handleConfirmClear();
         } else if (e.key === 'Tab') {
           // Focus trap
-          const focusableElements = document.querySelectorAll(
-            'div[role="dialog"] button'
-          );
+          const focusableElements = document.querySelectorAll('div[role="dialog"] button');
           const firstElement = focusableElements[0] as HTMLElement;
           const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
@@ -138,8 +134,6 @@ const ProfileReport: Component = () => {
       });
     }
   });
-
-
 
   // Compute columns with PII detected
   const piiColumns = createMemo(() => {
@@ -175,9 +169,7 @@ const ProfileReport: Component = () => {
   });
 
   // Check if there are any high-severity PII issues (error severity)
-  const hasHighSeverityPii = createMemo(() =>
-    piiColumns().some((col) => col.severity === 'error')
-  );
+  const hasHighSeverityPii = createMemo(() => piiColumns().some((col) => col.severity === 'error'));
 
   // Calculate health score from column profiles (completeness metric)
   const healthScore = createMemo(() => {
@@ -208,6 +200,11 @@ const ProfileReport: Component = () => {
     return { value: roundedScore, color };
   });
 
+  const isFileTooLargeForSql = createMemo(() => {
+    const fileSize = fileStore.store.file?.size || 0;
+    return fileSize > SQL_MODE_SIZE_LIMIT;
+  });
+
   return (
     <div class="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 print:p-0">
       <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 print:hidden">
@@ -230,7 +227,9 @@ const ProfileReport: Component = () => {
                   <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
                   <span>
                     Analyzed <span class="text-slate-300 font-medium">{file().name}</span>
-                    <span class="ml-1 text-slate-600 opacity-60">({fileStore.formatFileSize(file().size)})</span>
+                    <span class="ml-1 text-slate-600 opacity-60">
+                      ({fileStore.formatFileSize(file().size)})
+                    </span>
                   </span>
                 </div>
 
@@ -238,9 +237,12 @@ const ProfileReport: Component = () => {
                   <div class="flex items-center gap-1.5">
                     <span class="text-slate-700 font-light">|</span>
                     <span class="text-slate-500">
-                      Processed <span class="text-emerald-500/90 font-medium">
+                      Processed{' '}
+                      <span class="text-emerald-500/90 font-medium">
                         {fileStore.formatFileSize(store.performanceMetrics!.fileSizeBytes)}
-                      </span> in <span class="text-emerald-500/90 font-medium whitespace-nowrap">
+                      </span>{' '}
+                      in{' '}
+                      <span class="text-emerald-500/90 font-medium whitespace-nowrap">
                         {store.performanceMetrics!.durationSeconds < 0.1
                           ? `${(store.performanceMetrics!.durationSeconds * 1000).toFixed(0)}ms`
                           : `${store.performanceMetrics!.durationSeconds.toFixed(2)}s`}
@@ -257,29 +259,32 @@ const ProfileReport: Component = () => {
           <div class="bg-slate-800 p-1 rounded-xl border border-slate-700 flex">
             <button
               onClick={() => setViewMode('table')}
-              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'table'
-                ? 'bg-slate-700 text-white shadow-lg'
-                : 'text-slate-400 hover:text-slate-200'
-                }`}
+              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                store.viewMode === 'table'
+                  ? 'bg-slate-700 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
             >
               Table View
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'cards'
-                ? 'bg-slate-700 text-white shadow-lg'
-                : 'text-slate-400 hover:text-slate-200'
-                }`}
+              class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                store.viewMode === 'cards'
+                  ? 'bg-slate-700 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
             >
               Card View
             </button>
             <Show when={isFeatureEnabled(FEATURE_FLAGS.QUALITY_MODE)}>
               <button
                 onClick={() => setViewMode('validation')}
-                class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${store.viewMode === 'validation'
-                  ? 'bg-slate-700 text-white shadow-lg'
-                  : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                class={`px-4 py-2 rounded-lg text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                  store.viewMode === 'validation'
+                    ? 'bg-slate-700 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
                 Quality
               </button>
@@ -302,45 +307,21 @@ const ProfileReport: Component = () => {
               class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
               </svg>
               Export
             </button>
           </div>
 
           {/* SQL Mode - disabled for large files */}
-          {(() => {
-            const fileSize = fileStore.store.file?.size || 0;
-            // SQL mode is disabled for files larger than 100MB (DuckDB in-browser limit)
-            const isFileTooLargeForSql = fileSize > SQL_MODE_SIZE_LIMIT;
-
-            if (isFileTooLargeForSql) {
-              return (
-                <div class="relative group">
-                  <button
-                    disabled
-                    class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-500 font-semibold cursor-not-allowed flex items-center gap-2 opacity-60"
-                    title="File too large for SQL mode"
-                  >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-                      />
-                    </svg>
-                    SQL Mode
-                  </button>
-                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-700 text-slate-200 text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-600">
-                    File too large for in-browser SQL (max 100MB)
-                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-700" />
-                  </div>
-                </div>
-              );
-            }
-
-            return (
+          <Show
+            when={isFileTooLargeForSql()}
+            fallback={
               <A
                 href="/sql-mode"
                 class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
@@ -355,8 +336,30 @@ const ProfileReport: Component = () => {
                 </svg>
                 SQL Mode
               </A>
-            );
-          })()}
+            }
+          >
+            <div class="relative group">
+              <button
+                disabled
+                class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-500 font-semibold cursor-not-allowed flex items-center gap-2 opacity-60"
+                title="File too large for SQL mode"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                  />
+                </svg>
+                SQL Mode
+              </button>
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-700 text-slate-200 text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-600">
+                File too large for in-browser SQL (max 100MB)
+                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-700" />
+              </div>
+            </div>
+          </Show>
         </div>
       </header>
 
@@ -368,15 +371,17 @@ const ProfileReport: Component = () => {
       {/* PII Summary Banner */}
       <Show when={piiColumns().length > 0}>
         <div
-          class={`rounded-xl p-4 mb-2 border ${hasHighSeverityPii()
-            ? 'bg-rose-500/10 border-rose-500/30'
-            : 'bg-amber-500/10 border-amber-500/30'
-            } print:bg-amber-50 print:border-amber-200`}
+          class={`rounded-xl p-4 mb-2 border ${
+            hasHighSeverityPii()
+              ? 'bg-rose-500/10 border-rose-500/30'
+              : 'bg-amber-500/10 border-amber-500/30'
+          } print:bg-amber-50 print:border-amber-200`}
         >
           <div class="flex items-start gap-3">
             <div
-              class={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${hasHighSeverityPii() ? 'bg-rose-500/20' : 'bg-amber-500/20'
-                }`}
+              class={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                hasHighSeverityPii() ? 'bg-rose-500/20' : 'bg-amber-500/20'
+              }`}
             >
               <svg
                 class={`w-5 h-5 ${hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'}`}
@@ -395,8 +400,9 @@ const ProfileReport: Component = () => {
             </div>
             <div class="flex-1 min-w-0">
               <h3
-                class={`font-bold text-base ${hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'
-                  } print:text-amber-600`}
+                class={`font-bold text-base ${
+                  hasHighSeverityPii() ? 'text-rose-400' : 'text-amber-400'
+                } print:text-amber-600`}
               >
                 Potential PII Detected
               </h3>
@@ -408,12 +414,13 @@ const ProfileReport: Component = () => {
                 <For each={piiColumns()}>
                   {(col) => (
                     <div
-                      class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${col.severity === 'error'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : col.severity === 'warning'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
-                        }`}
+                      class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
+                        col.severity === 'error'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          : col.severity === 'warning'
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
+                      }`}
                     >
                       <span class="font-semibold">{col.name}</span>
                       <span class="opacity-60">({col.piiType})</span>
@@ -453,7 +460,9 @@ const ProfileReport: Component = () => {
               <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black mb-1 print:text-slate-400 group-hover:text-slate-300 transition-colors">
                 {kpi.label}
               </p>
-              <p class={`text-3xl font-bold font-heading ${kpi.color} tabular-nums print:text-black`}>
+              <p
+                class={`text-3xl font-bold font-heading ${kpi.color} tabular-nums print:text-black`}
+              >
                 {typeof kpi.value === 'number'
                   ? new Intl.NumberFormat().format(kpi.value)
                   : kpi.value}
@@ -494,12 +503,7 @@ const ProfileReport: Component = () => {
               class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
               aria-label="Clear search"
             >
-              <svg
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   d="M6 18L18 6M6 6l12 12"
                   stroke-width="2"
@@ -572,9 +576,7 @@ const ProfileReport: Component = () => {
             when={store.viewMode === 'table'}
             fallback={
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 print:grid-cols-2">
-                <For each={filteredProfiles()}>
-                  {(profile) => <ColumnCard profile={profile} />}
-                </For>
+                <For each={filteredProfiles()}>{(profile) => <ColumnCard profile={profile} />}</For>
               </div>
             }
           >
@@ -688,22 +690,14 @@ const ProfileReport: Component = () => {
           aria-labelledby="clear-dialog-title"
         >
           {/* Backdrop */}
-          <div
-            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={handleCancelClear}
-          />
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancelClear} />
 
           {/* Dialog */}
           <div class="relative bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl p-6 max-w-sm mx-4 animate-in fade-in zoom-in duration-150">
-            <h3
-              id="clear-dialog-title"
-              class="text-lg font-bold text-slate-100 mb-2"
-            >
+            <h3 id="clear-dialog-title" class="text-lg font-bold text-slate-100 mb-2">
               Clear all results?
             </h3>
-            <p class="text-slate-300 mb-6">
-              This cannot be undone.
-            </p>
+            <p class="text-slate-300 mb-6">This cannot be undone.</p>
 
             <div class="flex justify-end gap-3">
               <button
@@ -734,8 +728,6 @@ const ProfileReport: Component = () => {
           fileSize={fileStore.store.file?.size || 0}
         />
       </Show>
-
-
     </div>
   );
 };

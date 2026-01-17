@@ -2,7 +2,12 @@ import { Component, createSignal, Show, For, createEffect, on } from 'solid-js';
 import { fileStore } from '../stores/fileStore';
 import { profileStore } from '../stores/profileStore';
 import { authStore } from '../stores/auth.store';
-import { gcsBrowserService, GCSObject, parseGCSUrl, isSupportedDataFormat } from '../services/gcs-browser';
+import {
+  gcsBrowserService,
+  GCSObject,
+  parseGCSUrl,
+  isSupportedDataFormat,
+} from '../services/gcs-browser';
 import { validateGCSUrl } from '../services/gcs-streaming.service';
 
 interface Source {
@@ -18,7 +23,13 @@ const SOURCES: Source[] = [
   { id: 's3', name: 'Amazon S3', description: 'Public S3 buckets', icon: '📦' },
   { id: 'huggingface', name: 'HuggingFace', description: 'ML datasets', icon: '🤗' },
   { id: 'motherduck', name: 'MotherDuck', description: 'Cloud DuckDB', icon: '🦆' },
-  { id: 'postgresql', name: 'PostgreSQL', description: 'PG databases', icon: '🐘', requiresAuth: true },
+  {
+    id: 'postgresql',
+    name: 'PostgreSQL',
+    description: 'PG databases',
+    icon: '🐘',
+    requiresAuth: true,
+  },
   { id: 'gsheets', name: 'Google Sheets', description: 'Published Google Sheets', icon: '📊' },
   { id: 'gcs', name: 'Google Cloud', description: 'GCS buckets (OAuth)', icon: '☁️' },
 ];
@@ -63,7 +74,12 @@ const CORSSetupInstructions: Component<{ bucketName?: string }> = (props) => {
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -111,9 +127,8 @@ const CORSSetupInstructions: Component<{ bucketName?: string }> = (props) => {
           </div>
 
           <p class="text-xs text-slate-500">
-            Note: You need the{' '}
-            <code class="bg-slate-800 px-1 rounded">storage.buckets.update</code> permission to
-            configure CORS on a bucket.
+            Note: You need the <code class="bg-slate-800 px-1 rounded">storage.buckets.update</code>{' '}
+            permission to configure CORS on a bucket.
           </p>
         </div>
       </Show>
@@ -159,8 +174,8 @@ const GCSFileBrowser: Component<{
         if (bucket) {
           loadFiles('');
         }
-      }
-    )
+      },
+    ),
   );
 
   const navigateToFolder = (folderPath: string) => {
@@ -351,8 +366,8 @@ const RemoteSourcesModal: Component<RemoteSourcesModalProps> = (props) => {
         } else {
           setUrlValidation({ valid: true });
         }
-      }
-    )
+      },
+    ),
   );
 
   const handleSubmit = async (e: Event) => {
@@ -406,8 +421,8 @@ const RemoteSourcesModal: Component<RemoteSourcesModalProps> = (props) => {
         setBucketName('');
         setShowBrowser(false);
         setUrlValidation({ valid: true });
-      }
-    )
+      },
+    ),
   );
 
   return (
@@ -453,7 +468,7 @@ const RemoteSourcesModal: Component<RemoteSourcesModalProps> = (props) => {
                 </div>
               </div>
               <button
-                onClick={props.onClose}
+                onClick={() => props.onClose()}
                 class="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-200 transition-colors"
               >
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -582,7 +597,12 @@ const RemoteSourcesModal: Component<RemoteSourcesModalProps> = (props) => {
                           onClick={handleBrowseBucket}
                           class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors flex items-center gap-2"
                         >
-                          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
@@ -628,9 +648,7 @@ const RemoteSourcesModal: Component<RemoteSourcesModalProps> = (props) => {
 
                   <button
                     type="submit"
-                    disabled={
-                      !url() || fileState.state === 'processing' || !urlValidation().valid
-                    }
+                    disabled={!url() || fileState.state === 'processing' || !urlValidation().valid}
                     class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/40"
                   >
                     {fileState.state === 'processing' ? (

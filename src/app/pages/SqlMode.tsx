@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, Show, Suspense } from 'solid-js';
+import { Component, createSignal, For, onMount, onCleanup, Show, Suspense } from 'solid-js';
 import { A, useNavigate } from '@solidjs/router';
 import Navigation from '../components/Navigation';
 import { fileStore } from '../stores/fileStore';
@@ -41,6 +41,11 @@ const SqlMode: Component = () => {
   const [tableName] = createSignal('data');
   const [rowCount, setRowCount] = createSignal<number | null>(null);
   const [showMemoryWarning, setShowMemoryWarning] = createSignal(false);
+  const resultsList = () => results() ?? [];
+  const resultsHeaders = () => {
+    const list = resultsList();
+    return list.length > 0 ? Object.keys(list[0]) : [];
+  };
 
   // DuckDB instance reference
   let db: import('@duckdb/duckdb-wasm').AsyncDuckDB | null = null;
@@ -139,11 +144,17 @@ const SqlMode: Component = () => {
 
       // Create table based on file type
       if (fileName.endsWith('.csv') || fileName.endsWith('.tsv')) {
-        await conn.query(`CREATE TABLE ${tableName()} AS SELECT * FROM read_csv_auto('${file.name}')`);
+        await conn.query(
+          `CREATE TABLE ${tableName()} AS SELECT * FROM read_csv_auto('${file.name}')`,
+        );
       } else if (fileName.endsWith('.json') || fileName.endsWith('.jsonl')) {
-        await conn.query(`CREATE TABLE ${tableName()} AS SELECT * FROM read_json_auto('${file.name}')`);
+        await conn.query(
+          `CREATE TABLE ${tableName()} AS SELECT * FROM read_json_auto('${file.name}')`,
+        );
       } else if (fileName.endsWith('.parquet')) {
-        await conn.query(`CREATE TABLE ${tableName()} AS SELECT * FROM read_parquet('${file.name}')`);
+        await conn.query(
+          `CREATE TABLE ${tableName()} AS SELECT * FROM read_parquet('${file.name}')`,
+        );
       } else {
         throw new Error(`Unsupported file type: ${fileName}`);
       }
@@ -218,7 +229,12 @@ const SqlMode: Component = () => {
       <Show when={showMemoryWarning()}>
         <div class="bg-amber-500/10 border-b border-amber-500/30 px-4 py-3 sm:px-8">
           <div class="max-w-7xl mx-auto flex items-center gap-3">
-            <svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              class="w-5 h-5 text-amber-400 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -235,7 +251,12 @@ const SqlMode: Component = () => {
               class="ml-auto text-amber-400 hover:text-amber-300 transition-colors"
             >
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -262,7 +283,9 @@ const SqlMode: Component = () => {
           </Show>
 
           {/* No File State - friendly prompt to upload */}
-          <Show when={!isInitializing() && error() === 'No file loaded. Please upload a file first.'}>
+          <Show
+            when={!isInitializing() && error() === 'No file loaded. Please upload a file first.'}
+          >
             <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center max-w-lg mx-auto">
               <div class="p-4 bg-cyan-500/10 rounded-full w-fit mx-auto mb-6">
                 <svg
@@ -281,7 +304,8 @@ const SqlMode: Component = () => {
               </div>
               <h2 class="text-xl font-bold text-slate-200 mb-2">No Data Loaded</h2>
               <p class="text-slate-400 mb-6">
-                Upload a file first to query it with SQL. SQL Mode lets you filter, transform, and explore your data before profiling.
+                Upload a file first to query it with SQL. SQL Mode lets you filter, transform, and
+                explore your data before profiling.
               </p>
               <A
                 href="/"
@@ -301,7 +325,13 @@ const SqlMode: Component = () => {
           </Show>
 
           {/* Other Error State - for actual errors like DuckDB failures */}
-          <Show when={!isInitializing() && error() && error() !== 'No file loaded. Please upload a file first.'}>
+          <Show
+            when={
+              !isInitializing() &&
+              error() &&
+              error() !== 'No file loaded. Please upload a file first.'
+            }
+          >
             <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
               <svg
                 class="w-12 h-12 text-red-400 mx-auto mb-4"
@@ -363,13 +393,9 @@ const SqlMode: Component = () => {
                     </div>
                   </div>
                   <div class="text-right">
-                    <p class="text-sm text-slate-400">
-                      {fileStore.store.file?.name}
-                    </p>
+                    <p class="text-sm text-slate-400">{fileStore.store.file?.name}</p>
                     <Show when={rowCount() !== null}>
-                      <p class="text-sm text-slate-500">
-                        {rowCount()?.toLocaleString()} rows
-                      </p>
+                      <p class="text-sm text-slate-500">{rowCount()?.toLocaleString()} rows</p>
                     </Show>
                   </div>
                 </div>
@@ -385,19 +411,27 @@ const SqlMode: Component = () => {
                     disabled={isQuerying()}
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors flex items-center gap-2"
                   >
-                    <Show when={isQuerying()} fallback={
-                      <>
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                          />
-                        </svg>
-                        Run Query
-                      </>
-                    }>
+                    <Show
+                      when={isQuerying()}
+                      fallback={
+                        <>
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                            />
+                          </svg>
+                          Run Query
+                        </>
+                      }
+                    >
                       <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       Running...
                     </Show>
@@ -413,7 +447,8 @@ const SqlMode: Component = () => {
                 />
 
                 <p class="text-xs text-slate-500 mt-2">
-                  Use standard SQL syntax. Table name: <code class="text-emerald-400">{tableName()}</code>
+                  Use standard SQL syntax. Table name:{' '}
+                  <code class="text-emerald-400">{tableName()}</code>
                 </p>
               </div>
 
@@ -474,31 +509,35 @@ const SqlMode: Component = () => {
                     <table class="w-full text-sm">
                       <thead class="bg-slate-900/50 sticky top-0">
                         <tr>
-                          {results() &&
-                            results()!.length > 0 &&
-                            Object.keys(results()![0]).map((header) => (
+                          <For each={resultsHeaders()}>
+                            {(header) => (
                               <th class="px-4 py-3 text-left font-semibold text-slate-300 border-b border-slate-700">
                                 {header}
                               </th>
-                            ))}
+                            )}
+                          </For>
                         </tr>
                       </thead>
                       <tbody>
-                        {results()?.map((row, idx) => (
-                          <tr class={idx % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-800/10'}>
-                            {Object.values(row).map((value) => (
-                              <td class="px-4 py-2 text-slate-400 font-mono text-xs border-b border-slate-700/50 whitespace-nowrap">
-                                {value === null || value === undefined ? (
-                                  <span class="text-slate-600 italic">null</span>
-                                ) : typeof value === 'bigint' ? (
-                                  value.toString()
-                                ) : (
-                                  String(value)
+                        <For each={resultsList()}>
+                          {(row, idx) => (
+                            <tr class={idx() % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-800/10'}>
+                              <For each={Object.values(row)}>
+                                {(value) => (
+                                  <td class="px-4 py-2 text-slate-400 font-mono text-xs border-b border-slate-700/50 whitespace-nowrap">
+                                    {value === null || value === undefined ? (
+                                      <span class="text-slate-600 italic">null</span>
+                                    ) : typeof value === 'bigint' ? (
+                                      value.toString()
+                                    ) : (
+                                      String(value)
+                                    )}
+                                  </td>
                                 )}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                              </For>
+                            </tr>
+                          )}
+                        </For>
                       </tbody>
                     </table>
                   </div>
@@ -523,8 +562,8 @@ const SqlMode: Component = () => {
                   </svg>
                   <h3 class="text-lg font-semibold text-slate-400 mb-2">Run a Query</h3>
                   <p class="text-slate-500 text-sm max-w-md mx-auto">
-                    Write a SQL query above and click "Run Query" to see results.
-                    You can then profile the results to get detailed statistics.
+                    Write a SQL query above and click "Run Query" to see results. You can then
+                    profile the results to get detailed statistics.
                   </p>
                 </div>
               </Show>
